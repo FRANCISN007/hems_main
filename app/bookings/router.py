@@ -541,29 +541,17 @@ def update_booking(
   
 @router.put("/{room_number}/")
 def guest_checkout(
-    room_number: str,  # Room number is now passed as a string
+    room_number: str,  # Room number is passed as a string
     db: Session = Depends(get_db),
 ):
     """
     Endpoint to check out a guest by room number.
-    Updates the booking status to 'checked-out' and the room status to 'available'.
+    Ensures the room exists and the booking is in a valid state before proceeding.
     """
     try:
-        # Step 1: Retrieve the booking by room number and ensure it is 'checked-in' or 'reserved'
-        booking = db.query(booking_models.Booking).filter(
-            func.lower(booking_models.Booking.room_number) == room_number.lower(),  # Case-insensitive comparison
-            booking_models.Booking.status.in_(["checked-in", "reserved"])  # Allow both statuses
-        ).first()
-
-        if not booking:
-            raise HTTPException(
-                status_code=404,
-                detail=f"Ths room number {room_number} is not booked yet, so it's not in a valid state for checkout."
-            )
-
-        # Step 2: Retrieve the associated room with case-insensitive comparison
+        # Step 1: Check if the room exists first
         room = db.query(room_models.Room).filter(
-            func.lower(room_models.Room.room_number) == room_number.lower()  # Match the room number case-insensitively
+            func.lower(room_models.Room.room_number) == room_number.lower()  # Case-insensitive comparison
         ).first()
 
         if not room:
@@ -572,11 +560,23 @@ def guest_checkout(
                 detail=f"Room number {room_number} not found."
             )
 
+        # Step 2: Retrieve the active booking (checked-in or reserved)
+        booking = db.query(booking_models.Booking).filter(
+            func.lower(booking_models.Booking.room_number) == room_number.lower(),
+            booking_models.Booking.status.in_(["checked-in", "reserved"])
+        ).first()
+
+        if not booking:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Room number {room_number} is not currently booked, so it's not in a valid state for checkout."
+            )
+
         # Step 3: Update booking and room statuses
         booking.status = "checked-out"
         room.status = "available"
 
-        # Commit the changes to the database
+        # Commit changes to the database
         db.commit()
 
         return {
@@ -586,16 +586,13 @@ def guest_checkout(
         }
 
     except HTTPException as e:
-        # Re-raise the HTTP exception
-        raise e
+        raise e  # Re-raise specific HTTP exceptions
     except Exception as e:
-        # Handle unexpected errors
-        db.rollback()
+        db.rollback()  # Rollback on unexpected errors
         raise HTTPException(
             status_code=500,
             detail=f"An error occurred during checkout: {str(e)}"
         )
-
 
    
     
