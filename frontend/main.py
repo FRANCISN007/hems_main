@@ -9,6 +9,8 @@ import sys
 import win32print
 import win32ui
 
+
+
 #def resource_path(relative_path):
     #try:
         #base_path = sys._MEIPASS2
@@ -16,6 +18,10 @@ import win32ui
         #base_path = os.path.abspath(".")
 
     #return os.path.join(base_path, relative_path)
+
+
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))  # Ensure `frontend/` is in path
+
 
 
 API_URL = "http://localhost:8000/license"  # FastAPI server URL
@@ -78,7 +84,7 @@ class Application:
         except Exception as e:
             messagebox.showerror("Image Error", f"Could not load printer icon: {e}")
 
-    def print_report(self):
+    def print_report(self): 
         try:
             # Get the default printer
             printer_name = win32print.GetDefaultPrinter()

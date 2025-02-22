@@ -13,6 +13,9 @@ import pandas as pd
 from tkinter import Tk, Button, messagebox
 from utils import export_to_excel, print_excel
 import requests
+#from bookings_gui import BookingManagement  # Import the Payment GUI
+
+
 
 
 
@@ -103,6 +106,30 @@ class PaymentManagement:
 
             btn.pack(pady=5, padx=10, anchor="w", fill="x")
             self.buttons.append(btn)
+
+
+
+
+
+           # # 🔗 Add Payment Link Below the Sidebar (as a clickable label)
+        self.payment_label = tk.Label(self.left_frame, text="Booking link",
+                                    fg="#004080", cursor="hand2", 
+                                    font=("Helvetica", 13, "bold", "underline"), 
+                                    bg="#d9d9d9")  # Match sidebar background
+        self.payment_label.pack(pady=20, padx=10, anchor="w")
+
+        # Hover Effect: Underline on hover
+        self.payment_label.bind("<Enter>", lambda e: self.payment_label.config(font=("Helvetica", 13, "bold", "underline")))
+        self.payment_label.bind("<Leave>", lambda e: self.payment_label.config(font=("Helvetica", 13, "bold")))
+
+        # Click Action: Open Payment Window
+        self.payment_label.bind("<Button-1>", lambda e: self.open_booking_window())
+
+    def open_booking_window(self):
+        """Opens the Booking Management window."""
+        from bookings_gui import BookingManagement  # Import inside the function to avoid circular import
+        BookingManagement(self.root, self.token)
+    
             
             
     def fetch_and_display_paymentss(self):

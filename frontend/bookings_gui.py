@@ -10,6 +10,9 @@ import requests
 import os
 import sys
 import pandas as pd
+from payment_gui import PaymentManagement  # Import the Payment GUI
+
+
 #from frontend.main import relative_path
 
 #def resource_path(relative_path):
@@ -100,6 +103,29 @@ class BookingManagement:
         self.print_button = tk.Button(self.header_frame, text="Print Report", 
                               command=self.print_report, bg="#28A745", fg="white", font=("Helvetica", 10, "bold"))
         self.print_button.pack(side=tk.RIGHT, padx=10, pady=5)
+
+
+
+     # 🔗 Add Payment Link Below the Sidebar (as a clickable label)
+        self.payment_label = tk.Label(self.left_frame, text="Payment link",
+                                    fg="#004080", cursor="hand2", 
+                                    font=("Helvetica", 13, "bold", "underline"), 
+                                    bg="#d9d9d9")  # Match sidebar background
+        self.payment_label.pack(pady=20, padx=10, anchor="w")
+
+        # Hover Effect: Change color but keep the underline
+        self.payment_label.bind("<Enter>", lambda e: self.payment_label.config(fg="#007BFF"))
+        self.payment_label.bind("<Leave>", lambda e: self.payment_label.config(fg="#004080"))
+
+        # Click Action: Open Payment Window
+        self.payment_label.bind("<Button-1>", lambda e: self.open_payment_window())
+    def open_payment_window(self):
+        """Opens the Payment Management window."""
+        PaymentManagement(self.root, self.token)
+
+
+
+
 
     def fetch_and_display_bookings(self):
         """Fetch booking data from the API"""
