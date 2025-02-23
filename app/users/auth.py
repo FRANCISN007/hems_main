@@ -11,6 +11,8 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from app.users.models import User
 from dotenv import load_dotenv
+import os
+import sys
 
 #import crud
 from app.users import crud
@@ -18,6 +20,16 @@ from app.database import get_db
 
 # Load environment variables
 load_dotenv()
+
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS2
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
+
 
 SECRET_KEY = os.getenv('SECRET_KEY')
 ALGORITHM = os.getenv('ALGORITHM', 'HS256')

@@ -114,13 +114,14 @@ class PaymentManagement:
            # # 🔗 Add Payment Link Below the Sidebar (as a clickable label)
         self.payment_label = tk.Label(self.left_frame, text="Booking link",
                                     fg="#004080", cursor="hand2", 
-                                    font=("Helvetica", 13, "bold", "underline"), 
+                                    font=("Helvetica", 12, "bold", "underline"), 
                                     bg="#d9d9d9")  # Match sidebar background
         self.payment_label.pack(pady=20, padx=10, anchor="w")
 
-        # Hover Effect: Underline on hover
-        self.payment_label.bind("<Enter>", lambda e: self.payment_label.config(font=("Helvetica", 13, "bold", "underline")))
-        self.payment_label.bind("<Leave>", lambda e: self.payment_label.config(font=("Helvetica", 13, "bold")))
+        # Hover Effect: Change color but keep the underline
+        self.payment_label.bind("<Enter>", lambda e: self.payment_label.config(fg="#007BFF"))
+        self.payment_label.bind("<Leave>", lambda e: self.payment_label.config(fg="#004080"))
+
 
         # Click Action: Open Payment Window
         self.payment_label.bind("<Button-1>", lambda e: self.open_booking_window())
@@ -413,9 +414,9 @@ class PaymentManagement:
                             payment.get("payment_id", ""),
                             payment.get("guest_name", ""),
                             payment.get("room_number", ""),
-                            f"₦{float(payment.get('amount_paid', 0)) :,.2f}",  # Format amount_paid
-                            f"₦{float(payment.get('discount_allowed', 0)) :,.2f}",  # Format discount_allowed
-                            f"₦{float(payment.get('balance_due', 0)) :,.2f}",  # Format balance_due
+                            f"{float(payment.get('amount_paid', 0)) :,.2f}",  # Format amount_paid
+                            f"{float(payment.get('discount_allowed', 0)) :,.2f}",  # Format discount_allowed
+                            f"{float(payment.get('balance_due', 0)) :,.2f}",  # Format balance_due
                             payment.get("payment_method", ""),
                             payment.get("payment_date", ""),
                             payment.get("status", ""),
@@ -429,7 +430,7 @@ class PaymentManagement:
                         widget.destroy()
 
                 # Display total payment amount at the top
-                self.total_label = tk.Label(self.right_frame, text=f"Total Payment: ₦{total_amount:,.2f}",
+                self.total_label = tk.Label(self.right_frame, text=f"Total Payment: {total_amount:,.2f}",
                                             font=("Arial", 12, "bold"), bg="#ffffff", fg="blue")
                 self.total_label.pack(side=tk.TOP, pady=5)
             else:
@@ -547,9 +548,9 @@ class PaymentManagement:
                             payment.get("payment_id", ""),
                             payment.get("guest_name", ""),
                             payment.get("room_number", ""),
-                            f"₦{amount_paid:,.2f}",
-                            f"₦{float(payment.get('discount_allowed', 0)):,.2f}",
-                            f"₦{float(payment.get('balance_due', 0)):,.2f}",
+                            f"{amount_paid:,.2f}",
+                            f"{float(payment.get('discount_allowed', 0)):,.2f}",
+                            f"{float(payment.get('balance_due', 0)):,.2f}",
                             payment.get("payment_method", ""),
                             payment.get("payment_date", ""),
                             payment.get("status", ""),
@@ -566,7 +567,7 @@ class PaymentManagement:
 
                     self.total_payment_label = tk.Label(
                         self.right_frame,
-                        text=f"Total Payment: ₦{total_payment:,.2f}",
+                        text=f"Total Payment: {total_payment:,.2f}",
                         font=("Arial", 12, "bold"),
                         bg="#ffffff", fg="blue"
                     )
@@ -611,7 +612,7 @@ class PaymentManagement:
         fetch_btn.grid(row=0, column=4, padx=10, pady=5)
 
         # Update the total label with blue text
-        self.total_label = tk.Label(frame, text="Total Debt Amount: ₦0", font=("Arial", 12, "bold"), bg="#ffffff", fg="blue")
+        self.total_label = tk.Label(frame, text="Total Debt Amount: 0", font=("Arial", 12, "bold"), bg="#ffffff", fg="blue")
         self.total_label.pack(pady=5)
 
         table_frame = tk.Frame(frame, bg="#ffffff")
@@ -653,7 +654,7 @@ class PaymentManagement:
                 data = response.json()
 
                 # Update the total debt amount
-                self.total_label.config(text=f"Total Debt Amount: ₦{data.get('total_debt_amount', 0):,.2f}")
+                self.total_label.config(text=f"Total Debt Amount: {data.get('total_debt_amount', 0):,.2f}")
 
                 debtors = data.get("debtors", [])
                 if not debtors:
@@ -667,11 +668,11 @@ class PaymentManagement:
                         debtor.get("booking_id", ""),
                         debtor.get("guest_name", ""),
                         debtor.get("room_number", ""),
-                        f"₦{float(debtor.get('room_price', 0)) :,.2f}",
+                        f"{float(debtor.get('room_price', 0)) :,.2f}",
                         debtor.get("number_of_days", ""),
-                        f"₦{float(debtor.get('total_due', 0)) :,.2f}",
-                        f"₦{float(debtor.get('total_paid', 0)) :,.2f}",
-                        f"₦{float(debtor.get('amount_due', 0)) :,.2f}",
+                        f"{float(debtor.get('total_due', 0)) :,.2f}",
+                        f"{float(debtor.get('total_paid', 0)) :,.2f}",
+                        f"{float(debtor.get('amount_due', 0)) :,.2f}",
                         debtor.get("booking_date", ""),
                         debtor.get("last_payment_date", "")
                     ))
@@ -705,7 +706,7 @@ class PaymentManagement:
         fetch_btn.pack(pady=5)
         
         # Apply green color to the total amount label
-        self.total_label = tk.Label(frame, text="Total Amount: ₦0", font=("Arial", 12, "bold"), bg="#ffffff", fg="blue")
+        self.total_label = tk.Label(frame, text="Total Amount: 0", font=("Arial", 12, "bold"), bg="#ffffff", fg="blue")
         self.total_label.pack(pady=5)
         
         table_frame = tk.Frame(frame, bg="#ffffff")
@@ -739,7 +740,7 @@ class PaymentManagement:
                 data = response.json()
                 
                 total_amount = data.get("total_amount", 0)
-                self.total_label.config(text=f"Total Amount: ₦{total_amount:,.2f}")
+                self.total_label.config(text=f"Total Amount: {total_amount:,.2f}")
 
                 if "payments" in data:
                     payments = data["payments"]
@@ -753,9 +754,9 @@ class PaymentManagement:
                         payment.get("payment_id", ""),
                         payment.get("guest_name", ""),
                         payment.get("room_number", ""),
-                        f"₦{float(payment.get('amount_paid', 0)) :,.2f}",
-                        f"₦{float(payment.get('discount allowed', 0)) :,.2f}",
-                        f"₦{float(payment.get('balance_due', 0)) :,.2f}",
+                        f"{float(payment.get('amount_paid', 0)) :,.2f}",
+                        f"{float(payment.get('discount allowed', 0)) :,.2f}",
+                        f"{float(payment.get('balance_due', 0)) :,.2f}",
                         payment.get("payment_method", ""),
                         payment.get("payment_date", ""),
                         payment.get("status", ""),
@@ -767,12 +768,6 @@ class PaymentManagement:
             messagebox.showerror("Error", f"Request failed: {e}")
 
 
-
-
-
-    
-
-   
 
     def search_payment_by_id(self):
         self.clear_right_frame()
@@ -840,9 +835,9 @@ class PaymentManagement:
                         payment_id = data.get("payment_id", "")
                         guest_name = data.get("guest_name", "")
                         room_number = data.get("room_number", "")
-                        amount_paid = f"₦{float(data.get('amount_paid', 0)) :,.2f}"  # Format amount
-                        discount_allowed = f"₦{float(data.get('discount_allowed', 0)) :,.2f}"  # Format discount
-                        balance_due = f"₦{float(data.get('balance_due', 0)) :,.2f}"  # Format balance
+                        amount_paid = f"{float(data.get('amount_paid', 0)) :,.2f}"  # Format amount
+                        discount_allowed = f"{float(data.get('discount_allowed', 0)) :,.2f}"  # Format discount
+                        balance_due = f"{float(data.get('balance_due', 0)) :,.2f}"  # Format balance
                         payment_method = data.get("payment_method", "")
                         payment_date = data.get("payment_date", "")
                         status = data.get("status", "").lower()  # Normalize status
@@ -989,9 +984,9 @@ class PaymentManagement:
                         data.get("payment_id", ""),
                         data.get("guest_name", ""),
                         data.get("room_number", ""),
-                        f"₦{float(data.get('amount_paid', 0)) :,.2f}",
-                        f"₦{float(data.get('discount_allowed', 0)) :,.2f}",
-                        f"₦{float(data.get('balance_due', 0)) :,.2f}",
+                        f"{float(data.get('amount_paid', 0)) :,.2f}",
+                        f"{float(data.get('discount_allowed', 0)) :,.2f}",
+                        f"{float(data.get('balance_due', 0)) :,.2f}",
                         data.get("payment_method", ""),
                         data.get("payment_date", ""),
                         data.get("status", ""),  # Payment status (should be "voided")

@@ -10,6 +10,7 @@ import os
 
 router = APIRouter()
 
+
 # Hardcoded admin password (better to store in an environment variable)
 ADMIN_LICENSE_PASSWORD = os.getenv("ADMIN_LICENSE_PASSWORD")
 

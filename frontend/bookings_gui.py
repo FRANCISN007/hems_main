@@ -109,7 +109,7 @@ class BookingManagement:
      # 🔗 Add Payment Link Below the Sidebar (as a clickable label)
         self.payment_label = tk.Label(self.left_frame, text="Payment link",
                                     fg="#004080", cursor="hand2", 
-                                    font=("Helvetica", 13, "bold", "underline"), 
+                                    font=("Helvetica", 12, "bold", "underline"), 
                                     bg="#d9d9d9")  # Match sidebar background
         self.payment_label.pack(pady=20, padx=10, anchor="w")
 
@@ -373,7 +373,7 @@ class BookingManagement:
                         booking.get("id", ""),
                         booking.get("room_number", ""),
                         booking.get("guest_name", ""),
-                        f"₦{float(booking.get('booking_cost', 0)) :,.2f}",
+                        f"{float(booking.get('booking_cost', 0)) :,.2f}",
                         booking.get("arrival_date", ""),
                         booking.get("departure_date", ""),
                         booking.get("status", ""),
@@ -389,7 +389,7 @@ class BookingManagement:
 
                 # Display total booking cost in green
                 self.total_booking_cost_label.config(
-                    text=f"Total Booking Cost: ₦{total_booking_cost:,.2f}"
+                    text=f"Total Booking Cost: {total_booking_cost:,.2f}"
                 )
 
             else:
@@ -531,7 +531,7 @@ class BookingManagement:
                                 booking.get("id", ""),
                                 booking.get("room_number", ""),
                                 booking.get("guest_name", ""),
-                                f"₦{booking_cost:,.2f}",
+                                f"{booking_cost:,.2f}",
                                 booking.get("arrival_date", ""),
                                 booking.get("departure_date", ""),
                                 booking.get("status", ""),
@@ -545,7 +545,7 @@ class BookingManagement:
 
                         self.tree.tag_configure("cancelled", foreground="red")
                         self.tree.tag_configure("normal", foreground="black")
-                        self.total_cost_label.config(text=f"Total Booking Cost: ₦{total_cost:,.2f}")
+                        self.total_cost_label.config(text=f"Total Booking Cost: {total_cost:,.2f}")
                     else:
                         self.tree.delete(*self.tree.get_children())
                         self.total_cost_label.config(text="Total Booking Cost: ₦0.00")
@@ -628,7 +628,7 @@ class BookingManagement:
                         booking.get("id", ""),
                         booking.get("room_number", ""),
                         booking.get("guest_name", ""),
-                         f"₦{float(booking.get('booking_cost', 0)) :,.2f}",  # Format booking_cost
+                         f"{float(booking.get('booking_cost', 0)) :,.2f}",  # Format booking_cost
                         booking.get("arrival_date", ""),
                         booking.get("departure_date", ""),
                         booking.get("status", ""),
@@ -714,7 +714,7 @@ class BookingManagement:
                         booking.get("id", ""),
                         booking.get("room_number", ""),
                         booking.get("guest_name", ""),
-                        f"₦{float(booking.get('booking_cost', 0)) :,.2f}",  # Format booking_cost
+                        f"{float(booking.get('booking_cost', 0)) :,.2f}",  # Format booking_cost
                         booking.get("arrival_date", ""),
                         booking.get("departure_date", ""),
                         booking.get("status", ""),
@@ -829,7 +829,7 @@ class BookingManagement:
                             booking.get("id", ""),
                             booking.get("room_number", ""),
                             booking.get("guest_name", ""),
-                            f"₦{float(booking.get('booking_cost', 0)) :,.2f}",
+                            f"{float(booking.get('booking_cost', 0)) :,.2f}",
                             booking.get("arrival_date", ""),
                             booking.get("departure_date", ""),
                             booking.get("status", ""),

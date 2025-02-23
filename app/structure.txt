@@ -113,6 +113,9 @@ utils.py → Handles API calls to the backend.
 to stop uvicorn that is used by another process
 taskkill /PID 9268 /F
 
+to check 
+netstat -ano | findstr :8000
+
 
 
 docker build -t hotel-management-system .
