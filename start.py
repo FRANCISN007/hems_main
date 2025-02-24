@@ -1,52 +1,45 @@
+import os
+import sys
 import subprocess
 import time
-import threading
-import sys
-import os
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+PYTHON_EXECUTABLE = os.path.join(BASE_DIR, "env", "Scripts", "python.exe")  # Ensure correct path
 
+# Check if Python executable exists
+if not os.path.exists(PYTHON_EXECUTABLE):
+    print(f"Error: Python executable not found at {PYTHON_EXECUTABLE}")
+    sys.exit(1)
 
-#print("Using interpreter:", sys.executable)
-
-
-# Function to start the FastAPI backend
 def start_backend():
-    with open("backend_log.txt", "w") as log_file:
-        process = subprocess.Popen(
-            [sys.executable, "-m", "uvicorn", "app.main:app", "--host", "127.0.0.1", "--port", "8000", "--reload"],
-            stdout=log_file,
-            stderr=log_file,
-        )
-    process.wait()
+    """Starts the FastAPI backend using the virtual environment"""
+    backend_script = os.path.join(BASE_DIR, "app", "main.py")
 
-# Function to check if backend is running
-def is_backend_running():
-    import requests
-    for attempt in range(20):  # Check for 20 seconds
-        try:
-            response = requests.get("http://127.0.0.1:8000/docs")
-            if response.status_code == 200:
-                return True
-        except requests.ConnectionError:
-            time.sleep(1)
-    return False
+    if not os.path.exists(backend_script):
+        print(f"Error: Backend script not found at {backend_script}")
+        sys.exit(1)
 
-# Function to start the Tkinter frontend
+    process = subprocess.Popen([PYTHON_EXECUTABLE, "-m", "app.main"], cwd=BASE_DIR)
+    time.sleep(3)  # Wait for backend to start
+    return process
+
 def start_frontend():
-    frontend_path = os.path.join(os.getcwd(), "frontend", "main.py")
-    subprocess.run([sys.executable, frontend_path])
+    """Starts the Tkinter frontend using the virtual environment"""
+    frontend_script = os.path.join(BASE_DIR, "frontend", "main.py")
 
-def main():
-    # Start backend in a separate thread
-    backend_thread = threading.Thread(target=start_backend, daemon=True)
-    backend_thread.start()
+    if not os.path.exists(frontend_script):
+        print(f"Error: Frontend script not found at {frontend_script}")
+        sys.exit(1)
 
-    # Ensure backend is running before launching frontend
-    if is_backend_running():
-        print("Backend is running, launching frontend...")
-        start_frontend()
-    else:
-        print("Backend failed to start. Check backend_log.txt for errors.")
+    subprocess.Popen([PYTHON_EXECUTABLE, frontend_script], cwd=BASE_DIR)
 
-if __name__ == '__main__':
-    main()
+if __name__ == "__main__":
+    backend_process = start_backend()
+    start_frontend()
+    
+    # Keep the program running (so backend doesn't close)
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        backend_process.terminate()

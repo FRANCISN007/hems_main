@@ -324,8 +324,8 @@ class EventManagement:
                         event.get("id", ""),
                         event.get("organizer", ""),
                         event.get("title", ""),
-                        f"₦{event_amount:,.2f}",
-                        f"₦{float(event.get('caution_fee', 0)) :,.2f}",
+                        f"{event_amount:,.2f}",
+                        f"{float(event.get('caution_fee', 0)) :,.2f}",
                         event.get("start_datetime", ""),
                         event.get("end_datetime", ""),
                         event.get("location", ""),
@@ -334,7 +334,7 @@ class EventManagement:
                         event.get("created_by", ""),
                     ))
 
-                self.total_label.config(text=f"Total Event Amount: ₦{total_amount:,.2f}")
+                self.total_label.config(text=f"Total Event Amount: {total_amount:,.2f}")
 
                 if not events:
                     messagebox.showinfo("No Results", "No events found for the selected filters.")
@@ -419,8 +419,8 @@ class EventManagement:
                         event.get("organizer", ""),
                         event.get("title", ""),
                         #f"₦{float(booking.get('booking_cost', 0)) :,.2f}",
-                        f"₦{float(event.get('event_amount', 0)) :,.2f}",
-                        f"₦{float(event.get('caution_fee', 0)) :,.2f}",
+                        f"{float(event.get('event_amount', 0)) :,.2f}",
+                        f"{float(event.get('caution_fee', 0)) :,.2f}",
                         event.get("start_datetime", ""),
                         event.get("end_datetime", ""),
                         event.get("location", ""),
@@ -623,7 +623,7 @@ class EventManagement:
         form_frame.grid(row=1, columnspan=2, pady=10, padx=10, sticky="ew")
 
         # Labels and Entry fields
-        labels = ["Event ID:", "Organiser Name:", "Amount Paid:", "Discount Allowed:", "Payment Method:"]
+        labels = ["Event ID:", "Organiser:", "Amount Paid:", "Discount Allowed:", "Payment Method:"]
         self.entries = {}
 
         for i, label_text in enumerate(labels):
@@ -647,31 +647,31 @@ class EventManagement:
     def submit_event_payment(self):
         """Handles submission of event payment to backend."""
         try:
-            # Validate and fetch Event ID
+            # Validate Event ID
             event_id_str = self.entries["Event ID:"].get().strip()
             if not event_id_str.isdigit():
                 messagebox.showerror("Error", "Event ID must be a valid integer.")
                 return
             event_id = int(event_id_str)
 
-            # Fetch and validate Organiser Name
-            organiser = self.entries["Organiser Name:"].get().strip()
+            # Validate Organizer Name
+            organiser = self.entries["Organiser:"].get().strip()
             if not organiser:
                 messagebox.showerror("Error", "Organiser name is required.")
                 return
 
-            # Fetch and validate Amount Paid
+            # Validate Amount Paid
             amount_paid_str = self.entries["Amount Paid:"].get().strip()
             if not amount_paid_str.replace(".", "", 1).isdigit():
                 messagebox.showerror("Error", "Amount Paid must be a valid number.")
                 return
             amount_paid = float(amount_paid_str)
 
-            # Fetch and validate Discount Allowed (default to 0 if empty)
+            # Validate Discount Allowed (default to 0 if empty)
             discount_allowed_str = self.entries["Discount Allowed:"].get().strip()
             discount_allowed = float(discount_allowed_str) if discount_allowed_str.replace(".", "", 1).isdigit() else 0.0
 
-            # Fetch Payment Method
+            # Validate Payment Method
             payment_method = self.entries["Payment Method:"].get().strip()
             if not payment_method:
                 messagebox.showerror("Error", "Payment Method is required.")
@@ -688,7 +688,7 @@ class EventManagement:
             }
 
             # API URL for creating event payment
-            url = "http://127.0.0.1:8000/eventpayment/"
+            url = "http://127.0.0.1:8000/eventpayment/"  # Adjusted API endpoint
             headers = {"Authorization": f"Bearer {self.token}", "Content-Type": "application/json"}
 
             # Send request to API
@@ -755,6 +755,8 @@ class EventManagement:
         self.total_payment_label = tk.Label(frame, text="", font=("Arial", 12, "bold"), bg="#ffffff", fg="blue")
         self.total_payment_label.pack(pady=10)
 
+    
+
     def fetch_event_payments(self, start_date_entry, end_date_entry):
         api_url = "http://127.0.0.1:8000/eventpayment/"  
         params = {
@@ -781,19 +783,20 @@ class EventManagement:
                 total_amount_paid = 0
                 
                 for payment in data:
-                    if payment.get("payment_status", "").lower() == "voided":
-                        continue  # Exclude voided payments
+                    payment_status = payment.get("payment_status", "").lower()
                     
-                    total_amount_paid += float(payment.get("amount_paid", 0))
-                    
+                    # Exclude voided payments from total computation but still list them
+                    if payment_status != "voided":
+                        total_amount_paid += float(payment.get("amount_paid", 0))
+
                     self.tree.insert("", "end", values=(
                         payment.get("id", ""),
                         payment.get("event_id", ""),
                         payment.get("organiser", ""),
-                        f"₦{float(payment.get('event_amount', 0)) :,.2f}",
-                        f"₦{float(payment.get('amount_paid', 0)) :,.2f}",
-                        f"₦{float(payment.get('discount_allowed', 0)) :,.2f}",
-                        f"₦{float(payment.get('balance_due', 0)) :,.2f}",
+                        f"{float(payment.get('event_amount', 0)) :,.2f}",
+                        f"{float(payment.get('amount_paid', 0)) :,.2f}",
+                        f"{float(payment.get('discount_allowed', 0)) :,.2f}",
+                        f"{float(payment.get('balance_due', 0)) :,.2f}",
                         payment.get("payment_method", ""),
                         payment.get("payment_status", ""),
                         payment.get("payment_date", ""),
@@ -801,13 +804,17 @@ class EventManagement:
                     ))
                 
                 self.total_payment_label.config(
-                    text=f"Total Payments: ₦{total_amount_paid:,.2f}"
+                    text=f"Total Payments: {total_amount_paid:,.2f}"
                 )
             else:
                 messagebox.showerror("Error", response.json().get("detail", "Failed to retrieve payments."))
 
         except requests.exceptions.RequestException as e:
             messagebox.showerror("Error", f"Request failed: {e}")
+
+
+
+
 
     def clear_right_frame(self):
         for widget in self.right_frame.winfo_children():
@@ -833,7 +840,7 @@ class EventManagement:
         # Status Dropdown
         tk.Label(filter_frame, text="Status:", font=("Arial", 11), bg="#ffffff").grid(row=0, column=0, padx=5, pady=5)
 
-        status_options = ["pending", "complete", "incomplete", "void"]
+        status_options = ["pending", "complete", "incomplete", "voided"]
         self.status_var = tk.StringVar(value=status_options[0])  # Default selection
 
         status_menu = ttk.Combobox(filter_frame, textvariable=self.status_var, values=status_options, state="readonly")
@@ -868,7 +875,7 @@ class EventManagement:
         table_frame.pack(fill=tk.BOTH, expand=True)
         
         # Total Payment Amount Label
-        self.total_cost_label = tk.Label(frame, text="Total Payment Amount: ₦0.00", 
+        self.total_cost_label = tk.Label(frame, text="Total Payment Amount: 0.00", 
                                  font=("Arial", 12, "bold"), bg="#ffffff", fg="blue")
         self.total_cost_label.pack(pady=5)
 
@@ -932,10 +939,10 @@ class EventManagement:
                             payment.get("id", ""),
                             payment.get("event_id", ""),
                             payment.get("organiser", ""),
-                            f"₦{event_amount:,.2f}",
-                            f"₦{amount_paid:,.2f}",
-                            f"₦{discount_allowed:,.2f}",
-                            f"₦{balance_due:,.2f}",
+                            f"{event_amount:,.2f}",
+                            f"{amount_paid:,.2f}",
+                            f"{discount_allowed:,.2f}",
+                            f"{balance_due:,.2f}",
                             payment.get("payment_date", ""),
                             payment.get("payment_status", ""),
                             payment.get("payment_method", ""),
@@ -943,7 +950,7 @@ class EventManagement:
                         ))
 
                     # Update Total Payment Label
-                    self.total_cost_label.config(text=f"Total Payment Amount: ₦{total_amount:,.2f}")
+                    self.total_cost_label.config(text=f"Total Payment Amount: {total_amount:,.2f}")
                 else:
                     messagebox.showinfo("No Results", "No payments found for the selected filters.")
             else:
@@ -1024,10 +1031,10 @@ class EventManagement:
                     self.search_tree.delete(*self.search_tree.get_children())
 
                     # Format amounts
-                    event_amount = f"₦{float(payment.get('event_amount', 0)) :,.2f}"
-                    amount_paid = f"₦{float(payment.get('amount_paid', 0)) :,.2f}"
-                    discount_allowed = f"₦{float(payment.get('discount_allowed', 0)) :,.2f}"
-                    balance_due = f"₦{float(payment.get('balance_due', 0)) :,.2f}"
+                    event_amount = f"{float(payment.get('event_amount', 0)) :,.2f}"
+                    amount_paid = f"{float(payment.get('amount_paid', 0)) :,.2f}"
+                    discount_allowed = f"{float(payment.get('discount_allowed', 0)) :,.2f}"
+                    balance_due = f"{float(payment.get('balance_due', 0)) :,.2f}"
 
                     self.search_tree.insert("", "end", values=(
                         payment.get("id", ""),
@@ -1107,11 +1114,11 @@ class EventManagement:
                 payment_data = response.json()
                 payment_status = payment_data.get("payment_status", "").lower()
 
-                if payment_status == "void":
+                if payment_status == "voided":
                     messagebox.showerror("Error", f"Payment ID {payment_id} has already been voided.")
                     return
                 
-                void_url = f"http://127.0.0.1:8000/eventpayment/{payment_id}/void"
+                void_url = f"http://127.0.0.1:8000/eventpayment/void/{payment_id}/"
                 void_response = requests.put(void_url, headers=headers)
 
                 if void_response.status_code == 200:
@@ -1149,9 +1156,9 @@ class EventManagement:
                     self.void_payment_tree.insert("", "end", values=(
                         data.get("id", ""),
                         data.get("organiser", ""),
-                        f"₦{float(data.get('amount_paid', 0)) :,.2f}",
-                        f"₦{float(data.get('discount_allowed', 0)) :,.2f}",
-                        f"₦{float(data.get('balance_due', 0)) :,.2f}",
+                        f"{float(data.get('amount_paid', 0)) :,.2f}",
+                        f"{float(data.get('discount_allowed', 0)) :,.2f}",
+                        f"{float(data.get('balance_due', 0)) :,.2f}",
                         data.get("payment_status", ""),
                         data.get("created_by", ""),
                     ))
@@ -1165,45 +1172,6 @@ class EventManagement:
 
     
     
-    
-    
-    
-    
-      
-    #def create_event(self):
-        #pass
-    
-    #def list_events(self):
-        #pass
-    
-    
-    #def search_event_by_id(self):
-        #pass
-    
-    #def update_event(self):
-        #pass
-    
-    #def cancel_event(self):
-        #pass
-    
-    
-    
-    
-    
-    #def create_event_payment(self):
-        #pass
-    
-    #def list_events_payment(self):
-        #pass
-    
-    #def list_payment_by_status(self):
-        #pass
-    
-    #def search_Payment_by_id(self):
-        #pass
-    
-    #def void_payment(self):
-        #pass
 
 
 

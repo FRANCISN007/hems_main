@@ -12,7 +12,7 @@ from datetime import datetime, timedelta, date
 from sqlalchemy.sql import  case
 from sqlalchemy.orm import aliased
 from typing import Optional 
-
+from loguru import logger
 
 
 
@@ -40,13 +40,15 @@ def create_event_payment(
             detail=f"Payment cannot be processed because Event ID {payment_data.event_id} is cancelled."
         )
 
-    # Fetch all previous payments for this event
+    # Fetch all previous payments for this event, excluding voided payments
     total_paid = db.query(func.coalesce(func.sum(eventpayment_models.EventPayment.amount_paid), 0)).filter(
-        eventpayment_models.EventPayment.event_id == payment_data.event_id
+        eventpayment_models.EventPayment.event_id == payment_data.event_id,
+        eventpayment_models.EventPayment.payment_status != "voided"  # Exclude voided payments
     ).scalar()
 
     total_discount = db.query(func.coalesce(func.sum(eventpayment_models.EventPayment.discount_allowed), 0)).filter(
-        eventpayment_models.EventPayment.event_id == payment_data.event_id
+        eventpayment_models.EventPayment.event_id == payment_data.event_id,
+        eventpayment_models.EventPayment.payment_status != "voided"  # Exclude voided discounts
     ).scalar()
 
     # Compute new total payment and discount including the new payment
@@ -155,7 +157,7 @@ def list_event_payments(
 
 @router.get("/status", response_model=List[eventpayment_schemas.EventPaymentResponse])
 def list_event_payments_by_status(
-    status: Optional[str] = Query(None, description="Payment status to filter by (pending, complete, incomplete, void)"),
+    status: Optional[str] = Query(None, description="Payment status to filter by (pending, complete, incomplete, voided)"),
     start_date: Optional[date] = Query(None, description="Filter by payment date (start) in format yyyy-mm-dd"),
     end_date: Optional[date] = Query(None, description="Filter by payment date (end) in format yyyy-mm-dd"),
     db: Session = Depends(get_db),
@@ -164,7 +166,7 @@ def list_event_payments_by_status(
     query = db.query(eventpayment_models.EventPayment)
 
     if status:
-        valid_statuses = {"pending", "complete", "incomplete", "void"}
+        valid_statuses = {"pending", "complete", "incomplete", "voided"}
         if status.lower() not in valid_statuses:
             raise HTTPException(status_code=400, detail=f"Invalid status. Choose from: {valid_statuses}")
         query = query.filter(eventpayment_models.EventPayment.payment_status == status)
@@ -182,11 +184,7 @@ def list_event_payments_by_status(
     return payments  # ✅ Return list as expected
 
 
-
-
-
-# Void a Payment
-@router.put("/{payment_id}/void", response_model=dict)
+@router.put("/void/{payment_id}/", response_model=dict)
 def void_event_payment(
     payment_id: int,
     db: Session = Depends(get_db),
@@ -194,65 +192,80 @@ def void_event_payment(
 ):
     # Only admins can void payments
     if current_user.role != "admin":
-        raise HTTPException(status_code=403, detail="Only admins can void payments")
+        raise HTTPException(status_code=403, detail="Insufficient permissions")
 
-    payment = db.query(eventpayment_models.EventPayment).filter(eventpayment_models.EventPayment.id == payment_id).first()
-    
-    if not payment:
-        raise HTTPException(status_code=404, detail="Payment not found")
-    
-    if payment.payment_status == "void":
-        raise HTTPException(status_code=400, detail="Payment has already been voided")
+    try:
+        # Retrieve the payment record by ID
+        payment = db.query(eventpayment_models.EventPayment).filter(
+            eventpayment_models.EventPayment.id == payment_id
+        ).first()
 
-    # Store voided payment amount before changing status
-    voided_amount = payment.amount_paid
-    voided_discount = payment.discount_allowed  # Consider if discount should be reversed too
+        if not payment:
+            logger.warning(f"Event Payment with ID {payment_id} does not exist.")
+            raise HTTPException(status_code=404, detail=f"Payment with ID {payment_id} not found.")
 
-    # Mark payment as void
-    payment.payment_status = "void"
-    db.commit()
+        # Check if payment has already been voided
+        if payment.payment_status == "voided":
+            raise HTTPException(status_code=400, detail="Payment has already been voided")
 
-    # Recalculate total amount paid and balance for the event
-    event = db.query(event_models.Event).filter(event_models.Event.id == payment.event_id).first()
-    
-    if not event:
-        raise HTTPException(status_code=404, detail="Associated event not found")
+        # Retrieve the associated event
+        event = db.query(event_models.Event).filter(event_models.Event.id == payment.event_id).first()
 
-    # Recalculate total paid and discount excluding voided payments
-    total_paid = db.query(func.coalesce(func.sum(eventpayment_models.EventPayment.amount_paid), 0)).filter(
-        eventpayment_models.EventPayment.event_id == payment.event_id,
-        eventpayment_models.EventPayment.payment_status != "void"
-    ).scalar()
+        if not event:
+            logger.warning(f"Event with ID {payment.event_id} not found.")
+            raise HTTPException(status_code=404, detail="Associated event not found")
 
-    total_discount = db.query(func.coalesce(func.sum(eventpayment_models.EventPayment.discount_allowed), 0)).filter(
-        eventpayment_models.EventPayment.event_id == payment.event_id,
-        eventpayment_models.EventPayment.payment_status != "void"
-    ).scalar()
+        # Store the event total cost
+        event_total_cost = event.event_amount
 
-    # Add back the voided amount to balance due
-    balance_due = event.event_amount - (total_paid + total_discount)
+        # Mark the payment as voided
+        payment.payment_status = "voided"
 
-    # Determine updated payment status
-    if balance_due > 0:
-        updated_payment_status = "incomplete"
-    elif balance_due == 0:
-        updated_payment_status = "complete"
-    else:
-        updated_payment_status = "excess"
+        # Calculate total valid payments (excluding voided ones)
+        total_valid_payments = db.query(
+            func.coalesce(func.sum(eventpayment_models.EventPayment.amount_paid), 0)
+        ).filter(
+            eventpayment_models.EventPayment.event_id == event.id,
+            eventpayment_models.EventPayment.payment_status != "voided"  # Exclude voided payments
+        ).scalar()
 
-    # Update the event’s payment status and balance due
-    db.query(event_models.Event).filter(event_models.Event.id == payment.event_id).update({
-        "payment_status": updated_payment_status,
-        "balance_due": balance_due  # Ensure the event reflects the new balance
-    })
-    db.commit()
-    
-    return {
-        "message": "Payment voided successfully",
-        "voided_amount": voided_amount,
-        "updated_balance_due": balance_due,
-        "updated_payment_status": updated_payment_status
-    }
+        # Update the event's balance due
+        event.balance_due = event_total_cost - total_valid_payments
+
+        # Update event's payment status based on the new balance
+        event.payment_status = "pending" if event.balance_due > 0 else "paid"
+
+        # Commit changes
+        db.commit()
+
+        logger.info(f"Event Payment with ID {payment_id} marked as void. Event balance recalculated.")
+
+        return {
+            "message": f"Event Payment with ID {payment_id} has been voided. Event balance updated.",
+            "payment_details": {
+                "payment_id": payment.id,
+                "status": payment.payment_status,
+            },
+            "event_details": {
+                "event_id": event.id,
+                "balance_due": event.balance_due,
+                "payment_status": event.payment_status,
+            },
+        }
+
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error voiding event payment: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"An error occurred while voiding the event payment: {str(e)}"
+        )
+
+
+
+
 
 
 @router.get("/{payment_id}")
