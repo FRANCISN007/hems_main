@@ -130,6 +130,7 @@ class PaymentManagement:
         """Opens the Booking Management window."""
         from bookings_gui import BookingManagement  # Import inside the function to avoid circular import
         BookingManagement(self.root, self.token)
+        
     
             
             

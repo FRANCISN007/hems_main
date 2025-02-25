@@ -3,6 +3,7 @@ from tkinter import ttk, messagebox
 from tkcalendar import DateEntry
 import requests
 from utils import BASE_URL
+import datetime 
 
 from tkinter import Tk, Button, messagebox
 from utils import export_to_excel, print_excel
@@ -117,11 +118,28 @@ class BookingManagement:
         self.payment_label.bind("<Enter>", lambda e: self.payment_label.config(fg="#007BFF"))
         self.payment_label.bind("<Leave>", lambda e: self.payment_label.config(fg="#004080"))
 
-        # Click Action: Open Payment Window
+    # Click Action: Open Payment Window
         self.payment_label.bind("<Button-1>", lambda e: self.open_payment_window())
     def open_payment_window(self):
         """Opens the Payment Management window."""
         PaymentManagement(self.root, self.token)
+
+
+
+    def reset_booking_form(self):
+        """Clears all input fields in the booking form."""
+        if hasattr(self, "entries"):
+            for key, entry in self.entries.items():
+                if isinstance(entry, ttk.Combobox):
+                    entry.set("")  # Clear combobox selection
+                elif isinstance(entry, DateEntry):
+                    entry.set_date(datetime.date.today())  # Reset date to today
+                elif isinstance(entry, tk.Entry):
+                    entry.delete(0, tk.END)  # Clear text entry
+                else:
+                    print(f"Unknown entry type for {key}")
+
+    
 
 
 
@@ -235,8 +253,7 @@ class BookingManagement:
     def submit_booking(self):
         """Collects form data and sends a request to create a booking."""
         try:
-            # Assuming 'self.username' holds the current user's username or ID
-            created_by = self.username  # Adjust this based on how you store the current user's info
+            created_by = self.username  
 
             booking_data = {
                 "room_number": self.entries["Room Number"].get(),
@@ -245,24 +262,31 @@ class BookingManagement:
                 "arrival_date": self.entries["Arrival Date"].get_date().strftime("%Y-%m-%d"),
                 "departure_date": self.entries["Departure Date"].get_date().strftime("%Y-%m-%d"),
                 "booking_type": self.entries["Booking Type"].get(),
-                "created_by": created_by,  # Add the created_by field to the data
+                "created_by": created_by,
             }
 
-            if not all(booking_data.values()):  # Ensure all fields are filled
+            if not all(booking_data.values()):  
                 messagebox.showerror("Error", "Please fill in all fields")
                 return
 
-            api_url =  "http://127.0.0.1:8000/bookings/create/"  # Adjust if needed
+            api_url = "http://127.0.0.1:8000/bookings/create/"  
             headers = {"Authorization": f"Bearer {self.token}", "Content-Type": "application/json"}
 
             response = requests.post(api_url, json=booking_data, headers=headers)
 
             if response.status_code == 200:
                 response_data = response.json()
-                booking_id = response_data.get("booking_details", {}).get("id")  # Extract booking ID
+                booking_id = response_data.get("booking_details", {}).get("id")  
 
                 if booking_id:
                     messagebox.showinfo("Success", f"Booking created successfully!\nBooking ID: {booking_id}")
+                    
+                    # Ensure this method exists before calling
+                    if hasattr(self, "reset_booking_form"):
+                        self.reset_booking_form()
+                    else:
+                        print("reset_booking_form method is missing")
+
                 else:
                     messagebox.showerror("Error", "Booking ID missing in response.")
 
