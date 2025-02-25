@@ -362,7 +362,7 @@ class BookingManagement:
 
                 # Check if bookings list is empty
                 if not bookings:
-                    self.total_booking_cost_label.config(text="Total Booking Cost: ₦0.00")  # Reset label
+                    self.total_booking_cost_label.config(text="Total Booking Cost: 0.00")  # Reset label
                     messagebox.showinfo("No Results", "No bookings found for the selected filters.")
                     return
 

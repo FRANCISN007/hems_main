@@ -303,7 +303,7 @@ class EventManagement:
 
     def fetch_events(self, start_date_entry, end_date_entry):
         """Fetch event payments from API and populate the table."""
-        api_url = "http://127.0.0.1:8000/event-payments"  # Use event-payments endpoint
+        api_url = "http://127.0.0.1:8000/event_payments"  # Use event-payments endpoint
         params = {
             "start_date": start_date_entry.get_date().strftime("%Y-%m-%d"),
             "end_date": end_date_entry.get_date().strftime("%Y-%m-%d"),

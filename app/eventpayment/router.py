@@ -243,7 +243,7 @@ def void_event_payment(
         event.balance_due = event_total_cost - total_valid_payments
 
         # Update event's payment status based on the new balance
-        event.payment_status = "pending" if event.balance_due > 0 else "paid"
+        event.payment_status = "pending" if event.balance_due > 0 else "complete"
 
         # Commit changes
         db.commit()
@@ -300,10 +300,13 @@ def get_event_payment_by_id(
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
 
-    # Compute balance_due correctly
+    # Compute balance_due correctly, excluding voided payments
     total_paid = (
         db.query(func.sum(eventpayment_models.EventPayment.amount_paid))
-        .filter(eventpayment_models.EventPayment.event_id == payment.event_id)
+        .filter(
+            eventpayment_models.EventPayment.event_id == payment.event_id,
+            eventpayment_models.EventPayment.payment_status != "voided"  # Exclude voided payments
+        )
         .scalar()
     ) or 0
 
@@ -313,29 +316,24 @@ def get_event_payment_by_id(
         .scalar()
     ) or 0
 
-    balance_due = event.event_amount - (total_paid + total_discount)
+    # Ensure event_amount is a float to avoid type issues
+    event_amount = float(event.event_amount)
+
+    balance_due = event_amount - (float(total_paid) + float(total_discount))
 
     # Construct response including required fields
     formatted_payment = {
-        "id": payment.id,  #  Add the missing 'id' field
+        "id": payment.id,  # Add the missing 'id' field
         "event_id": payment.event_id,
         "organiser": payment.organiser,
-        "event_amount": event.event_amount,
-        "amount_paid": payment.amount_paid,
-        "discount_allowed": payment.discount_allowed,
+        "event_amount": event_amount,
+        "amount_paid": float(payment.amount_paid),
+        "discount_allowed": float(payment.discount_allowed),
         "balance_due": balance_due,
         "payment_method": payment.payment_method,
         "payment_status": payment.payment_status,
-        "payment_date": payment.payment_date,  #  Add the missing 'payment_date' field
+        "payment_date": payment.payment_date,  # Add the missing 'payment_date' field
         "created_by": payment.created_by,
     }
 
     return formatted_payment
-
-
-
-
-
-
-
-
