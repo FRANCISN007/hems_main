@@ -20,7 +20,18 @@ class EventPaymentCreate(EventPaymentBase):
     pass
 
 # Schema for Response when Retrieving an Event Payment
-class EventPaymentResponse(EventPaymentBase):
+class EventPaymentResponse(BaseModel):
     id: int
+    event_id: int
+    organiser: str
+    event_amount: float  #  Ensure this field exists
+    amount_paid: float
+    discount_allowed: float
     balance_due: float
+    payment_method: str
+    payment_status: str
     payment_date: date
+    created_by: str
+
+    class Config:
+        from_attributes = True

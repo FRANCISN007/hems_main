@@ -33,7 +33,7 @@ def create_event_payment(
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
 
-    # 🚨 Check if the event is canceled before proceeding with payment
+    #  Check if the event is canceled before proceeding with payment
     if event.payment_status.lower() == "cancelled":
         raise HTTPException(
             status_code=400,
@@ -123,10 +123,13 @@ def list_event_payments(
         if not event:
             continue  # Skip if event is not found
 
-        # Compute balance_due correctly
+        # Compute balance_due correctly, excluding voided payments
         total_paid = (
             db.query(func.sum(eventpayment_models.EventPayment.amount_paid))
-            .filter(eventpayment_models.EventPayment.event_id == payment.event_id)
+            .filter(
+                eventpayment_models.EventPayment.event_id == payment.event_id,
+                eventpayment_models.EventPayment.payment_status != "voided"  # Exclude voided payments
+            )
             .scalar()
         ) or 0
 
@@ -136,24 +139,31 @@ def list_event_payments(
             .scalar()
         ) or 0
 
-        balance_due = event.event_amount - (total_paid + total_discount)
+        # Ensure event_amount is correctly retrieved from the event table
+        event_amount = float(event.event_amount)
+
+        balance_due = event_amount - (float(total_paid) + float(total_discount))
 
         # Construct response object
         formatted_payments.append({
-            "id": payment.id,  # ✅ Ensure 'id' is included
+            "id": payment.id,  # Ensure 'id' is included
             "event_id": payment.event_id,
             "organiser": payment.organiser,
-            "event_amount": event.event_amount,
-            "amount_paid": payment.amount_paid,
-            "discount_allowed": payment.discount_allowed,
+            "event_amount": event_amount,  # Ensure 'event_amount' is included
+            "amount_paid": float(payment.amount_paid),
+            "discount_allowed": float(payment.discount_allowed),
             "balance_due": balance_due,
             "payment_method": payment.payment_method,
             "payment_status": payment.payment_status,
-            "payment_date": payment.payment_date,  # ✅ Ensure 'payment_date' is included
+            "payment_date": payment.payment_date,  # Ensure 'payment_date' is included
             "created_by": payment.created_by,
         })
 
     return formatted_payments
+
+
+
+
 
 @router.get("/status", response_model=List[eventpayment_schemas.EventPaymentResponse])
 def list_event_payments_by_status(
@@ -179,9 +189,9 @@ def list_event_payments_by_status(
     payments = query.all()
     
     if not payments:
-        return []  # ✅ Return an empty list if no records are found
+        return []  #  Return an empty list if no records are found
 
-    return payments  # ✅ Return list as expected
+    return payments  #  Return list as expected
 
 
 @router.put("/void/{payment_id}/", response_model=dict)
@@ -307,7 +317,7 @@ def get_event_payment_by_id(
 
     # Construct response including required fields
     formatted_payment = {
-        "id": payment.id,  # ✅ Add the missing 'id' field
+        "id": payment.id,  #  Add the missing 'id' field
         "event_id": payment.event_id,
         "organiser": payment.organiser,
         "event_amount": event.event_amount,
@@ -316,7 +326,7 @@ def get_event_payment_by_id(
         "balance_due": balance_due,
         "payment_method": payment.payment_method,
         "payment_status": payment.payment_status,
-        "payment_date": payment.payment_date,  # ✅ Add the missing 'payment_date' field
+        "payment_date": payment.payment_date,  #  Add the missing 'payment_date' field
         "created_by": payment.created_by,
     }
 
