@@ -25,7 +25,7 @@ sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))  # Ensure `fronte
 
 
 
-API_URL = "http://localhost:8000/license"  # FastAPI server URL
+API_URL = "http://127.0.0.1:8000/license"  # FastAPI server URL
 
 class Application:
     def __init__(self, root):

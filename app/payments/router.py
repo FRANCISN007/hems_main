@@ -13,14 +13,20 @@ from app.bookings import models as booking_models
 from sqlalchemy.sql import func
 from loguru import logger
 from app.bookings import models  # Import the models module from bookings
-
+import os
 
 
 router = APIRouter()
 
 
 # Set up logging
-logger.add("app.log", rotation="500 MB", level="DEBUG")
+#logger.add("app.log", rotation="500 MB", level="DEBUG")
+
+#log_path = os.path.join(os.getenv("LOCALAPPDATA", "C:\\Temp"), "app.log")
+#logger.add(log_path, rotation="500 MB", level="DEBUG")
+
+
+
 
 @router.post("/{booking_id}")
 def create_payment(

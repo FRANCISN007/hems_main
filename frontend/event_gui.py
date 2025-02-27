@@ -298,12 +298,12 @@ class EventManagement:
         self.tree.configure(xscroll=x_scroll.set)
 
         # Total Amount Label
-        self.total_label = tk.Label(frame, text="Total Event Amount: ₦0.00", font=("Arial", 12, "bold"), bg="#ffffff", fg="blue")
+        self.total_label = tk.Label(frame, text="Total Event Amount: 0.00", font=("Arial", 12, "bold"), bg="#ffffff", fg="blue")
         self.total_label.pack(pady=10)
 
     def fetch_events(self, start_date_entry, end_date_entry):
-        """Fetch event payments from API and populate the table."""
-        api_url = "http://127.0.0.1:8000/event_payments"  # Use event-payments endpoint
+        """Fetch events from API and populate the table."""
+        api_url = "http://127.0.0.1:8000/events"
         params = {
             "start_date": start_date_entry.get_date().strftime("%Y-%m-%d"),
             "end_date": end_date_entry.get_date().strftime("%Y-%m-%d"),
@@ -313,37 +313,35 @@ class EventManagement:
         try:
             response = requests.get(api_url, params=params, headers=headers)
             if response.status_code == 200:
-                payments = response.json()
+                events = response.json()
                 self.tree.delete(*self.tree.get_children())  # Clear table
                 total_amount = 0
-                total_balance_due = 0
 
-                for payment in payments:
-                    event_amount = float(payment.get("event_amount", 0))
-                    balance_due = float(payment.get("balance_due", 0))
+                for event in events:
+                    event_amount = float(event.get("event_amount", 0))
                     total_amount += event_amount
-                    total_balance_due += balance_due
-
                     self.tree.insert("", "end", values=(
-                        payment.get("id", ""),
-                        payment.get("organiser", ""),
+                        event.get("id", ""),
+                        event.get("organizer", ""),
+                        event.get("title", ""),
                         f"{event_amount:,.2f}",
-                        f"{float(payment.get('amount_paid', 0)):,.2f}",
-                        f"{float(payment.get('discount_allowed', 0)):,.2f}",
-                        f"{balance_due:,.2f}",  # Display balance due
-                        payment.get("payment_status", ""),
-                        payment.get("payment_date", ""),
-                        payment.get("created_by", ""),
+                        f"{float(event.get('caution_fee', 0)) :,.2f}",
+                        event.get("start_datetime", ""),
+                        event.get("end_datetime", ""),
+                        event.get("location", ""),
+                        event.get("phone_number", ""),
+                        event.get("payment_status", ""),
+                        event.get("created_by", ""),
                     ))
 
-                self.total_label.config(text=f"Total Event Amount: ₦{total_amount:,.2f} | Total Balance Due: ₦{total_balance_due:,.2f}")
+                self.total_label.config(text=f"Total Event Amount: {total_amount:,.2f}")
 
-                if not payments:
-                    messagebox.showinfo("No Results", "No event payments found for the selected filters.")
-                    self.total_label.config(text="Total Event Amount: ₦0.00 | Total Balance Due: ₦0.00")
+                if not events:
+                    messagebox.showinfo("No Results", "No events found for the selected filters.")
+                    self.total_label.config(text="Total Event Amount: 0.00")
 
             else:
-                messagebox.showerror("Error", response.json().get("detail", "Failed to retrieve event payments."))
+                messagebox.showerror("Error", response.json().get("detail", "Failed to retrieve events."))
 
         except requests.exceptions.RequestException as e:
             messagebox.showerror("Error", f"Request failed: {e}")
@@ -352,6 +350,7 @@ class EventManagement:
         """Clears the right frame before rendering new content."""
         for widget in self.right_frame.winfo_children():
             widget.pack_forget()
+
 
 
 

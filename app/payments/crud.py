@@ -10,7 +10,7 @@ from sqlalchemy import between
 
 
 # Set up logging
-logger.add("app.log", rotation="500 MB", level="DEBUG")
+#logger.add("app.log", rotation="500 MB", level="DEBUG")
 
 
 def create_payment(

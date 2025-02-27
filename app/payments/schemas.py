@@ -26,5 +26,5 @@ class PaymentUpdateSchema(BaseModel):
     #booking_cost: Optional[float]   # Update booking cost if provided
     
     class Config:
-        orm_mode = True
+        from_attributes = True
 

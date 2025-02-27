@@ -35,6 +35,6 @@ class RoomUpdateSchema(BaseModel):
     status: Optional[Literal["available", "checked-in", "reserved"]] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 

@@ -9,13 +9,20 @@ from app.bookings import models as booking_models  # Adjust path if needed
 from app.users import schemas
 from datetime import date
 from loguru import logger
-
+import os
 router = APIRouter()
 
 
 
 # Set up logging
-logger.add("app.log", rotation="500 MB", level="DEBUG")
+#logger.add("app.log", rotation="500 MB", level="DEBUG")
+
+
+#log_path = os.path.join(os.getenv("LOCALAPPDATA", "C:\\Temp"), "app.log")
+#logger.add("C:/Users/KLOUNGE/Documents/app.log", rotation="500 MB", level="DEBUG")
+
+
+
 
 @router.post("/")
 def create_room(

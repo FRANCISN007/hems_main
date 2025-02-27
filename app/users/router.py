@@ -6,7 +6,7 @@ from app.database import get_db
 from app.users import crud as user_crud, schemas  # Correct import for user CRUD operations
 import os
 from loguru import logger
-
+import os
 
 router = APIRouter()
 
@@ -14,7 +14,14 @@ router = APIRouter()
 
 ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD')
 
-logger.add("app.log", rotation="500 MB", level="DEBUG")
+#logger.add("app.log", rotation="500 MB", level="DEBUG")
+
+
+
+#log_path = os.path.join(os.getenv("LOCALAPPDATA", "C:\\Temp"), "app.log")
+#logger.add("C:/Users/KLOUNGE/Documents/app.log", rotation="500 MB", level="DEBUG")
+
+
 
 
 @router.post("/register/")

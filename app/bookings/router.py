@@ -14,12 +14,16 @@ from app.payments import models as payment_models
 from loguru import logger
 from sqlalchemy.sql import func
 from datetime import datetime
-
+import os
 
 router = APIRouter()
 
 # Set up logging
-logger.add("app.log", rotation="500 MB", level="DEBUG")
+#logger.add("app.log", rotation="500 MB", level="DEBUG")
+
+
+#log_path = os.path.join(os.getenv("LOCALAPPDATA", "C:\\Temp"), "app.log")
+#logger.add(log_path, rotation="500 MB", level="DEBUG")
 
 
 

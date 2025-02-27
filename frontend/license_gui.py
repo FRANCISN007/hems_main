@@ -15,7 +15,7 @@ def resource_path(relative_path):
     return os.path.join(base_path, relative_path)
 
 
-API_URL = "http://localhost:8000/license"  # FastAPI server URL
+API_URL = "http://127.0.0.1:8000/license"  # FastAPI server URL
 
 class LicenseGUI(tk.Frame):  # Inherit from tk.Frame
     def __init__(self, master, show_login_screen_callback):
