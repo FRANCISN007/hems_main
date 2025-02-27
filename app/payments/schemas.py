@@ -11,9 +11,9 @@ class PaymentCreateSchema(BaseModel):
     payment_date: datetime
     created_by: Optional[str] = None  # Remove manual input, get from `current_user`
     #booking_cost: Optional[float]  # Update booking cost if provided
+    
     class Config:
-        orm_mode = True
-
+        from_attributes = True
 
 class PaymentUpdateSchema(BaseModel):
     guest_name: str

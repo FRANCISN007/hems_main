@@ -15,7 +15,8 @@ class RoomSchema(BaseModel):
     status: Literal["available", "checked-in", "reserved"]  # Updated status options
 
     class Config:
-        orm_mode = True
+        from_attributes = True
+
         
 
 class RoomList(BaseModel):
@@ -25,7 +26,7 @@ class RoomList(BaseModel):
     
 
     class Config:
-        orm_mode = True
+        from_attributes = True
         
         
 class RoomUpdateSchema(BaseModel):
