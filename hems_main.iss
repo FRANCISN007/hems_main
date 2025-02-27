@@ -3,7 +3,7 @@
 
 #define MyAppName "Hotel and Event Management System"
 #define MyAppVersion "1.5"
-#define MyAppPublisher "My Company, Inc."
+#define MyAppPublisher "School of Accounting Package"
 #define MyAppURL "https://www.example.com/"
 #define MyAppExeName "start.py"
 #define MyAppAssocName MyAppName + " File"
@@ -52,4 +52,4 @@ Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\env\Scripts\python.exe"; P
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\env\Scripts\python.exe"; Parameters: """{app}\start.py"""; Tasks: desktopicon
 
 [Run]
-Filename: "{app}\env\Scripts\python.exe"; Parameters: """{app}\start.py"""; WorkingDir: "{app}"; Flags: nowait runhidden
+Filename: "{app}\env\Scripts\python.exe"; Parameters: """{app}\start.py"""; WorkingDir: "{app}"; Flags: nowait runminimized

@@ -19,7 +19,11 @@ def start_backend():
         print(f"Error: Backend script not found at {backend_script}")
         sys.exit(1)
 
-    process = subprocess.Popen([PYTHON_EXECUTABLE, "-m", "app.main"], cwd=BASE_DIR)
+    #process = subprocess.Popen([PYTHON_EXECUTABLE, "-m", "app.main"], cwd=BASE_DIR)
+    with open("error.log", "w") as log_file:
+        process = subprocess.Popen([PYTHON_EXECUTABLE, "-m", "app.main"], cwd=BASE_DIR)
+
+
     time.sleep(3)  # Wait for backend to start
     return process
 

@@ -9,8 +9,17 @@ from app.license.router import router as license_router
 from app.events.router import router as events_router
 from app.eventpayment.router import router as eventpayment_router
 import uvicorn
+import sys
+import os
+
 
 from contextlib import asynccontextmanager
+
+
+
+
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 
 @asynccontextmanager

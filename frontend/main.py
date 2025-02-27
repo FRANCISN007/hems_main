@@ -21,7 +21,10 @@ import win32ui
     #return os.path.join(base_path, relative_path)
 
 
-sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))  # Ensure `frontend/` is in path
+#sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))  # Ensure `frontend/` is in pat
+
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 
 
