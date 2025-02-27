@@ -507,7 +507,7 @@ class BookingManagement:
         self.tree.configure(xscroll=x_scroll.set)
 
         # ✅ Add Label for Total Booking Cost at the Bottom
-        self.total_cost_label = tk.Label(frame, text="Total Booking Cost: ₦0.00", font=("Arial", 12, "bold"), bg="#ffffff", fg="blue")
+        self.total_cost_label = tk.Label(frame, text="Total Booking Cost: 0.00", font=("Arial", 12, "bold"), bg="#ffffff", fg="blue")
         self.total_cost_label.pack(pady=10)  # Placed at the bottom
 
 
