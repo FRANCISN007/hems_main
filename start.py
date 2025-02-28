@@ -3,6 +3,9 @@ import sys
 import subprocess
 import time
 
+
+
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PYTHON_EXECUTABLE = os.path.join(BASE_DIR, "env", "Scripts", "python.exe")  # Ensure correct path
 
@@ -40,6 +43,7 @@ def start_frontend():
 if __name__ == "__main__":
     backend_process = start_backend()
     start_frontend()
+    
     
     # Keep the program running (so backend doesn't close)
     try:
