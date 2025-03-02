@@ -2,86 +2,79 @@ import tkinter as tk
 from tkinter import messagebox
 import requests
 from login_gui import LoginGUI
-import os
-import sys
-
-
-def resource_path(relative_path):
-    try:
-        base_path = sys._MEIPASS2
-    except Exception:
-        base_path = os.path.abspath(".")
-
-    return os.path.join(base_path, relative_path)
-
 
 API_URL = "http://127.0.0.1:8000/license"  # FastAPI server URL
 
-class LicenseGUI(tk.Frame):  # Inherit from tk.Frame
-    def __init__(self, master, show_login_screen_callback):
-        super().__init__(master)  # Initialize the parent class (tk.Frame)
-        self.master = master
-        self.show_login_screen_callback = show_login_screen_callback  # Save the callback
-        self.pack()  # This will pack the frame to the root window
-        self.master.title("License Management")
-        self.master.geometry("500x400")  # Increase window size for better layout
-        
-        if not root or not root.winfo_exists():
-            print("Error: Tkinter root window does not exist.")
-            return  # Stop execution if root is destroyed
 
-        screen_width = root.winfo_screenwidth()  # Now safe to call
+class SplashScreen(tk.Toplevel):
+    def __init__(self, master):
+        super().__init__(master)
+        self.title("Welcome")
+        self.state('zoomed')  # Fullscreen splash
+        self.configure(bg="black")
 
-        #screen_width = root.winfo_screenwidth()
-        screen_height = root.winfo_screenheight()
-        
-        # Maximize the window (like login window)
-        root.state('zoomed')
-# Set window width and height
-        window_width = 500
-        window_height = 400
+        # Welcome text
+        self.label = tk.Label(self, text="Welcome to Hotel and Event Management System", 
+                              font=("Arial", 28, "bold"), fg="white", bg="black")
+        self.label.place(relx=0.5, rely=0.65, anchor="center")  # Positioned lower
 
-# Calculate position to center the window
-        x_position = (screen_width - window_width) // 2
-        y_position = (screen_height - window_height) // 2
+        # Produced by text (italicized)
+        self.produced_by_label = tk.Label(self, text="Produced by School of Accounting Package", 
+                                          font=("Arial", 13, "italic"), fg="white", bg="black")
+        self.produced_by_label.place(relx=0.5, rely=0.72, anchor="center")  # Positioned under main text
 
-# Set the geometry of the window
-        root.geometry(f"{window_width}x{window_height}+{x_position}+{y_position}")
-        
-        # Generate License Section
+
+class LicenseGUI(tk.Toplevel):
+    def __init__(self, master, splash_screen):
+        super().__init__(master)
+        self.master = master  # Store reference to root window
+        self.splash_screen = splash_screen  # Store reference to splash screen
+        self.title("License Management")
+        self.geometry("500x400")
+
+        # Keep License Window on top of Splash
+        self.transient(self.splash_screen)  # Makes License screen modal
+        self.grab_set()  # Prevents interacting with splash until license is verified
+
+        screen_width = self.winfo_screenwidth()
+        screen_height = self.winfo_screenheight()
+
+        # Position above the splash text (not centered)
+        x_position = (screen_width - 500) // 2
+        y_position = (screen_height - 720) // 2  # Slightly higher to avoid covering text
+
+        self.geometry(f"500x400+{x_position}+{y_position}")
+
         self.generate_frame = tk.LabelFrame(self, text="Generate License Key", padx=10, pady=10)
         self.generate_frame.pack(padx=10, pady=10, fill="both", expand=True)
 
         self.password_label = tk.Label(self.generate_frame, text="Admin License Password:")
         self.password_label.pack(padx=5, pady=5)
 
-        self.password_entry = tk.Entry(self.generate_frame, show="*", width=30)  # Increase width for better visibility
+        self.password_entry = tk.Entry(self.generate_frame, show="*", width=30)
         self.password_entry.pack(padx=5, pady=5)
 
         self.key_label = tk.Label(self.generate_frame, text="License Key:")
         self.key_label.pack(padx=5, pady=5)
 
-        self.key_entry = tk.Entry(self.generate_frame, width=30)  # Increase width for better visibility
+        self.key_entry = tk.Entry(self.generate_frame, width=30)
         self.key_entry.pack(padx=5, pady=5)
 
         self.generate_button = tk.Button(self.generate_frame, text="Generate License", command=self.generate_license)
         self.generate_button.pack(pady=10)
 
-        # Verify License Section
         self.verify_frame = tk.LabelFrame(self, text="Verify License Key", padx=10, pady=10)
         self.verify_frame.pack(padx=10, pady=10, fill="both", expand=True)
 
         self.verify_key_label = tk.Label(self.verify_frame, text="Enter License Key to Verify:")
         self.verify_key_label.pack(padx=5, pady=5)
 
-        self.verify_key_entry = tk.Entry(self.verify_frame, width=30)  # Increase width for better visibility
+        self.verify_key_entry = tk.Entry(self.verify_frame, width=30)
         self.verify_key_entry.pack(padx=5, pady=5)
 
         self.verify_button = tk.Button(self.verify_frame, text="Verify License", command=self.verify_license)
         self.verify_button.pack(pady=10)
 
-
-    # Function to generate a license key
     def generate_license(self):
         license_password = self.password_entry.get()
         key = self.key_entry.get()
@@ -91,35 +84,19 @@ class LicenseGUI(tk.Frame):  # Inherit from tk.Frame
             return
 
         try:
-            # Debugging: print the payload to verify the data
-            
-
-            # Modify the request to send data as query parameters
             response = requests.post(
                 f"{API_URL}/generate?license_password={license_password}&key={key}", 
-                headers={"Content-Type": "application/json"}  # Set content-type as JSON
+                headers={"Content-Type": "application/json"}
             )
-
-            # Check for response status code to debug error
-            #print(f"Response status: {response.status_code}")
-            #rint(f"Response body: {response.text}")
-
-            response.raise_for_status()  # Check if the request was successful (status code 200)
-            new_license = response.json()  # Parse the response JSON
-
+            response.raise_for_status()
+            new_license = response.json()
             messagebox.showinfo("License Generated", f"New License Key: {new_license['key']}")
 
-        except requests.exceptions.HTTPError as err:
-        # ✅ Check for incorrect password response
-            if response.status_code == 401:  # Assuming 401 is returned for wrong password
-                messagebox.showerror("Error", "Wrong password entered.")
-            else:
-                messagebox.showerror("Error", "Wrong password entered.")
-
+        except requests.exceptions.HTTPError:
+            messagebox.showerror("Error", "Wrong password entered.")
         except Exception as e:
             messagebox.showerror("Error", f"An unexpected error occurred: {e}")
 
-    # Function to verify the license key
     def verify_license(self):
         key = self.verify_key_entry.get()
 
@@ -135,38 +112,31 @@ class LicenseGUI(tk.Frame):  # Inherit from tk.Frame
             if result["valid"]:
                 messagebox.showinfo("License Valid", "The license key is valid!")
 
-                # Close the license window
-                self.master.withdraw()  # Hides the license window instead of destroying it
-
-                # Create a new window for login
+                # Destroy Splash and License screens before opening the dashboard
+                if self.splash_screen:
+                    self.splash_screen.destroy()
+                self.destroy()
+                
+                # Open the dashboard (Login Window)
                 login_window = tk.Toplevel(self.master)
                 LoginGUI(login_window)
 
             else:
                 messagebox.showwarning("Invalid License", result["message"])
 
-        except requests.exceptions.HTTPError as err:
-            messagebox.showerror("Error","Invalid license key")
+        except requests.exceptions.HTTPError:
+            messagebox.showerror("Error", "Invalid license key")
         except Exception as e:
             messagebox.showerror("Error", f"An unexpected error occurred: {e}")
 
 
-# Function to transition to the login screen
-def show_login_screen():
-    # Clear the current window and transition to the login screen
-    for widget in root.winfo_children():
-        widget.destroy()
-
-    from login_gui import LoginGUI  # Import LoginGUI and show it
-    login_gui = LoginGUI(root)
-    login_gui.pack()
-
-
-# Tkinter window setup
+# Main Execution
 root = tk.Tk()
-root.title("License Management")
-root.geometry("500x400")  # Increase window size for better layout
+root.withdraw()
 
-# Create License GUI window
-license_screen = LicenseGUI(root, show_login_screen)
+splash = SplashScreen(root)
+
+# Reduce Splash Delay to 2 seconds before showing License GUI (on top of splash)
+root.after(2000, lambda: LicenseGUI(root, splash))  
+
 root.mainloop()

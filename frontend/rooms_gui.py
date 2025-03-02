@@ -37,7 +37,7 @@ class RoomManagement:
         self.root.configure(bg="#f0f0f0")  # Set the background color of the main window
 
         title_label = tk.Label(self.root, text="Room Management", font=("Helvetica", 18, "bold"),
-                               bg="#007BFF", fg="white", padx=10, pady=10)
+                               bg="#2C3E50", fg="white", padx=10, pady=10)
         title_label.pack(fill=tk.X)
 
         columns = ("Room Number", "Room Type", "Amount", "Status", "Booking Type")

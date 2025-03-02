@@ -49,6 +49,8 @@ HEMS-main/
 ├── README.md
 
 
+%USERPROFILE%\AppData\Local\programs
+
 
 📂 Updated Backend Structure
 bash
