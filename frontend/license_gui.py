@@ -34,9 +34,9 @@ class LicenseSplashScreen(tk.Toplevel):
         # 🛠️ Fixed Button Display Issue
         tk.Button(self.license_frame, text="Verify License", font=("Arial", 12), command=self.verify_license).pack(pady=15)
 
-        # 🌟 **Adjusted Splash Text Spacing**
-        tk.Label(self, text="Welcome to Hotel and Event Management System", 
-                 font=("Arial", 20, "bold"), fg="white", bg="#2C3E50").place(relx=0.5, rely=0.1, anchor="n")  # Moved slightly up
+        tk.Label(self, text="✦  W E L C O M E  ✦\nHotel & Event Management System", 
+         font=("Century Gothic", 24, "bold"), fg="white", bg="#2C3E50",
+         padx=10, pady=5).place(relx=0.5, rely=0.08, anchor="n")  # Adjusted position
 
         tk.Label(self, text="Produced & Licensed by School of Accounting Package", 
                  font=("Arial", 10, "italic"), fg="white", bg="#2C3E50").place(relx=0.8, rely=0.94, anchor="n")  # Added more space below
