@@ -11,7 +11,7 @@ class LicenseSplashScreen(tk.Toplevel):
         self.master = master
         self.title("License & Welcome")
         self.state('zoomed')  # Fullscreen window
-        self.configure(bg="black")
+        self.configure(bg="#2C3E50")
         
         # Enlarged License Frame (Moved Down)
         self.license_frame = tk.Frame(self, bg="white", padx=40, pady=30)
@@ -36,10 +36,16 @@ class LicenseSplashScreen(tk.Toplevel):
 
         # 🌟 **Adjusted Splash Text Spacing**
         tk.Label(self, text="Welcome to Hotel and Event Management System", 
-                 font=("Arial", 28, "bold"), fg="white", bg="black").place(relx=0.5, rely=0.68, anchor="n")  # Moved slightly up
+                 font=("Arial", 20, "bold"), fg="white", bg="#2C3E50").place(relx=0.5, rely=0.1, anchor="n")  # Moved slightly up
 
         tk.Label(self, text="Produced & Licensed by School of Accounting Package", 
-                 font=("Arial", 14, "italic"), fg="white", bg="black").place(relx=0.5, rely=0.77, anchor="n")  # Added more space below
+                 font=("Arial", 10, "italic"), fg="white", bg="#2C3E50").place(relx=0.8, rely=0.94, anchor="n")  # Added more space below
+        
+        tk.Label(self, text="© 2025", 
+                 font=("Arial", 10, "italic"), fg="white", bg="#2C3E50").place(relx=0.85, rely=0.97, anchor="n")  # Added more space below
+
+
+
 
     def generate_license(self):
         license_password = self.password_entry.get()

@@ -32,7 +32,7 @@ class EventManagement:
         screen_width = self.root.winfo_screenwidth()
         screen_height = self.root.winfo_screenheight()
         window_width = 1375
-        window_height = 580
+        window_height = 587
         x_position = (screen_width - window_width) // 2
         y_position = (screen_height - window_height) // 2
         self.root.geometry(f"{window_width}x{window_height}+{x_position}+{y_position}")
@@ -44,12 +44,12 @@ class EventManagement:
                 # Header Section (Dark Blue-Gray)
         self.header_frame = tk.Frame(self.root, bg="#2C3E50", height=50)
         self.header_frame.pack(fill=tk.X)
-        self.header_label = tk.Label(self.header_frame, text="Event Management", 
-                                     fg="white", bg="#2C3E50", font=("Helvetica", 15, "bold"))
+        self.header_label = tk.Label(self.header_frame, text="", 
+                                     fg="white", bg="#2C3E50", font=("Helvetica", 5, "bold"))
         self.header_label.pack(pady=0)
 
         # Sidebar Section (Dark Blue-Gray)
-        self.left_frame = tk.Frame(self.root, bg="#2C3E50", width=220)
+        self.left_frame = tk.Frame(self.root, bg="#2C3E50", width=215)
         self.left_frame.pack(side=tk.LEFT, fill=tk.Y, padx=0, pady=0)
 
         # Right Section (Light Gray for contrast)
@@ -74,7 +74,7 @@ class EventManagement:
         for text, command in event_buttons:
             btn = tk.Button(self.left_frame, text=text, 
                             command=lambda t=text, c=command: self.update_subheading(t, c),
-                            width=20, font=("Helvetica", 10, "bold"), anchor="w", padx=10, 
+                            width=17, font=("Helvetica", 10, "bold"), anchor="w", padx=10, 
                             bg="#34495E", fg="white", relief="flat", bd=0)  # Steel Gray
             btn.bind("<Enter>", lambda e, b=btn: b.config(bg="#3E5770"))  # Hover Effect
             btn.bind("<Leave>", lambda e, b=btn: b.config(bg="#34495E"))
@@ -97,7 +97,7 @@ class EventManagement:
         for text, command in payment_buttons:
             btn = tk.Button(self.left_frame, text=text, 
                             command=lambda t=text, c=command: self.update_subheading(t, c),
-                            width=20, font=("Helvetica", 10, "bold"), anchor="w", padx=10, 
+                            width=17, font=("Helvetica", 10, "bold"), anchor="w", padx=10, 
                             bg="#34495E", fg="white", relief="flat", bd=0)  # Steel Gray
             btn.bind("<Enter>", lambda e, b=btn: b.config(bg="#3E5770"))  # Hover Effect
             btn.bind("<Leave>", lambda e, b=btn: b.config(bg="#34495E"))
@@ -108,11 +108,11 @@ class EventManagement:
 
 
         self.export_button = tk.Button(self.header_frame, text="Export to Excel", 
-                               command=self.export_report, bg="#007BFF", fg="white", font=("Helvetica", 10, "bold"))
+                               command=self.export_report, bg="#007BFF", fg="white", font=("Helvetica", 9, "bold"))
         self.export_button.pack(side=tk.RIGHT, padx=10, pady=5)
 
         self.print_button = tk.Button(self.header_frame, text="Print Report", 
-                              command=self.print_report, bg="#28A745", fg="white", font=("Helvetica", 10, "bold"))
+                              command=self.print_report, bg="#28A745", fg="white", font=("Helvetica", 9, "bold"))
         self.print_button.pack(side=tk.RIGHT, padx=10, pady=5)        
 
     def update_subheading(self, text, command):

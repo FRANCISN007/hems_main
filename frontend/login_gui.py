@@ -6,13 +6,6 @@ import os
 import sys
 
 
-def resource_path(relative_path):
-    try:
-        base_path = sys._MEIPASS2
-    except Exception:
-        base_path = os.path.abspath(".")
-
-    return os.path.join(base_path, relative_path)
 
 
 
@@ -20,7 +13,7 @@ def resource_path(relative_path):
 class LoginGUI:
     def __init__(self, root):
         self.root = root
-        self.root.title("Hotel Management System")
+        self.root.title("Registration & Login")
         self.root.geometry("700x500")
         self.root.state("zoomed")  # ✅ Ensures full-screen mode
         self.api_base_url ="http://127.0.0.1:8000"

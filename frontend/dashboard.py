@@ -21,12 +21,13 @@ class Dashboard:
         self.user_role = get_user_role(self.token)
 
         # Header Frame
-        self.header = tk.Frame(self.root, bg="#2C3E50", height=60)
+        self.header = tk.Frame(self.root, bg="#D3D3D3", height=60)
         self.header.pack(fill=tk.X)
 
-        title_label = tk.Label(self.header, text="Hotel & Event Management System", fg="white",
-                               bg="#2C3E50", font=("Arial", 15, "bold"))
-        title_label.pack(pady=10)
+
+        title_label = tk.Label(self.header, text="Dashboard", fg="black",
+                               bg="#D3D3D3", font=("Arial", 12, "bold"))
+        title_label.pack(pady=5)
 
         # Menu Bar (Top Navigation)
         self.menu_bar = tk.Menu(self.root)
@@ -41,9 +42,19 @@ class Dashboard:
        # self.menu_bar.add_command(label="E-Payments", command=self.manage_payments)
         self.menu_bar.add_command(label="Logout", command=self.logout)
 
-        # Main Content Frame
-        self.main_content = tk.Frame(self.root, bg="#ECF0F1")
+
+        # Outer Border Frame (Creates the Frame around the screen)
+        self.border_frame = tk.Frame(self.root, bg="gray", padx=5, pady=5)  # Gray border
+        self.border_frame.pack(fill=tk.BOTH, expand=True)
+
+        # Main Content Frame inside the Border Frame
+        self.main_content = tk.Frame(self.border_frame, bg="#F2F3F4", bd=5, relief=tk.RIDGE)
         self.main_content.pack(fill=tk.BOTH, expand=True)
+
+
+        # Main Content Frame
+        #self.main_content = tk.Frame(self.root, bg="#F2F3F4")
+        #self.main_content.pack(fill=tk.BOTH, expand=True)
 
     def manage_users(self):
         if self.user_role != "admin":
