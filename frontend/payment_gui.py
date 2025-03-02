@@ -35,8 +35,8 @@ class PaymentManagement:
         self.last_exported_file = None
 
         # Set window size and position at the center
-        window_width = 1200
-        window_height = 600
+        window_width = 1375
+        window_height = 580
         screen_width = self.root.winfo_screenwidth()
         screen_height = self.root.winfo_screenheight()
         x_coordinate = (screen_width // 2) - (window_width // 2)
@@ -50,61 +50,62 @@ class PaymentManagement:
         style.configure("Treeview.Heading", font=("Helvetica", 12, "bold"))
         style.configure("Treeview", font=("Helvetica", 11))
 
-        # Header Section (Lighter gray instead of dark gray)
-        self.header_frame = tk.Frame(self.root, bg="#d9d9d9", height=50)
+
+
+      # Header Section (Dark Blue-Gray)
+        self.header_frame = tk.Frame(self.root, bg="#2C3E50", height=50)
         self.header_frame.pack(fill=tk.X)
 
         self.header_label = tk.Label(self.header_frame, text="Payment Management", 
-                                     fg="black", bg="#d9d9d9", font=("Helvetica", 16, "bold"))
-        self.header_label.pack(pady=10)
-        
+                                    fg="white", bg="#2C3E50", font=("Helvetica", 15, "bold"))
+        self.header_label.pack(pady=0)
+
         self.fetch_and_display_paymentss()
         # Export and Print Buttons in Header Section
         self.export_button = tk.Button(self.header_frame, text="Export to Excel", 
-                               command=self.export_report, bg="#007BFF", fg="white", font=("Helvetica", 10, "bold"))
+                            command=self.export_report, bg="#007BFF", fg="white", font=("Helvetica", 10, "bold"))
         self.export_button.pack(side=tk.RIGHT, padx=10, pady=5)
 
         self.print_button = tk.Button(self.header_frame, text="Print Report", 
-                              command=self.print_report, bg="#28A745", fg="white", font=("Helvetica", 10, "bold"))
+                            command=self.print_report, bg="#28A745", fg="white", font=("Helvetica", 10, "bold"))
         self.print_button.pack(side=tk.RIGHT, padx=10, pady=5)
 
+        # Sidebar Section (Dark Blue-Gray)
+        self.left_frame = tk.Frame(self.root, bg="#2C3E50", width=220)
+        self.left_frame.pack(side=tk.LEFT, fill=tk.Y, padx=0, pady=0)
 
-        # Sidebar Section (Lighter gray to match the theme)
-        self.left_frame = tk.Frame(self.root, bg="#d9d9d9", width=200)
-        self.left_frame.pack(side=tk.LEFT, fill=tk.Y, padx=10, pady=10)
+        # Right Section (Light Gray for contrast)
+        self.right_frame = tk.Frame(self.root, bg="#ECF0F1", width=700)
+        self.right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=20, pady=20)
 
-        # Right Section (Set to light gray)
-        self.right_frame = tk.Frame(self.root, bg="#f0f0f0", width=700)
-        self.right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=10, pady=10)
-
-        # Subheading for dynamic section title (Lighter background)
+        # Subheading for dynamic section title
         self.subheading_label = tk.Label(self.right_frame, text="Select an option", 
-                                         font=("Helvetica", 12, "bold"), fg="#333333", bg="#f0f0f0")
+                                        font=("Helvetica", 14, "bold"), fg="#2C3E50", bg="#ECF0F1")
         self.subheading_label.pack(pady=10)
 
-        # Payment action buttons (Maintain hover effects)
+        # Payment action buttons (Steel Gray)
         self.buttons = []  
         buttons = [
-            ("➕Create Payment", self.create_payment),
-            ("📜List Payment", self.list_payments),
-            ("📜List Payment By ID", self.search_payment_by_id),
-            ("🔍List Payment By Status", self.list_payments_by_status),
-            ("📅Total Daily Payment", self.list_total_daily_payments),
-            ("🔍Debtor List", self.debtor_list),
-            ("❌Void Payment", self.void_payment),
+            ("Create Payment", self.create_payment),
+            ("List Payment", self.list_payments),
+            ("List Payment By ID", self.search_payment_by_id),
+            ("List Payment By Status", self.list_payments_by_status),
+            ("Total Daily Payment", self.list_total_daily_payments),
+            ("Debtor List", self.debtor_list),
+            ("Void Payment", self.void_payment),
         ]
 
         for text, command in buttons:
             btn = tk.Button(self.left_frame, text=text, 
                             command=lambda t=text, c=command: self.update_subheading(t, c),
-                            width=19, font=("Helvetica", 10, "bold"), anchor="w", padx=10, 
-                            bg="#e0e0e0", fg="black")  # Lightened the button background
+                            width=20, font=("Helvetica", 10, "bold"), anchor="w", padx=10, 
+                            bg="#34495E", fg="white", relief="flat", bd=0)  # Steel Gray
 
-            # Bind hover effects
-            btn.bind("<Enter>", lambda e, b=btn: b.config(bg="#007BFF", fg="white"))  
-            btn.bind("<Leave>", lambda e, b=btn: b.config(bg="#e0e0e0", fg="black"))  
+            # Hover Effects (Lighter Gray)
+            btn.bind("<Enter>", lambda e, b=btn: b.config(bg="#3E5770"))  
+            btn.bind("<Leave>", lambda e, b=btn: b.config(bg="#34495E"))  
 
-            btn.pack(pady=5, padx=10, anchor="w", fill="x")
+            btn.pack(pady=8, padx=15, anchor="w", fill="x")
             self.buttons.append(btn)
 
 

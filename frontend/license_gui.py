@@ -38,7 +38,7 @@ class LicenseSplashScreen(tk.Toplevel):
         tk.Label(self, text="Welcome to Hotel and Event Management System", 
                  font=("Arial", 28, "bold"), fg="white", bg="black").place(relx=0.5, rely=0.68, anchor="n")  # Moved slightly up
 
-        tk.Label(self, text="Produced by School of Accounting Package", 
+        tk.Label(self, text="Produced & Licensed by School of Accounting Package", 
                  font=("Arial", 14, "italic"), fg="white", bg="black").place(relx=0.5, rely=0.77, anchor="n")  # Added more space below
 
     def generate_license(self):

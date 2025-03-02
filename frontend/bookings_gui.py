@@ -35,64 +35,68 @@ class BookingManagement:
         self.username = "current_user"
         self.token = token
         self.root.configure(bg="#f0f0f0")
-        
-        # Set window size and position at the center
-        window_width = 1200
-        window_height = 600
+
+         # Set window size and position at the center
+        window_width = 1375
+        window_height = 580
         screen_width = self.root.winfo_screenwidth()
         screen_height = self.root.winfo_screenheight()
         x_coordinate = (screen_width // 2) - (window_width // 2)
         y_coordinate = (screen_height // 2) - (window_height // 2)
         self.root.geometry(f"{window_width}x{window_height}+{x_coordinate}+{y_coordinate}")
 
-        style = ttk.Style()
-        style.configure("Treeview.Heading", font=("Helvetica", 12, "bold"))
-        style.configure("Treeview", font=("Helvetica", 11))
 
-        # Header Section
-        self.header_frame = tk.Frame(self.root, bg="#d9d9d9", height=50)
+
+        # Header Section (Dark Blue-Gray)
+        self.header_frame = tk.Frame(self.root, bg="#2C3E50", height=50)
         self.header_frame.pack(fill=tk.X)
-        self.header_label = tk.Label(self.header_frame, text="Booking Management", 
-                                     fg="black", bg="#d9d9d9", font=("Helvetica", 16, "bold"))
-        self.header_label.pack(pady=10)
+        self.header_label = tk.Label(self.header_frame, text="Booking Management",
+                                    fg="white", bg="#2C3E50", font=("Helvetica", 15, "bold"))
+        self.header_label.pack(pady=0)
 
-        # Sidebar Section
-        self.left_frame = tk.Frame(self.root, bg="#d9d9d9", width=200)
-        self.left_frame.pack(side=tk.LEFT, fill=tk.Y, padx=10, pady=10)
+        # Sidebar Section (Dark Blue-Gray)
+        self.left_frame = tk.Frame(self.root, bg="#2C3E50", width=220)
+        self.left_frame.pack(side=tk.LEFT, fill=tk.Y, padx=0, pady=0)
 
-        # Right Section
-        self.right_frame = tk.Frame(self.root, bg="#f0f0f0", width=700)
-        self.right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=10, pady=10)
+        # Right Section (Light Gray for contrast)
+        self.right_frame = tk.Frame(self.root, bg="#ECF0F1", width=700)
+        self.right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=20, pady=20)
 
         # Subheading for dynamic section title
-        self.subheading_label = tk.Label(self.right_frame, text="Select an option", 
-                                         font=("Helvetica", 12, "bold"), fg="#333333", bg="#f0f0f0")
+        self.subheading_label = tk.Label(self.right_frame, text="Select an option",
+                                        font=("Helvetica", 14, "bold"), fg="#2C3E50", bg="#ECF0F1")
         self.subheading_label.pack(pady=10)
 
-        # Booking action buttons
+        # Booking action buttons (Steel Gray)
         self.buttons = []
         buttons = [
-            ("➕Create Booking", self.create_booking),
-            ("📑List Bookings", self.list_bookings),
-            ("📑List By Status", self.list_bookings_by_status),
-            ("🔎Search Guest Name", self.search_booking),
-            ("🔎Search by Booking ID", self.search_booking_by_id),
-            ("🔎Search By Room No", self.search_booking_by_room),
-            ("✏️Update Booking", self.update_booking),
-            ("✅Guest Checkout", self.guest_checkout),
-            ("❌Cancel Booking", self.cancel_booking),
+            ("Create Booking", self.create_booking),
+            ("List Bookings", self.list_bookings),
+            ("List By Status", self.list_bookings_by_status),
+            ("Search Guest Name", self.search_booking),
+            ("Search by Booking ID", self.search_booking_by_id),
+            ("Search By Room No", self.search_booking_by_room),
+            ("Update Booking", self.update_booking),
+            ("Guest Checkout", self.guest_checkout),
+            ("Cancel Booking", self.cancel_booking),
         ]
 
         for text, command in buttons:
-            btn = tk.Button(self.left_frame, text=text, 
+            btn = tk.Button(self.left_frame, text=text,
                             command=lambda t=text, c=command: self.update_subheading(t, c),
-                            width=18, font=("Helvetica", 10, "bold"), anchor="w", padx=10, 
-                            bg="#e0e0e0", fg="black")
-            btn.bind("<Enter>", lambda e, b=btn: b.config(bg="#007BFF", fg="white"))  
-            btn.bind("<Leave>", lambda e, b=btn: b.config(bg="#e0e0e0", fg="black"))
-            btn.pack(pady=5, padx=10, anchor="w", fill="x")
+                            width=20, font=("Helvetica", 10, "bold"), anchor="w", padx=10,
+                            bg="#34495E", fg="white", relief="flat", bd=0)  # Steel Gray
+
+            # Hover Effects (Lighter Gray)
+            btn.bind("<Enter>", lambda e, b=btn: b.config(bg="#3E5770"))
+            btn.bind("<Leave>", lambda e, b=btn: b.config(bg="#34495E"))
+
+            btn.pack(pady=8, padx=15, anchor="w", fill="x")
             self.buttons.append(btn)
+
+
             
+             
         self.fetch_and_display_bookings()
 
         # ✅ Attach buttons to self.right_frame (Booking Management window)

@@ -27,7 +27,7 @@ class UserManagement:
 
         # Set window size and position at the center
         window_width = 850
-        window_height = 500
+        window_height = 580
         screen_width = self.user_management_window.winfo_screenwidth()
         screen_height = self.user_management_window.winfo_screenheight()
         x_coordinate = (screen_width // 2) - (window_width // 2)

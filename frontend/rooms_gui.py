@@ -11,7 +11,7 @@ class RoomManagement:
 
         # Set window size and position at the center
         window_width = 800
-        window_height = 600
+        window_height = 580
         screen_width = self.root.winfo_screenwidth()
         screen_height = self.root.winfo_screenheight()
         x_coordinate = (screen_width // 2) - (window_width // 2)
