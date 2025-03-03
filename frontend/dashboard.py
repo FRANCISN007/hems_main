@@ -6,12 +6,38 @@ from bookings_gui import BookingManagement
 from payment_gui import PaymentManagement
 from event_gui import EventManagement  
 from utils import load_token, get_user_role
+import os
+from PIL import Image, ImageTk
+
 
 class Dashboard:
     def __init__(self, root, token):
         self.root = root
         self.token = token
         self.root.title("Hotel & Event Management System")
+
+
+        # Debugging: Print icon paths
+        icon_ico_path = os.path.abspath("frontend/icon.ico").replace("\\", "/")
+        icon_png_path = os.path.abspath("frontend/icon.png").replace("\\", "/")
+
+        # Try using ICO first
+        if os.path.exists(icon_ico_path):
+            self.root.iconbitmap(icon_ico_path)
+        elif os.path.exists(icon_png_path):
+            try:
+                # Load and resize the PNG icon
+                icon_img = Image.open(icon_png_path)
+                icon_resized = icon_img.resize((64, 64))  # Adjust size (e.g., 128x128 if needed)
+                self.icon_image = ImageTk.PhotoImage(icon_resized)
+
+                # Set the resized icon
+                self.root.iconphoto(True, self.icon_image)
+            except Exception as e:
+                print(f"Error loading PNG icon: {e}")
+        else:
+            print("Error: Icon file not found!")
+
 
         # Set full screen but allow minimize/maximize
         self.root.geometry(f"{self.root.winfo_screenwidth()}x{self.root.winfo_screenheight()}")
@@ -63,6 +89,7 @@ class Dashboard:
         UserManagement(self.root, self.token)
 
     def manage_rooms(self):
+        
         RoomManagement(self.root, self.token)
 
     def manage_bookings(self):

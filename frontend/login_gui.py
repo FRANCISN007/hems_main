@@ -4,7 +4,7 @@ import requests
 from dashboard import Dashboard  # Import the Dashboard clas
 import os
 import sys
-
+from PIL import Image, ImageTk
 
 
 
@@ -15,8 +15,30 @@ class LoginGUI:
         self.root = root
         self.root.title("Registration & Login")
         self.root.geometry("700x500")
-        self.root.state("zoomed")  # ✅ Ensures full-screen mode
-        self.api_base_url ="http://127.0.0.1:8000"
+        self.root.state("zoomed")  # Full-screen mode
+        self.api_base_url = "http://127.0.0.1:8000"
+
+        # Define icon paths
+        icon_ico_path = os.path.abspath("frontend/icon.ico").replace("\\", "/")
+        icon_png_path = os.path.abspath("frontend/icon.png").replace("\\", "/")
+
+        # Debugging: Print paths to verify
+        print("ICO Path:", icon_ico_path)
+        print("PNG Path:", icon_png_path)
+
+        # Try setting the application icon
+        try:
+            if os.path.exists(icon_ico_path):
+                self.root.iconbitmap(icon_ico_path)  # ✅ Use root.iconbitmap()
+            elif os.path.exists(icon_png_path):
+                icon_img = Image.open(icon_png_path)
+                icon_resized = icon_img.resize((64, 64))  # Resize if needed
+                self.icon_image = ImageTk.PhotoImage(icon_resized)
+                self.root.iconphoto(True, self.icon_image)  # ✅ Use root.iconphoto()
+            else:
+                print("Error: Icon file not found!")
+        except Exception as e:
+            print(f"Error setting icon: {e}")
         
         
 

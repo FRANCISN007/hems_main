@@ -30,6 +30,7 @@ def create_room(
     db: Session = Depends(get_db),
     current_user: schemas.UserDisplaySchema = Depends(get_current_user),
 ):
+    
     logger.info(f"Room creation request received. User: {current_user.username}, Role: {current_user.role}")
 
     # Check for admin permissions
