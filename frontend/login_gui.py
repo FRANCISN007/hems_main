@@ -10,6 +10,7 @@ from PIL import Image, ImageTk
 
 
 
+
 class LoginGUI:
     def __init__(self, root):
         self.root = root
@@ -67,32 +68,32 @@ class LoginGUI:
         title_label = tk.Label(
             self.frame,
             text="Login",
-            font=("Arial", 15, "bold"),
+            font=("Arial", 12, "bold"),
             bg="#D3D3D3",  # Light gray background for the title
             fg="black",
-            borderwidth=2,  # Light border thickness
+            borderwidth=3,  # Light border thickness
             relief="solid",  # Gives a bordered effect
             padx=10,  # Adds horizontal padding
             pady=5  # Adds vertical padding (increases height)
         )
-        title_label.pack(pady=15)
+        title_label.pack(pady=5)
 
         # Username Field with a Frame
-        username_label = tk.Label(self.frame, text="Username:", font=("Arial", 12), bg="white")
+        username_label = tk.Label(self.frame, text="Username:", font=("Arial", 10), bg="white")
         username_label.pack(anchor="w")
 
         username_frame = tk.Frame(self.frame, bg="#D3D3D3", relief="sunken", borderwidth=2)
         username_frame.pack(pady=6, fill="x", padx=5)
-        self.username_entry = tk.Entry(username_frame, width=38, borderwidth=0, bg="white")
+        self.username_entry = tk.Entry(username_frame, width=30, borderwidth=0, bg="white")
         self.username_entry.pack(padx=2, pady=2)
 
         # Password Field with a Frame
-        password_label = tk.Label(self.frame, text="Password:", font=("Arial", 12), bg="white")
+        password_label = tk.Label(self.frame, text="Password:", font=("Arial", 10), bg="white")
         password_label.pack(anchor="w")
 
         password_frame = tk.Frame(self.frame, bg="#D3D3D3", relief="sunken", borderwidth=2)
         password_frame.pack(pady=8, fill="x", padx=5)
-        self.password_entry = tk.Entry(password_frame, width=38, show="*", borderwidth=0, bg="white")
+        self.password_entry = tk.Entry(password_frame, width=30, show="*", borderwidth=0, bg="white")
         self.password_entry.pack(padx=2, pady=2)
 
 
@@ -115,31 +116,31 @@ class LoginGUI:
         self.frame = tk.Frame(self.main_frame, bg="white", padx=30, pady=30, relief="raised", bd=3)
         self.frame.pack()
 
-        title_label = tk.Label(self.frame, text="Register", font=("Arial", 15, "bold"), bg="white")
+        title_label = tk.Label(self.frame, text="Register", font=("Arial", 13, "bold"), bg="white")
         title_label.pack(pady=15)
 
         # ✅ Username Field with a Frame (Sinking Effect)
-        username_label = tk.Label(self.frame, text="Username:", font=("Arial", 12), bg="white")
+        username_label = tk.Label(self.frame, text="Username:", font=("Arial", 10), bg="white")
         username_label.pack(anchor="w")
 
         username_frame = tk.Frame(self.frame, bg="#D3D3D3", relief="sunken", borderwidth=2)
         username_frame.pack(pady=6, fill="x", padx=5)
-        self.reg_username_entry = tk.Entry(username_frame, width=38, borderwidth=0, bg="white")
+        self.reg_username_entry = tk.Entry(username_frame, width=30, borderwidth=0, bg="white")
         self.reg_username_entry.pack(padx=2, pady=2)
 
         # ✅ Password Field with a Frame
-        password_label = tk.Label(self.frame, text="Password:", font=("Arial", 12), bg="white")
+        password_label = tk.Label(self.frame, text="Password:", font=("Arial", 10), bg="white")
         password_label.pack(anchor="w")
 
         password_frame = tk.Frame(self.frame, bg="#D3D3D3", relief="sunken", borderwidth=2)
         password_frame.pack(pady=8, fill="x", padx=5)
-        self.reg_password_entry = tk.Entry(password_frame, width=38, show="*", borderwidth=0, bg="white")
+        self.reg_password_entry = tk.Entry(password_frame, width=30, show="*", borderwidth=0, bg="white")
         self.reg_password_entry.pack(padx=2, pady=2)
 
         # ✅ Role Dropdown (No Sinking Needed)
-        role_label = tk.Label(self.frame, text="Role:", font=("Arial", 12), bg="white")
+        role_label = tk.Label(self.frame, text="Role:", font=("Arial", 10), bg="white")
         role_label.pack(anchor="w")
-        self.role_combobox = ttk.Combobox(self.frame, values=["user", "admin"], state="readonly", font=("Arial", 12))
+        self.role_combobox = ttk.Combobox(self.frame, values=["user", "admin"], state="readonly", font=("Arial", 10))
         self.role_combobox.pack(pady=8)
         self.role_combobox.current(0)
         self.role_combobox.bind("<<ComboboxSelected>>", self.toggle_admin_password)
@@ -147,13 +148,14 @@ class LoginGUI:
         # ✅ Admin Password Field (Initially Hidden)
         self.admin_password_frame = tk.Frame(self.frame, bg="white")
 
-        self.reg_admin_password_label = tk.Label(self.admin_password_frame, text="Admin Password:", font=("Arial", 12), bg="white")
+        self.reg_admin_password_label = tk.Label(self.admin_password_frame, text="Admin Password:", font=("Arial", 10), bg="white")
 
         admin_password_frame = tk.Frame(self.admin_password_frame, bg="#D3D3D3", relief="sunken", borderwidth=2)
-        self.reg_admin_password_entry = tk.Entry(admin_password_frame, width=38, show="*", borderwidth=0, bg="white")
+        self.reg_admin_password_entry = tk.Entry(admin_password_frame, width=25, show="*", borderwidth=0, bg="white")
 
         # Packing Admin Password Fields (Initially Hidden)
         self.admin_password_frame.pack_forget()
+        self.reg_admin_password_label.pack_forget()
         self.reg_admin_password_label.pack_forget()
         admin_password_frame.pack_forget()
         self.reg_admin_password_entry.pack_forget()
@@ -221,6 +223,7 @@ class LoginGUI:
         except requests.RequestException as e:
             messagebox.showerror("Error", f"Login failed: {e}")
 
+    
     def register(self):
         """Handles user registration."""
         username = self.reg_username_entry.get()
@@ -232,6 +235,10 @@ class LoginGUI:
             messagebox.showerror("Error", "Please enter both username and password.")
             return
 
+        if role == "admin" and (not admin_password or admin_password.strip() == ""):
+            messagebox.showerror("Error", "Admin password is required for admin registration.")
+            return
+
         try:
             data = {"username": username, "password": password, "role": role, "admin_password": admin_password}
             response = requests.post(f"{self.api_base_url}/users/register/", json=data)
@@ -239,12 +246,19 @@ class LoginGUI:
             if response.status_code == 400:
                 messagebox.showerror("Error", "Username already exists.")
                 return
+            
+            if response.status_code == 403:
+                messagebox.showerror("Error", "Invalid admin password.")
+                return
 
             response.raise_for_status()
             messagebox.showinfo("Success", "User registered successfully!")
             self.show_login_ui()  # ✅ Switch back to login after successful registration
         except requests.RequestException as e:
             messagebox.showerror("Error", f"Registration failed: {e}")
+
+
+
 
 if __name__ == "__main__":
     root = tk.Tk()

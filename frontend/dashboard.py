@@ -28,7 +28,7 @@ class Dashboard:
             try:
                 # Load and resize the PNG icon
                 icon_img = Image.open(icon_png_path)
-                icon_resized = icon_img.resize((64, 64))  # Adjust size (e.g., 128x128 if needed)
+                icon_resized = icon_img.resize((80, 80))  # Adjust size (e.g., 128x128 if needed)
                 self.icon_image = ImageTk.PhotoImage(icon_resized)
 
                 # Set the resized icon
