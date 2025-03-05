@@ -216,7 +216,7 @@ class LoginGUI:
                 messagebox.showinfo("Success", "Login successful!")
                 self.root.destroy()
                 dashboard_root = tk.Tk()
-                Dashboard(dashboard_root, token)
+                Dashboard(dashboard_root, username, token)
                 dashboard_root.mainloop()
             else:
                 messagebox.showerror("Error", "Invalid response from server.")

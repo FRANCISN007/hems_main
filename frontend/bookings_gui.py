@@ -14,29 +14,19 @@ import pandas as pd
 from payment_gui import PaymentManagement  # Import the Payment GUI
 
 
-#from frontend.main import relative_path
-
-#def resource_path(relative_path):
-    #try:
-        #base_path = sys._MEIPASS2
-    #except Exception:
-        #base_path = os.path.abspath(".")
-
-    #return os.path.join(base_path, relative_path)
-
-
 
 class BookingManagement:
     def __init__(self, root, token):
         self.root = tk.Toplevel(root)
         self.root.title("Booking Management")
+        self.root.state("zoomed")
         self.root.geometry("1000x600")
         
         self.username = "current_user"
         self.token = token
         self.root.configure(bg="#f0f0f0")
 
-         # Set window size and position at the center
+        # Set window size and position at the center
         window_width = 1375
         window_height = 587
         screen_width = self.root.winfo_screenwidth()
@@ -45,29 +35,24 @@ class BookingManagement:
         y_coordinate = (screen_height // 2) - (window_height // 2)
         self.root.geometry(f"{window_width}x{window_height}+{x_coordinate}+{y_coordinate}")
 
-
-
-        # Header Section (Dark Blue-Gray)
+        # Header Section
         self.header_frame = tk.Frame(self.root, bg="#2C3E50", height=50)
         self.header_frame.pack(fill=tk.X)
-        self.header_label = tk.Label(self.header_frame, text="",
-                                    fg="white", bg="#2C3E50", font=("Helvetica", 4, "bold"))
-        self.header_label.pack(pady=0)
 
-        # Sidebar Section (Dark Blue-Gray)
+        # Sidebar Section
         self.left_frame = tk.Frame(self.root, bg="#2C3E50", width=220)
         self.left_frame.pack(side=tk.LEFT, fill=tk.Y, padx=0, pady=0)
 
-        # Right Section (Light Gray for contrast)
+        # Right Section
         self.right_frame = tk.Frame(self.root, bg="#ECF0F1", width=700)
         self.right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=20, pady=20)
 
-        # Subheading for dynamic section title
+        # Subheading Label
         self.subheading_label = tk.Label(self.right_frame, text="Select an option",
-                                        font=("Helvetica", 14, "bold"), fg="#2C3E50", bg="#ECF0F1")
+                                         font=("Helvetica", 14, "bold"), fg="#2C3E50", bg="#ECF0F1")
         self.subheading_label.pack(pady=10)
 
-        # Booking action buttons (Steel Gray)
+        # Booking Action Buttons
         self.buttons = []
         buttons = [
             ("Create Booking", self.create_booking),
@@ -85,48 +70,69 @@ class BookingManagement:
             btn = tk.Button(self.left_frame, text=text,
                             command=lambda t=text, c=command: self.update_subheading(t, c),
                             width=16, font=("Helvetica", 10, "bold"), anchor="w", padx=10,
-                            bg="#34495E", fg="white", relief="flat", bd=0)  # Steel Gray
+                            bg="#34495E", fg="white", relief="flat", bd=0)
 
-            # Hover Effects (Lighter Gray)
             btn.bind("<Enter>", lambda e, b=btn: b.config(bg="#3E5770"))
             btn.bind("<Leave>", lambda e, b=btn: b.config(bg="#34495E"))
-
             btn.pack(pady=8, padx=15, anchor="w", fill="x")
             self.buttons.append(btn)
+
+        # Dashboard Link
+        # Dashboard Link with Circular Border
+        self.dashboard_label = tk.Label(
+            self.left_frame, text="⬅ Dashboard", cursor="hand2",
+            font=("Helvetica", 10, "bold"), fg="white", bg="#2C3E50",
+            padx=10, pady=5, relief="solid", borderwidth=2, highlightthickness=2,
+            highlightbackground="white", highlightcolor="white"
+        )
+        self.dashboard_label.pack(pady=15, padx=15, anchor="w", fill="x")
+        self.dashboard_label.bind("<Enter>", lambda e: self.dashboard_label.config(bg="#3E5770"))
+        self.dashboard_label.bind("<Leave>", lambda e: self.dashboard_label.config(bg="#2C3E50"))
+        self.dashboard_label.bind("<Button-1>", lambda e: self.open_dashboard_window())
+
+    def open_dashboard_window(self):
+        from dashboard import Dashboard  # Import here to avoid circular import issues
+        Dashboard(self.root, self.username, self.token)
+        self.root.destroy()
+
+    def update_subheading(self, text, command):
+        if self.subheading_label.winfo_exists():
+            self.subheading_label.config(text=text)
+        for widget in self.right_frame.winfo_children():
+            widget.destroy()
+        command()
+        
 
 
             
              
         self.fetch_and_display_bookings()
 
-        # ✅ Attach buttons to self.right_frame (Booking Management window)
-        # Export and Print Buttons in Header Section
-        self.export_button = tk.Button(self.header_frame, text="Export to Excel", 
-                               command=self.export_report, bg="#007BFF", fg="white", font=("Helvetica", 9, "bold"))
+       # Export and Print Buttons in Header Section
+        def on_enter(e):
+            e.widget.config(bg="#1ABC9C", fg="white")  # Background changes on hover
+
+        def on_leave(e):
+            e.widget.config(bg="#2C3E50", fg="white")  # Restore default background & text color
+
+        self.export_button = tk.Label(self.header_frame, text="Export to Excel", 
+                                    fg="white", bg="#2C3E50", font=("Helvetica", 9, "bold"), 
+                                    cursor="hand2", padx=10, pady=5)
         self.export_button.pack(side=tk.RIGHT, padx=10, pady=5)
+        self.export_button.bind("<Enter>", on_enter)
+        self.export_button.bind("<Leave>", on_leave)
+        self.export_button.bind("<Button-1>", lambda e: self.export_report())  # Click event
 
-        self.print_button = tk.Button(self.header_frame, text="Print Report", 
-                              command=self.print_report, bg="#28A745", fg="white", font=("Helvetica", 9, "bold"))
+        self.print_button = tk.Label(self.header_frame, text="Print Report", 
+                                    fg="white", bg="#2C3E50", font=("Helvetica", 9, "bold"), 
+                                    cursor="hand2", padx=10, pady=5)
         self.print_button.pack(side=tk.RIGHT, padx=10, pady=5)
+        self.print_button.bind("<Enter>", on_enter)
+        self.print_button.bind("<Leave>", on_leave)
+        self.print_button.bind("<Button-1>", lambda e: self.print_report())  # Click event
 
 
-
-     # 🔗 Add Payment Link Below the Sidebar (as a clickable label)
-        self.payment_label = tk.Label(self.left_frame, text="Payment link",
-                                    fg="#004080", cursor="hand2", 
-                                    font=("Helvetica", 10, "bold", "underline"), 
-                                    bg="#d9d9d9")  # Match sidebar background
-        self.payment_label.pack(pady=20, padx=10, anchor="w")
-
-        # Hover Effect: Change color but keep the underline
-        self.payment_label.bind("<Enter>", lambda e: self.payment_label.config(fg="#007BFF"))
-        self.payment_label.bind("<Leave>", lambda e: self.payment_label.config(fg="#004080"))
-
-    # Click Action: Open Payment Window
-        self.payment_label.bind("<Button-1>", lambda e: self.open_payment_window())
-    def open_payment_window(self):
-        """Opens the Payment Management window."""
-        PaymentManagement(self.root, self.token)
+     
 
 
 
@@ -222,13 +228,40 @@ class BookingManagement:
     
 
     def create_booking(self):
-        self.clear_right_frame()
-        frame = tk.Frame(self.right_frame, bg="#ffffff", padx=20, pady=20)
-        frame.pack(fill=tk.BOTH, expand=True)
+        """Opens a professional pop-up window for creating a new booking."""
+        create_window = tk.Toplevel(self.root)
+        create_window.title("Create Booking")
+        create_window.configure(bg="#dddddd")  # Light grey background
 
-        tk.Label(frame, text="Create Booking Form", font=("Arial", 14, "bold"), bg="#ffffff").grid(row=0, columnspan=2, pady=10)
+        # Set window size
+        window_width = 450
+        window_height = 430
+        screen_width = create_window.winfo_screenwidth()
+        screen_height = create_window.winfo_screenheight()
+        x_coordinate = (screen_width - window_width) // 2
+        y_coordinate = (screen_height - window_height) // 2
+        create_window.geometry(f"{window_width}x{window_height}+{x_coordinate}+{y_coordinate}")
 
-        # Labels & Entry fields
+        # Make it modal
+        create_window.transient(self.root)
+        create_window.grab_set()
+
+        # 🔹 Dark Header
+        header_frame = tk.Frame(create_window, bg="#2c3e50", height=50)
+        header_frame.pack(fill=tk.X)
+
+        header_label = tk.Label(header_frame, text="Create Booking", font=("Arial", 14, "bold"), fg="white", bg="#2c3e50", pady=10)
+        header_label.pack()
+
+        # 🔹 Main Content Frame with Border
+        frame = tk.Frame(create_window, bg="#ffffff", padx=20, pady=20, relief="ridge", borderwidth=3)
+        frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+        # 🔹 Form Frame Inside Main Frame
+        form_frame = tk.Frame(frame, bg="#ffffff", padx=10, pady=10)
+        form_frame.grid(row=0, columnspan=2, pady=10, padx=10, sticky="ew")
+
+        # 📌 Booking Fields
         fields = [
             ("Room Number", tk.Entry),
             ("Guest Name", tk.Entry),
@@ -239,23 +272,34 @@ class BookingManagement:
         ]
 
         self.entries = {}
+
         for i, (label, field_type) in enumerate(fields):
-            tk.Label(frame, text=label, font=("Arial", 12), bg="#ffffff").grid(row=i+1, column=0, sticky="w", pady=5)
+            label = tk.Label(form_frame, text=label, font=("Helvetica", 12, "bold"), bg="#ffffff", fg="#2c3e50")
+            label.grid(row=i, column=0, sticky="w", pady=5, padx=5)
+
             if field_type == ttk.Combobox:
-                entry = field_type(frame, values=["checked-in", "reservation", "complimentary"], state="readonly", font=("Arial", 15))
+                entry = field_type(form_frame, values=["checked-in", "reservation", "complimentary"], state="readonly", font=("Helvetica", 12), width=20)
             elif field_type == DateEntry:
-                entry = field_type(frame, font=("Arial", 12), width=12, background='darkblue', foreground='white', borderwidth=2)
+                entry = field_type(form_frame, font=("Helvetica", 12), width=12, background='darkblue', foreground='white', borderwidth=2)
             else:
-                entry = field_type(frame, font=("Arial", 12), width=25)
-            entry.grid(row=i+1, column=1, padx=10, pady=5)
-            self.entries[label] = entry
+                entry = field_type(form_frame, font=("Helvetica", 12), width=25)
 
-        # Submit Button
-        submit_btn = ttk.Button(frame, text="Submit Booking", command=self.submit_booking, style="Bold.TButton")
-        submit_btn.grid(row=len(fields)+1, columnspan=2, pady=10)
+            entry.grid(row=i, column=1, pady=5, padx=5, sticky="ew")
+            self.entries[label.cget("text")] = entry  # ✅ Store entry reference with correct label text
 
-    def submit_booking(self):
-        """Collects form data and sends a request to create a booking."""
+        # 🔹 Submit Button
+        btn_frame = tk.Frame(frame, bg="#ffffff")
+        btn_frame.grid(row=len(fields), columnspan=2, pady=15)
+
+        submit_btn = ttk.Button(btn_frame, text="Submit Booking", command=lambda: self.submit_booking(create_window), style="Bold.TButton")
+        submit_btn.pack()
+
+
+
+
+
+    def submit_booking(self, create_window):
+        """Collects form data and sends a request to create a booking, then closes the pop-up."""
         try:
             created_by = self.username  
 
@@ -291,6 +335,8 @@ class BookingManagement:
                     else:
                         print("reset_booking_form method is missing")
 
+                    create_window.destroy()  # Close the pop-up window
+
                 else:
                     messagebox.showerror("Error", "Booking ID missing in response.")
 
@@ -302,8 +348,6 @@ class BookingManagement:
         except requests.exceptions.RequestException as e:
             messagebox.showerror("Error", f"Request failed: {e}")
 
-
-    
     
     def list_bookings(self):
         self.clear_right_frame()
@@ -888,15 +932,42 @@ class BookingManagement:
         command()
 
     def update_booking(self):
-        self.clear_right_frame()
-        frame = tk.Frame(self.right_frame, bg="#ffffff", padx=20, pady=20)
-        frame.pack(fill=tk.BOTH, expand=True)
+        """Opens a professional pop-up window for updating a booking."""
+        update_window = tk.Toplevel(self.root)
+        update_window.title("Update Booking")
+        update_window.configure(bg="#dddddd")  # Light grey background
 
-        tk.Label(frame, text="Update Booking Form", font=("Arial", 14, "bold"), bg="#ffffff").grid(row=0, columnspan=2, pady=10)
+        # Set window size and center it
+        window_width = 480
+        window_height = 450
+        screen_width = update_window.winfo_screenwidth()
+        screen_height = update_window.winfo_screenheight()
+        x_coordinate = (screen_width - window_width) // 2
+        y_coordinate = (screen_height - window_height) // 2
+        update_window.geometry(f"{window_width}x{window_height}+{x_coordinate}+{y_coordinate}")
 
-        # Labels & Entry fields (same as create booking, with extra booking ID field)
+        # Make it modal
+        update_window.transient(self.root)
+        update_window.grab_set()
+
+        # 🔹 Dark Header
+        header_frame = tk.Frame(update_window, bg="#2c3e50", height=50)
+        header_frame.pack(fill=tk.X)
+
+        header_label = tk.Label(header_frame, text="Update Booking", font=("Arial", 14, "bold"), fg="white", bg="#2c3e50", pady=10)
+        header_label.pack()
+
+        # 🔹 Main Content Frame with Border
+        frame = tk.Frame(update_window, bg="#ffffff", padx=20, pady=20, relief="ridge", borderwidth=3)
+        frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+        # 🔹 Form Frame Inside Main Frame
+        form_frame = tk.Frame(frame, bg="#ffffff", padx=10, pady=10)
+        form_frame.grid(row=0, columnspan=2, pady=10, padx=10, sticky="ew")
+
+        # 📌 Booking Fields
         fields = [
-            ("Booking ID", tk.Entry),
+            ("Booking ID", tk.Entry),  # Unique field for updates
             ("Room Number", tk.Entry),
             ("Guest Name", tk.Entry),
             ("Phone Number", tk.Entry),
@@ -906,22 +977,28 @@ class BookingManagement:
         ]
 
         self.entries = {}
+
         for i, (label, field_type) in enumerate(fields):
-            tk.Label(frame, text=label, font=("Arial", 11), bg="#ffffff").grid(row=i+1, column=0, sticky="w", pady=5)
+            tk.Label(form_frame, text=label, font=("Helvetica", 12, "bold"), bg="#ffffff", fg="#2c3e50").grid(row=i, column=0, sticky="w", pady=5, padx=5)
+
             if field_type == ttk.Combobox:
-                entry = field_type(frame, values=["checked-in", "reservation", "complimentary"], state="readonly", font=("Arial", 11))
+                entry = field_type(form_frame, values=["checked-in", "reservation", "complimentary"], state="readonly", font=("Helvetica", 12), width=20)
             elif field_type == DateEntry:
-                entry = field_type(frame, font=("Arial", 11), width=12, background='darkblue', foreground='white', borderwidth=2)
+                entry = field_type(form_frame, font=("Helvetica", 12), width=12, background='darkblue', foreground='white', borderwidth=2)
             else:
-                entry = field_type(frame, font=("Arial", 11), width=25)
-            entry.grid(row=i+1, column=1, padx=10, pady=5)
-            self.entries[label] = entry
+                entry = field_type(form_frame, font=("Helvetica", 12), width=25)
 
-        # Submit Button
-        submit_btn = ttk.Button(frame, text="Submit Update", command=self.submit_update_booking, style="Bold.TButton")
-        submit_btn.grid(row=len(fields)+1, columnspan=2, pady=10)
+            entry.grid(row=i, column=1, pady=5, padx=5, sticky="ew")
+            self.entries[label] = entry  # ✅ Store entry reference with correct label text
 
-    def submit_update_booking(self):
+        # 🔹 Submit Button
+        btn_frame = tk.Frame(frame, bg="#ffffff")
+        btn_frame.grid(row=len(fields), columnspan=2, pady=15)
+
+        submit_btn = ttk.Button(btn_frame, text="Submit Update", command=lambda: self.submit_update_booking(update_window), style="Bold.TButton")
+        submit_btn.pack()
+
+    def submit_update_booking(self, update_window):
         """Collects form data and sends a request to update a booking."""
         try:
             booking_data = {
@@ -938,13 +1015,14 @@ class BookingManagement:
                 messagebox.showerror("Error", "Please fill in all fields")
                 return
 
-            api_url =f"http://127.0.0.1:8000/bookings/update/?booking_id={booking_data['booking_id']}"  # Adjust if needed
+            api_url = f"http://127.0.0.1:8000/bookings/update/?booking_id={booking_data['booking_id']}"  # Adjust if needed
             headers = {"Authorization": f"Bearer {self.token}", "Content-Type": "application/json"}
 
             response = requests.put(api_url, json=booking_data, headers=headers)
 
             if response.status_code == 200:
                 messagebox.showinfo("Success", "Booking updated successfully!")
+                update_window.destroy()  # Close the update window on success
             else:
                 messagebox.showerror("Error", response.json().get("detail", "Update failed."))
 
@@ -953,56 +1031,63 @@ class BookingManagement:
         except requests.exceptions.RequestException as e:
             messagebox.showerror("Error", f"Request failed: {e}")
 
-
-    def update_subheading(self, text, command):
-        self.subheading_label.config(text=text)
-        command()
-
     def guest_checkout(self):
-        self.clear_right_frame()
-        frame = tk.Frame(self.right_frame, bg="#ffffff", padx=20, pady=20)
-        frame.pack(fill=tk.BOTH, expand=True)
+        """Opens a professional pop-up window for guest checkout."""
+        checkout_window = tk.Toplevel(self.root)
+        checkout_window.title("Guest Checkout")
+        checkout_window.configure(bg="#f8f9fa")  # Light background
 
-        tk.Label(frame, text="Guest Checkout Form", font=("Arial", 14, "bold"), bg="#ffffff").grid(row=0, columnspan=2, pady=10)
+        # Set window size and center it
+        window_width, window_height = 360, 200
+        x_coordinate = (checkout_window.winfo_screenwidth() - window_width) // 2
+        y_coordinate = (checkout_window.winfo_screenheight() - window_height) // 2
+        checkout_window.geometry(f"{window_width}x{window_height}+{x_coordinate}+{y_coordinate}")
 
-        # Labels & Entry fields
-        fields = [
-            ("Room Number", tk.Entry),
-        ]
+        # Make it modal
+        checkout_window.transient(self.root)
+        checkout_window.grab_set()
 
-        self.entries = {}
-        for i, (label, field_type) in enumerate(fields):
-            tk.Label(frame, text=label, font=("Arial", 11), bg="#ffffff").grid(row=i+1, column=0, sticky="w", pady=5)
-            entry = field_type(frame, font=("Arial", 11), width=25)
-            entry.grid(row=i+1, column=1, padx=10, pady=5)
-            self.entries[label] = entry
+        # 🔹 Header Section
+        header = tk.Label(checkout_window, text="Guest Checkout", font=("Arial", 14, "bold"), fg="white", bg="#2c3e50", pady=8)
+        header.pack(fill=tk.X)
 
-        # Submit Button
-        submit_btn = ttk.Button(frame, text="Checkout Guest", command=self.submit_guest_checkout, style="Bold.TButton")
-        submit_btn.grid(row=len(fields)+1, columnspan=2, pady=10)
+        # 🔹 Form Frame
+        form_frame = tk.Frame(checkout_window, bg="white", padx=15, pady=10)
+        form_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
-    def submit_guest_checkout(self):
+        # Room Number Field
+        tk.Label(form_frame, text="Room Number", font=("Arial", 11, "bold"), bg="white", fg="#2c3e50").pack(anchor="w")
+        self.room_number_entry = tk.Entry(form_frame, font=("Arial", 11), width=22)
+        self.room_number_entry.pack(pady=5)
+
+        # 🔹 Submit Button
+        submit_btn = ttk.Button(checkout_window, text="Checkout Guest", command=lambda: self.submit_guest_checkout(checkout_window), style="Bold.TButton")
+        submit_btn.pack(pady=10)
+
+    def submit_guest_checkout(self, checkout_window):
         """Sends a request to checkout the guest by room number."""
         try:
-            room_number = self.entries["Room Number"].get()
+            room_number = self.room_number_entry.get()
 
-            if not room_number:  # Ensure room number is entered
+            if not room_number:
                 messagebox.showerror("Error", "Please enter a room number.")
                 return
 
-            api_url =f"http://127.0.0.1:8000/bookings/{room_number}/" # Adjust API URL if necessary
+            api_url = f"http://127.0.0.1:8000/bookings/{room_number}/"
             headers = {"Authorization": f"Bearer {self.token}", "Content-Type": "application/json"}
 
             response = requests.put(api_url, headers=headers)
 
             if response.status_code == 200:
                 messagebox.showinfo("Success", f"Guest checked out successfully for room number {room_number}!")
+                checkout_window.destroy()  # Close window on success
             else:
                 messagebox.showerror("Error", response.json().get("detail", "Checkout failed."))
 
         except requests.exceptions.RequestException as e:
-            messagebox.showerror("Error", f"Request failed: {e}") 
-            
+            messagebox.showerror("Error", f"Request failed: {e}")
+
+        
             
             
             
@@ -1012,60 +1097,74 @@ class BookingManagement:
 
     
     def cancel_booking(self):
-        self.clear_right_frame()
-        frame = tk.Frame(self.right_frame, bg="#ffffff", padx=20, pady=20)
-        frame.pack(fill=tk.BOTH, expand=True)
+        """Opens a professional pop-up window for booking cancellation."""
+        cancel_window = tk.Toplevel(self.root)
+        cancel_window.title("Cancel Booking")
+        cancel_window.configure(bg="#f8f9fa")  # Light background
 
-        tk.Label(frame, text="Cancel Booking Form", font=("Arial", 14, "bold"), bg="#ffffff").grid(row=0, columnspan=2, pady=10)
+        # Set window size and center it
+        window_width, window_height = 380, 250
+        x_coordinate = (cancel_window.winfo_screenwidth() - window_width) // 2
+        y_coordinate = (cancel_window.winfo_screenheight() - window_height) // 2
+        cancel_window.geometry(f"{window_width}x{window_height}+{x_coordinate}+{y_coordinate}")
 
-        # Labels & Entry fields
-        fields = [
-            ("Booking ID", tk.Entry),
-            ("Cancellation Reason (Optional)", tk.Entry),
-        ]
+        # Make it modal
+        cancel_window.transient(self.root)
+        cancel_window.grab_set()
 
-        self.entries = {}
-        for i, (label, field_type) in enumerate(fields):
-            tk.Label(frame, text=label, font=("Arial", 11), bg="#ffffff").grid(row=i+1, column=0, sticky="w", pady=5)
-            entry = field_type(frame, font=("Arial", 11), width=25)
-            entry.grid(row=i+1, column=1, padx=10, pady=5)
-            self.entries[label] = entry
+        # 🔹 Header Section
+        header = tk.Label(cancel_window, text="Cancel Booking", font=("Arial", 14, "bold"), fg="white", bg="#2c3e50", pady=8)
+        header.pack(fill=tk.X)
 
-        # Submit Button
-        submit_btn = ttk.Button(frame, text="Cancel Booking", command=self.submit_cancel_booking, style="Bold.TButton")
-        submit_btn.grid(row=len(fields)+1, columnspan=2, pady=10)
+        # 🔹 Form Frame
+        form_frame = tk.Frame(cancel_window, bg="white", padx=15, pady=10)
+        form_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
-    def submit_cancel_booking(self):
+        # Booking ID Field
+        tk.Label(form_frame, text="Booking ID", font=("Arial", 11, "bold"), bg="white", fg="#2c3e50").pack(anchor="w")
+        self.booking_id_entry = tk.Entry(form_frame, font=("Arial", 11), width=24)
+        self.booking_id_entry.pack(pady=5)
+
+        # Cancellation Reason (Optional)
+        tk.Label(form_frame, text="Cancellation Reason (Optional)", font=("Arial", 11, "bold"), bg="white", fg="#2c3e50").pack(anchor="w")
+        self.cancellation_reason_entry = tk.Entry(form_frame, font=("Arial", 11), width=24)
+        self.cancellation_reason_entry.pack(pady=5)
+
+        # 🔹 Submit Button
+        submit_btn = ttk.Button(cancel_window, text="Cancel Booking", command=lambda: self.submit_cancel_booking(cancel_window), style="Bold.TButton")
+        submit_btn.pack(pady=10)
+
+    def submit_cancel_booking(self, cancel_window):
         """Sends a request to cancel the booking by booking ID, with an optional cancellation reason."""
         try:
-            booking_id = self.entries["Booking ID"].get()
-            cancellation_reason = self.entries["Cancellation Reason (Optional)"].get()
+            booking_id = self.booking_id_entry.get().strip()
+            cancellation_reason = self.cancellation_reason_entry.get().strip()
 
-            if not booking_id:  # Ensure booking ID is entered
-                messagebox.showerror("Error", "Please enter a booking ID.")
+            if not booking_id:
+                messagebox.showerror("Error", "Please enter a Booking ID.")
                 return
 
-            # Construct the API URL with optional cancellation reason
+            # Construct API URL
             api_url = f"http://127.0.0.1:8000/bookings/cancel/{booking_id}/"
-            if cancellation_reason:  # Append reason as a query parameter if provided
+            if cancellation_reason:
                 api_url += f"?cancellation_reason={requests.utils.quote(cancellation_reason)}"
 
             headers = {"Authorization": f"Bearer {self.token}", "Content-Type": "application/json"}
-
             response = requests.post(api_url, headers=headers)
 
             if response.status_code == 200:
-                canceled_booking = response.json().get("canceled_booking")
-                messagebox.showinfo("Success", f"Booking ID {canceled_booking['id']} has been canceled successfully!\n"
-                                            f"Room Status: {canceled_booking['room_status']}\n"
-                                            f"Booking Status: {canceled_booking['status']}\n"
-                                            f"Cancellation Reason: {canceled_booking.get('cancellation_reason', 'None')}")
+                canceled_booking = response.json().get("canceled_booking", {})
+                messagebox.showinfo("Success", f"Booking {canceled_booking.get('id', booking_id)} canceled successfully!\n"
+                                               f"Room Status: {canceled_booking.get('room_status', 'N/A')}\n"
+                                               f"Booking Status: {canceled_booking.get('status', 'N/A')}\n"
+                                               f"Reason: {canceled_booking.get('cancellation_reason', 'None')}")
+                cancel_window.destroy()
             else:
                 messagebox.showerror("Error", response.json().get("detail", "Cancellation failed."))
 
         except requests.exceptions.RequestException as e:
             messagebox.showerror("Error", f"Request failed: {e}")
-        
+    
 
 
 

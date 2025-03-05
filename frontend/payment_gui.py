@@ -19,75 +19,52 @@ import requests
 
 
 
-
 class PaymentManagement:
-    def __init__(self, root, token):
+    def __init__(self, root, token, username):
         self.root = tk.Toplevel(root)
         self.root.title("Payment Management")
-        self.root.geometry("1000x600")
-        #self.root.geometry(f"1000x600+{position_left}+{position_top}")
-
-        self.token = token
-        self.root.configure(bg="#f0f0f0")  # Light gray background
-        self.void_payment_tree = None  
+        self.username = username  # Ensure this is assigned
+        self.root.state("zoomed")
+        self.root.configure(bg="#f0f0f0")
         
-        self.payments_data = []  # ✅ Initialize payments_data to prevent AttributeError
+        self.token = token
+        self.payments_data = []
         self.last_exported_file = None
 
         # Set window size and position at the center
         window_width = 1375
-        window_height = 587
+        window_height = 600
         screen_width = self.root.winfo_screenwidth()
         screen_height = self.root.winfo_screenheight()
         x_coordinate = (screen_width // 2) - (window_width // 2)
         y_coordinate = (screen_height // 2) - (window_height // 2)
         self.root.geometry(f"{window_width}x{window_height}+{x_coordinate}+{y_coordinate}")
 
-        # Set the position
-        
-
-        style = ttk.Style()
-        style.configure("Treeview.Heading", font=("Helvetica", 12, "bold"))
-        style.configure("Treeview", font=("Helvetica", 11))
-
-
-
-      # Header Section (Dark Blue-Gray)
+        # Header Section
         self.header_frame = tk.Frame(self.root, bg="#2C3E50", height=50)
         self.header_frame.pack(fill=tk.X)
+        
+        self.title_label = tk.Label(self.header_frame, text="Payment Management",
+                                    font=("Helvetica", 16, "bold"), fg="white", bg="#2C3E50")
+        self.title_label.pack(pady=10)
 
-        self.header_label = tk.Label(self.header_frame, text="", 
-                                    fg="white", bg="#2C3E50", font=("Helvetica", 4, "bold"))
-        self.header_label.pack(pady=0)
-
-        self.fetch_and_display_paymentss()
-        # Export and Print Buttons in Header Section
-        self.export_button = tk.Button(self.header_frame, text="Export to Excel", 
-                            command=self.export_report, bg="#007BFF", fg="white", font=("Helvetica", 9, "bold"))
-        self.export_button.pack(side=tk.RIGHT, padx=10, pady=5)
-
-        self.print_button = tk.Button(self.header_frame, text="Print Report", 
-                            command=self.print_report, bg="#28A745", fg="white", font=("Helvetica", 9, "bold"))
-        self.print_button.pack(side=tk.RIGHT, padx=10, pady=5)
-
-        # Sidebar Section (Dark Blue-Gray)
+        # Sidebar Section
         self.left_frame = tk.Frame(self.root, bg="#2C3E50", width=220)
         self.left_frame.pack(side=tk.LEFT, fill=tk.Y, padx=0, pady=0)
 
-        # Right Section (Light Gray for contrast)
-        self.right_frame = tk.Frame(self.root, bg="#ECF0F1", width=700)
+        # Right Section with a border and shadow effect
+        self.right_frame = tk.Frame(self.root, bg="#ECF0F1", width=700, relief="ridge", borderwidth=2)
         self.right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=20, pady=20)
 
-        # Subheading for dynamic section title
-        self.subheading_label = tk.Label(self.right_frame, text="Select an option", 
-                                        font=("Helvetica", 14, "bold"), fg="#2C3E50", bg="#ECF0F1")
+        # Subheading Label
+        self.subheading_label = tk.Label(self.right_frame, text="Select an option",
+                                         font=("Helvetica", 14, "bold"), fg="#2C3E50", bg="#ECF0F1")
         self.subheading_label.pack(pady=10)
 
-        # Payment action buttons (Steel Gray)
-        self.buttons = []  
+        # Payment Action Buttons
         buttons = [
             ("Create Payment", self.create_payment),
-            ("List Payment", self.list_payments),
+            ("List Payments", self.list_payments),
             ("List Payment By ID", self.search_payment_by_id),
             ("List Payment By Status", self.list_payments_by_status),
             ("Total Daily Payment", self.list_total_daily_payments),
@@ -96,45 +73,43 @@ class PaymentManagement:
         ]
 
         for text, command in buttons:
-            btn = tk.Button(self.left_frame, text=text, 
+            btn = tk.Button(self.left_frame, text=text,
                             command=lambda t=text, c=command: self.update_subheading(t, c),
-                            width=17, font=("Helvetica", 10, "bold"), anchor="w", padx=10, 
-                            bg="#34495E", fg="white", relief="flat", bd=0)  # Steel Gray
+                            width=18, font=("Helvetica", 10, "bold"), anchor="w", padx=10,
+                            bg="#34495E", fg="white", relief="flat", bd=0)
 
-            # Hover Effects (Lighter Gray)
-            btn.bind("<Enter>", lambda e, b=btn: b.config(bg="#3E5770"))  
-            btn.bind("<Leave>", lambda e, b=btn: b.config(bg="#34495E"))  
-
+            btn.bind("<Enter>", lambda e, b=btn: b.config(bg="#3E5770"))
+            btn.bind("<Leave>", lambda e, b=btn: b.config(bg="#34495E"))
             btn.pack(pady=8, padx=15, anchor="w", fill="x")
-            self.buttons.append(btn)
-
-
-
-
-
-           # # 🔗 Add Payment Link Below the Sidebar (as a clickable label)
-        self.payment_label = tk.Label(self.left_frame, text="Booking link",
-                                    fg="#004080", cursor="hand2", 
-                                    font=("Helvetica", 10, "bold", "underline"), 
-                                    bg="#d9d9d9")  # Match sidebar background
-        self.payment_label.pack(pady=20, padx=10, anchor="w")
-
-        # Hover Effect: Change color but keep the underline
-        self.payment_label.bind("<Enter>", lambda e: self.payment_label.config(fg="#007BFF"))
-        self.payment_label.bind("<Leave>", lambda e: self.payment_label.config(fg="#004080"))
-
-
-        # Click Action: Open Payment Window
-        self.payment_label.bind("<Button-1>", lambda e: self.open_booking_window())
-
-    def open_booking_window(self):
-        """Opens the Booking Management window."""
-        from bookings_gui import BookingManagement  # Import inside the function to avoid circular import
-        BookingManagement(self.root, self.token)
         
+        # Dashboard Shortcut
+        self.dashboard_label = tk.Label(
+            self.left_frame, text="⬅ Dashboard", cursor="hand2",
+            font=("Helvetica", 10, "bold"), fg="white", bg="#2C3E50",
+            padx=10, pady=5, relief="solid", borderwidth=2, highlightthickness=2,
+            highlightbackground="white", highlightcolor="white"
+        )
+        self.dashboard_label.pack(pady=15, padx=15, anchor="w", fill="x")
+        self.dashboard_label.bind("<Enter>", lambda e: self.dashboard_label.config(bg="#3E5770"))
+        self.dashboard_label.bind("<Leave>", lambda e: self.dashboard_label.config(bg="#2C3E50"))
+        self.dashboard_label.bind("<Button-1>", lambda e: self.open_dashboard_window())
+
     
-            
-            
+
+    def open_dashboard_window(self):
+        from dashboard import Dashboard
+        Dashboard(self.root, self.token, self.username)
+
+        self.root.destroy()
+    
+
+
+
+    def update_subheading(self, text, command):
+        self.subheading_label.config(text=text)
+        command()
+        
+                
     def fetch_and_display_paymentss(self):
         """Fetch booking data from the API"""
         url = "http://127.0.0.1:8000/payments/list"
@@ -217,80 +192,102 @@ class PaymentManagement:
         
 
     def create_payment(self):
-        """Displays the create payment form inside the right frame."""
-        self.clear_right_frame()  # Clear the previous content
+        """Opens a professional pop-up window for creating a new payment."""
+        create_window = tk.Toplevel(self.root)
+        create_window.title("Create Payment")
+        create_window.configure(bg="#dddddd")  # Light grey background
 
-        frame = tk.Frame(self.right_frame, bg="#ffffff", padx=20, pady=20)
-        frame.pack(fill=tk.BOTH, expand=True)
+        # Set window size
+        window_width = 500
+        window_height = 400
+        screen_width = create_window.winfo_screenwidth()
+        screen_height = create_window.winfo_screenheight()
+        x_coordinate = (screen_width - window_width) // 2
+        y_coordinate = (screen_height - window_height) // 2
+        create_window.geometry(f"{window_width}x{window_height}+{x_coordinate}+{y_coordinate}")
 
-        # Create the subheading label above the form
-        tk.Label(frame, text="Create Payment", font=("Arial", 14, "bold"), bg="#ffffff").grid(row=0, columnspan=2, pady=10)
+        # Make it modal
+        create_window.transient(self.root)
+        create_window.grab_set()
 
-        # Form frame (this is where the data entry section is)
+        # 🔹 Dark Header
+        header_frame = tk.Frame(create_window, bg="#2c3e50", height=50)
+        header_frame.pack(fill=tk.X)
+
+        header_label = tk.Label(header_frame, text="Create Payment", font=("Arial", 14, "bold"), fg="white", bg="#2c3e50", pady=10)
+        header_label.pack()
+
+        # 🔹 Main Content Frame with Border
+        frame = tk.Frame(create_window, bg="#ffffff", padx=20, pady=20, relief="ridge", borderwidth=3)
+        frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+        # 🔹 Form Frame Inside Main Frame
         form_frame = tk.Frame(frame, bg="#ffffff", padx=10, pady=10)
-        form_frame.grid(row=1, columnspan=2, pady=10, padx=10, sticky="ew")
+        form_frame.grid(row=0, columnspan=2, pady=10, padx=10, sticky="ew")
 
-        # Labels and Entry fields
-        labels = ["Booking ID:", "Amount Paid:", "Discount Allowed:", "Payment Method:", "Payment Date:"]
+        # 📌 Payment Fields
+        fields = [
+            ("Booking ID", tk.Entry),
+            ("Amount Paid", tk.Entry),
+            ("Discount Allowed", tk.Entry),
+            ("Payment Method", ttk.Combobox),
+            ("Payment Date", DateEntry),
+        ]
+
         self.entries = {}
 
-        for i, label_text in enumerate(labels):
-            label = tk.Label(form_frame, text=label_text, font=("Helvetica", 12), bg="#ffffff")
-            label.grid(row=i, column=0, sticky="w", pady=5, padx=5)
+        for i, (label, field_type) in enumerate(fields):
+            lbl = tk.Label(form_frame, text=label, font=("Helvetica", 12, "bold"), bg="#ffffff", fg="#2c3e50")
+            lbl.grid(row=i, column=0, sticky="w", pady=5, padx=5)
 
-            if label_text == "Payment Date:":
-                entry = DateEntry(form_frame, width=18, background="darkblue", foreground="white", borderwidth=2)
-            elif label_text == "Payment Method:":
-                entry = ttk.Combobox(form_frame, values=["Cash", "POS Card", "Bank Transfer"], state="readonly")
-                entry.current(0)
+            if field_type == ttk.Combobox:
+                entry = field_type(form_frame, values=["Cash", "POS Card", "Bank Transfer"], state="readonly", font=("Helvetica", 12), width=20)
+            elif field_type == DateEntry:
+                entry = field_type(form_frame, font=("Helvetica", 12), width=12, background='darkblue', foreground='white', borderwidth=2)
             else:
-                entry = tk.Entry(form_frame)
+                entry = field_type(form_frame, font=("Helvetica", 12), width=25)
 
             entry.grid(row=i, column=1, pady=5, padx=5, sticky="ew")
-            self.entries[label_text] = entry
+            self.entries[label] = entry  # ✅ Store entry reference with correct label text
 
-        # Submit Button
-        submit_btn = ttk.Button(form_frame, text="Submit Payment", command=self.submit_payment)
-        submit_btn.grid(row=len(labels), column=0, columnspan=2, pady=15)
+        # 🔹 Submit Button
+        btn_frame = tk.Frame(frame, bg="#ffffff")
+        btn_frame.grid(row=len(fields), columnspan=2, pady=15)
 
-    
-    
+        submit_btn = ttk.Button(btn_frame, text="Submit Payment", command=lambda: self.submit_payment(create_window), style="Bold.TButton")
+        submit_btn.pack()
 
 
-    def submit_payment(self):
-        """Handles payment submission to the backend."""
+
+
+    def submit_payment(self, create_window):
+        """Handles payment submission to the backend and closes the pop-up window."""
         try:
-            # Validate and fetch Booking ID
-            booking_id_str = self.entries["Booking ID:"].get().strip()
+            booking_id_str = self.entries["Booking ID"].get().strip()
             if not booking_id_str.isdigit():
                 messagebox.showerror("Error", "Booking ID must be a valid integer.")
                 return
             booking_id = int(booking_id_str)
 
-            # Fetch and validate Amount Paid
-            amount_paid_str = self.entries["Amount Paid:"].get().strip()
+            amount_paid_str = self.entries["Amount Paid"].get().strip()
             if not amount_paid_str.replace(".", "", 1).isdigit():
                 messagebox.showerror("Error", "Amount Paid must be a valid number.")
                 return
             amount_paid = float(amount_paid_str)
 
-            # Fetch and validate Discount Allowed (default to 0 if empty)
-            discount_allowed_str = self.entries["Discount Allowed:"].get().strip()
+            discount_allowed_str = self.entries["Discount Allowed"].get().strip()
             discount_allowed = float(discount_allowed_str) if discount_allowed_str.replace(".", "", 1).isdigit() else 0.0
 
-            # Fetch Payment Method
-            payment_method = self.entries["Payment Method:"].get().strip()
+            payment_method = self.entries["Payment Method"].get().strip()
             if not payment_method:
                 messagebox.showerror("Error", "Payment Method is required.")
                 return
 
-            # Fetch Payment Date and make it timezone-aware (set to UTC)
-            payment_date = self.entries["Payment Date:"].get_date()  # get the date from the date picker
+            payment_date = self.entries["Payment Date"].get_date()
             payment_date = datetime(payment_date.year, payment_date.month, payment_date.day, 0, 0, 0, 0)
-            payment_date = pytz.utc.localize(payment_date)  # Localize to UTC
-            payment_date_iso = payment_date.isoformat()  # Convert to ISO format
+            payment_date = pytz.utc.localize(payment_date)
+            payment_date_iso = payment_date.isoformat()
 
-            # Prepare the payload for the API request
             payload = {
                 "amount_paid": amount_paid,
                 "discount_allowed": discount_allowed,
@@ -298,30 +295,30 @@ class PaymentManagement:
                 "payment_date": payment_date_iso,
             }
 
-            # URL for creating the payment
             url = f"http://127.0.0.1:8000/payments/{booking_id}"
-
             headers = {"Authorization": f"Bearer {self.token}", "Content-Type": "application/json"}
 
-            # Send the request to the API
             response = requests.post(url, json=payload, headers=headers)
             data = response.json()
 
             if response.status_code == 200:
                 payment_details = data.get("payment_details")
                 if payment_details:
-                    payment_id = payment_details.get("payment_id")  # Updated key
-                    created_by = payment_details.get("created_by")  # Retrieve created_by field
+                    payment_id = payment_details.get("payment_id")
+                    created_by = payment_details.get("created_by")
                     messagebox.showinfo(
                         "Success", 
                         f"Payment created successfully!\nPayment ID: {payment_id}\nCreated By: {created_by}"
                     )
+                    create_window.destroy()  # Close the pop-up window
                 else:
                     messagebox.showerror("Error", "Payment ID missing in response.")
             else:
                 messagebox.showerror("Error", data.get("detail", "Payment failed."))
         except Exception as e:
             messagebox.showerror("Error", f"An unexpected error occurred: {e}")
+
+
 
 
     def list_payments(self):

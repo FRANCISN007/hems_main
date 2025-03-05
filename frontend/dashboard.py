@@ -11,76 +11,63 @@ from PIL import Image, ImageTk
 
 
 class Dashboard:
-    def __init__(self, root, token):
+    def __init__(self, root, username, token):
         self.root = root
         self.token = token
+        self.username = username
         self.root.title("Hotel & Event Management System")
-
-
-        # Debugging: Print icon paths
-        icon_ico_path = os.path.abspath("frontend/icon.ico").replace("\\", "/")
-        icon_png_path = os.path.abspath("frontend/icon.png").replace("\\", "/")
-
-        # Try using ICO first
-        if os.path.exists(icon_ico_path):
-            self.root.iconbitmap(icon_ico_path)
-        elif os.path.exists(icon_png_path):
-            try:
-                # Load and resize the PNG icon
-                icon_img = Image.open(icon_png_path)
-                icon_resized = icon_img.resize((80, 80))  # Adjust size (e.g., 128x128 if needed)
-                self.icon_image = ImageTk.PhotoImage(icon_resized)
-
-                # Set the resized icon
-                self.root.iconphoto(True, self.icon_image)
-            except Exception as e:
-                print(f"Error loading PNG icon: {e}")
-        else:
-            print("Error: Icon file not found!")
-
-
-        # Set full screen but allow minimize/maximize
-        self.root.geometry(f"{self.root.winfo_screenwidth()}x{self.root.winfo_screenheight()}")
+        self.root.geometry("1200x700")
         self.root.state("zoomed")
-
-        # Fetch user role
         self.user_role = get_user_role(self.token)
 
-        # Header Frame
-        self.header = tk.Frame(self.root, bg="#D3D3D3", height=60)
+        # Set application icon
+        icon_path = os.path.abspath("frontend/icon.ico")
+        if os.path.exists(icon_path):
+            self.root.iconbitmap(icon_path)
+        
+        # HEADER FRAME
+        self.header = tk.Frame(self.root, bg="#2C3E50", height=60)
         self.header.pack(fill=tk.X)
 
+        title_label = tk.Label(self.header, text="Dashboard                                                              Welcome to Hotel & Event Management System    ", fg="white", bg="#2C3E50", 
+                               font=("Arial", 14, "bold"))
+        title_label.pack(side=tk.LEFT, padx=20, pady=10)
+        
 
-        title_label = tk.Label(self.header, text="Dashboard", fg="black",
-                               bg="#D3D3D3", font=("Arial", 12, "bold"))
-        title_label.pack(pady=5)
+        # SIDEBAR FRAME
+        self.sidebar = tk.Frame(self.root, bg="#34495E", width=200)
+        self.sidebar.pack(side=tk.LEFT, fill=tk.Y)
 
-        # Menu Bar (Top Navigation)
-        self.menu_bar = tk.Menu(self.root)
-        self.root.config(menu=self.menu_bar)
+        # MENU BUTTONS IN SIDEBAR
+        menu_items = [
+            ("Users", self.manage_users),
+            ("Rooms", self.manage_rooms),
+            ("Bookings", self.manage_bookings),
+            ("Payments", self.manage_payments),
+            ("Events", self.manage_events),
+        ]
 
-        # Adding main menu items (No dropdowns)
-        self.menu_bar.add_command(label="Users", command=self.manage_users)
-        self.menu_bar.add_command(label="Rooms", command=self.manage_rooms)
-        self.menu_bar.add_command(label="Bookings", command=self.manage_bookings)
-        self.menu_bar.add_command(label="Payments", command=self.manage_payments)
-        self.menu_bar.add_command(label="Events", command=self.manage_events)
-       # self.menu_bar.add_command(label="E-Payments", command=self.manage_payments)
-        self.menu_bar.add_command(label="Logout", command=self.logout)
+        for text, command in menu_items:
+            btn = tk.Button(self.sidebar, text=text, command=command, fg="white", bg="#2C3E50",
+                            font=("Arial", 12), relief=tk.FLAT, padx=10, pady=5, anchor="w")
+            btn.pack(fill=tk.X, pady=5, padx=10)
+            btn.bind("<Enter>", lambda e, b=btn: b.config(bg="#1ABC9C"))
+            btn.bind("<Leave>", lambda e, b=btn: b.config(bg="#2C3E50"))
 
+        # LOGOUT BUTTON (Under "Events" in Sidebar)
+        logout_btn = tk.Button(self.sidebar, text="Logout", command=self.logout, fg="white", 
+                               bg="#2C3E50", font=("Arial", 12), relief=tk.FLAT, padx=10, pady=5, anchor="w")
+        logout_btn.pack(fill=tk.X, pady=20, padx=10)  # Added more space before logout
+        logout_btn.bind("<Enter>", lambda e: logout_btn.config(bg="#E74C3C"))  # Red on hover
+        logout_btn.bind("<Leave>", lambda e: logout_btn.config(bg="#2C3E50"))  # Back to default
 
-        # Outer Border Frame (Creates the Frame around the screen)
-        self.border_frame = tk.Frame(self.root, bg="gray", padx=5, pady=5)  # Gray border
-        self.border_frame.pack(fill=tk.BOTH, expand=True)
+        # MAIN CONTENT FRAME
+        self.main_content = tk.Frame(self.root, bg="#ECF0F1", bd=5, relief=tk.RIDGE)
+        self.main_content.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
-        # Main Content Frame inside the Border Frame
-        self.main_content = tk.Frame(self.border_frame, bg="#F2F3F4", bd=5, relief=tk.RIDGE)
-        self.main_content.pack(fill=tk.BOTH, expand=True)
-
-
-        # Main Content Frame
-        #self.main_content = tk.Frame(self.root, bg="#F2F3F4")
-        #self.main_content.pack(fill=tk.BOTH, expand=True)
+        welcome_label = tk.Label(self.main_content, text="", 
+                                 fg="#2C3E50", bg="#ECF0F1", font=("Arial", 14, "bold"))
+        welcome_label.pack(pady=20)
 
     def manage_users(self):
         if self.user_role != "admin":
@@ -89,16 +76,16 @@ class Dashboard:
         UserManagement(self.root, self.token)
 
     def manage_rooms(self):
-        
         RoomManagement(self.root, self.token)
 
     def manage_bookings(self):
         BookingManagement(self.root, self.token)
 
     def manage_payments(self):
-        PaymentManagement(self.root, self.token)
+        PaymentManagement(self.root, self.username, self.token)
 
     def manage_events(self):
+        """Opens the Event Management window"""
         EventManagement(self.root, self.token)
 
     def logout(self):
@@ -107,6 +94,7 @@ class Dashboard:
         from login_gui import LoginGUI
         LoginGUI(root)
         root.mainloop()
+
 
 if __name__ == "__main__":
     token = load_token()

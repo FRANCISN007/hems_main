@@ -8,20 +8,13 @@ import os
 import sys
 import win32print
 import win32ui
+from frontend.welcome import WelcomeWindow
 
 
 
 
-#def resource_path(relative_path):
-    #try:
-        #base_path = sys._MEIPASS2
-    #except Exception:
-        #base_path = os.path.abspath(".")
-
-    #return os.path.join(base_path, relative_path)
 
 
-#sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))  # Ensure `frontend/` is in pat
 
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))

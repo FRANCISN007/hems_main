@@ -10,12 +10,12 @@ class RoomManagement:
         self.root.title("Room Management")
 
         # Set window size and position at the center
-        window_width = 800
-        window_height = 580
+        window_width = 780
+        window_height = 550
         screen_width = self.root.winfo_screenwidth()
         screen_height = self.root.winfo_screenheight()
         x_coordinate = (screen_width // 2) - (window_width // 2)
-        y_coordinate = (screen_height // 2) - (window_height // 2)
+        y_coordinate = (screen_height // 2) - (window_height // 2) - 20  # Move slightly up
         self.root.geometry(f"{window_width}x{window_height}+{x_coordinate}+{y_coordinate}")
 
         self.user_role = get_user_role(self.token)
@@ -23,9 +23,59 @@ class RoomManagement:
         self.setup_ui()
         self.fetch_rooms()
 
+        # Style Configuration
         style = ttk.Style()
-        style.configure("Treeview.Heading", font=("Helvetica", 12, "bold"))
-        style.configure("Treeview", font=("Helvetica", 12))  # Increase row font size
+        style.configure("Treeview.Heading", font=("Helvetica", 12, "bold"), background="#2C3E50", foreground="white")
+        style.configure("Treeview", font=("Helvetica", 12), rowheight=25)
+        style.configure("TButton", font=("Helvetica", 11, "bold"), padding=6)
+        style.map("TButton", background=[("active", "#2980B9")])  # Hover effect
+
+    def setup_ui(self):
+        self.root.configure(bg="#f8f9fa")  # Light gray background for modern UI
+
+        # Title Label
+        title_label = tk.Label(self.root, text="Room Management", font=("Helvetica", 18, "bold"),
+                               bg="#2C3E50", fg="white", padx=10, pady=10)
+        title_label.pack(fill=tk.X)
+
+        # Frame for Treeview (Card-like Container)
+        card_frame = tk.Frame(self.root, bg="white", relief=tk.RIDGE, bd=2)
+        card_frame.pack(fill=tk.BOTH, expand=True, padx=15, pady=(10, 5))
+
+        # Treeview (Room List Table)
+        columns = ("Room Number", "Room Type", "Amount", "Status", "Booking Type")
+        self.tree = ttk.Treeview(card_frame, columns=columns, show="headings")
+
+        for col in columns:
+            self.tree.heading(col, text=col)
+            self.tree.column(col, width=140, anchor="center")
+
+        self.tree.pack(fill=tk.BOTH, expand=True)
+
+        # Apply alternating row colors
+        self.tree.tag_configure("oddrow", background="#ECF0F1")  # Light gray
+        self.tree.tag_configure("evenrow", background="white")
+
+        # Button Frame
+        btn_frame = tk.Frame(self.root, bg="#f8f9fa")
+        btn_frame.pack(pady=10, padx=10)
+
+        # Buttons with Icons
+        buttons = [
+            ("➕ Add Room", self.open_room_form),
+            ("✏️ Update Room", self.update_room),
+            ("❌ Delete Room", self.delete_room),
+            ("🟢 Available Rooms", self.list_available_rooms),
+            ("🔄 Refresh", self.fetch_rooms)
+        ]
+
+        for idx, (text, command) in enumerate(buttons):
+            btn = ttk.Button(btn_frame, text=text, command=command, width=16)
+            btn.grid(row=0, column=idx, padx=5, pady=5)
+
+            # Disable buttons for non-admin users
+            if self.user_role != "admin" and text in ["➕ Add Room", "✏️ Update Room", "❌ Delete Room"]:
+                btn.config(state=tk.DISABLED)
 
     def natural_sort_key(self, room):
         """Sort room numbers correctly, handling both numeric and alphanumeric values."""
@@ -33,47 +83,28 @@ class RoomManagement:
         parts = re.split(r'(\d+)', room_number)  # Split letters and numbers
         return [int(part) if part.isdigit() else part for part in parts]  # Convert numeric parts to int
 
-    def setup_ui(self):
-        self.root.configure(bg="#f0f0f0")  # Set the background color of the main window
+    def fetch_rooms(self):
+        """Fetch and display rooms."""
+        response = api_request("GET", "/rooms", self.token)
+        if response.get("status") == "success":
+            rooms = response.get("data", [])
 
-        title_label = tk.Label(self.root, text="Room Management", font=("Helvetica", 18, "bold"),
-                               bg="#2C3E50", fg="white", padx=10, pady=10)
-        title_label.pack(fill=tk.X)
+            # Ensure sorting function is available
+            rooms.sort(key=self.natural_sort_key)
 
-        columns = ("Room Number", "Room Type", "Amount", "Status", "Booking Type")
-        self.tree = ttk.Treeview(self.root, columns=columns, show="headings")
+            # Clear the tree before inserting new data
+            for row in self.tree.get_children():
+                self.tree.delete(row)
 
-        for col in columns:
-            self.tree.heading(col, text=col)
-            self.tree.column(col, width=140, anchor="center")
-        self.tree.pack(pady=10, fill=tk.BOTH, expand=True)
+            for index, room in enumerate(rooms):
+                tag = "evenrow" if index % 2 == 0 else "oddrow"
+                self.tree.insert("", tk.END, values=(
+                    room["room_number"], room["room_type"], room["amount"], 
+                    room["status"], room["booking_type"]
+                ), tags=(tag,))
 
-        btn_frame = tk.Frame(self.root, bg="#f0f0f0")  # Set background color for button frame
-        btn_frame.pack(pady=10)
-
-        self.add_button = ttk.Button(btn_frame, text="➕ Add Room", command=self.open_room_form)
-        self.add_button.pack(side=tk.LEFT, padx=5, pady=5, ipadx=10)
-
-        self.update_button = ttk.Button(btn_frame, text="✏️ Update Room", command=self.update_room)
-        self.update_button.pack(side=tk.LEFT, padx=5, pady=5, ipadx=10)
-
-        self.delete_button = ttk.Button(btn_frame, text="❌ Delete Room", command=self.delete_room)
-        self.delete_button.pack(side=tk.LEFT, padx=5, pady=5, ipadx=10)
-
-        self.available_rooms_button = ttk.Button(btn_frame, text="🟢 List Available Rooms", command=self.list_available_rooms)
-        self.available_rooms_button.pack(side=tk.LEFT, padx=5, pady=5, ipadx=10)
-
-        self.refresh_button = ttk.Button(btn_frame, text="🔄 Refresh", command=self.fetch_rooms)
-        self.refresh_button.pack(side=tk.LEFT, padx=5, pady=5, ipadx=10)
-
-        
-
-        if self.user_role != "admin":
-            self.delete_button.config(state=tk.DISABLED)
-            self.update_button.config(state=tk.DISABLED)
-            self.add_button.config(state=tk.DISABLED)
-
-
+        else:
+            messagebox.showerror("Error", "Failed to fetch rooms")
 
    
 
@@ -106,8 +137,6 @@ class RoomManagement:
             self.tree.insert("", tk.END, values=(room_number, room_type, amount, current_status, booking_type))
             
             
-            
-        
             
 
     def list_available_rooms(self):

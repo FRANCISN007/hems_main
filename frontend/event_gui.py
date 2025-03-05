@@ -24,44 +24,43 @@ class EventManagement:
     def __init__(self, root, token):
         self.root = tk.Toplevel(root)
         self.root.title("Event Management")
-        self.token = token
+        self.root.state("zoomed")
         self.root.configure(bg="#f0f0f0")
+        
         self.username = "current_user"
+        self.token = token
 
-        # Get screen width and height
+        # Set window size and position at the center
+        window_width = 1375
+        window_height = 600
         screen_width = self.root.winfo_screenwidth()
         screen_height = self.root.winfo_screenheight()
-        window_width = 1375
-        window_height = 587
-        x_position = (screen_width - window_width) // 2
-        y_position = (screen_height - window_height) // 2
-        self.root.geometry(f"{window_width}x{window_height}+{x_position}+{y_position}")
+        x_coordinate = (screen_width // 2) - (window_width // 2)
+        y_coordinate = (screen_height // 2) - (window_height // 2)
+        self.root.geometry(f"{window_width}x{window_height}+{x_coordinate}+{y_coordinate}")
 
-        style = ttk.Style()
-        style.configure("Treeview.Heading", font=("Helvetica", 12, "bold"))
-        style.configure("Treeview", font=("Helvetica", 11))
-
-                # Header Section (Dark Blue-Gray)
+        # Header Section
         self.header_frame = tk.Frame(self.root, bg="#2C3E50", height=50)
         self.header_frame.pack(fill=tk.X)
-        self.header_label = tk.Label(self.header_frame, text="", 
-                                     fg="white", bg="#2C3E50", font=("Helvetica", 5, "bold"))
-        self.header_label.pack(pady=0)
+        
+        self.title_label = tk.Label(self.header_frame, text="Event Management",
+                                    font=("Helvetica", 16, "bold"), fg="white", bg="#2C3E50")
+        self.title_label.pack(pady=10)
 
-        # Sidebar Section (Dark Blue-Gray)
-        self.left_frame = tk.Frame(self.root, bg="#2C3E50", width=215)
+        # Sidebar Section
+        self.left_frame = tk.Frame(self.root, bg="#2C3E50", width=220)
         self.left_frame.pack(side=tk.LEFT, fill=tk.Y, padx=0, pady=0)
 
-        # Right Section (Light Gray for contrast)
-        self.right_frame = tk.Frame(self.root, bg="#ECF0F1", width=700)
+        # Right Section with a border and shadow effect
+        self.right_frame = tk.Frame(self.root, bg="#ECF0F1", width=700, relief="ridge", borderwidth=2)
         self.right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=20, pady=20)
 
-        # Subheading for dynamic section title
-        self.subheading_label = tk.Label(self.right_frame, text="Select an option", 
+        # Subheading Label
+        self.subheading_label = tk.Label(self.right_frame, text="Select an option",
                                          font=("Helvetica", 14, "bold"), fg="#2C3E50", bg="#ECF0F1")
         self.subheading_label.pack(pady=10)
 
-        # Event action buttons (Steel Gray)
+        # Event Action Buttons
         self.buttons = []
         event_buttons = [
             ("Create Event", self.create_event),
@@ -72,20 +71,21 @@ class EventManagement:
         ]
 
         for text, command in event_buttons:
-            btn = tk.Button(self.left_frame, text=text, 
+            btn = tk.Button(self.left_frame, text=text,
                             command=lambda t=text, c=command: self.update_subheading(t, c),
-                            width=17, font=("Helvetica", 10, "bold"), anchor="w", padx=10, 
-                            bg="#34495E", fg="white", relief="flat", bd=0)  # Steel Gray
-            btn.bind("<Enter>", lambda e, b=btn: b.config(bg="#3E5770"))  # Hover Effect
+                            width=18, font=("Helvetica", 10, "bold"), anchor="w", padx=10,
+                            bg="#34495E", fg="white", relief="flat", bd=0)
+            
+            btn.bind("<Enter>", lambda e, b=btn: b.config(bg="#3E5770"))
             btn.bind("<Leave>", lambda e, b=btn: b.config(bg="#34495E"))
             btn.pack(pady=8, padx=15, anchor="w", fill="x")
             self.buttons.append(btn)
 
-        # Separation line
+        # Separation Line
         separator = tk.Frame(self.left_frame, height=4, bg="#ECF0F1")
         separator.pack(fill="x", padx=5, pady=10)
 
-        # Event Payment action buttons (Steel Gray)
+        # Event Payment Buttons
         payment_buttons = [
             ("Create Event Payment", self.create_event_payment),
             ("List Event Payments", self.list_events_payment),
@@ -95,25 +95,59 @@ class EventManagement:
         ]
 
         for text, command in payment_buttons:
-            btn = tk.Button(self.left_frame, text=text, 
+            btn = tk.Button(self.left_frame, text=text,
                             command=lambda t=text, c=command: self.update_subheading(t, c),
-                            width=17, font=("Helvetica", 10, "bold"), anchor="w", padx=10, 
-                            bg="#34495E", fg="white", relief="flat", bd=0)  # Steel Gray
-            btn.bind("<Enter>", lambda e, b=btn: b.config(bg="#3E5770"))  # Hover Effect
+                            width=18, font=("Helvetica", 10, "bold"), anchor="w", padx=10,
+                            bg="#34495E", fg="white", relief="flat", bd=0)
+            
+            btn.bind("<Enter>", lambda e, b=btn: b.config(bg="#3E5770"))
             btn.bind("<Leave>", lambda e, b=btn: b.config(bg="#34495E"))
             btn.pack(pady=8, padx=15, anchor="w", fill="x")
             self.buttons.append(btn)
 
+        # Dashboard Link with Circular Border
+        self.dashboard_label = tk.Label(
+            self.left_frame, text="⬅ Dashboard", cursor="hand2",
+            font=("Helvetica", 10, "bold"), fg="white", bg="#2C3E50",
+            padx=10, pady=5, relief="solid", borderwidth=2, highlightthickness=2,
+            highlightbackground="white", highlightcolor="white"
+        )
+        self.dashboard_label.pack(pady=15, padx=15, anchor="w", fill="x")
+        self.dashboard_label.bind("<Enter>", lambda e: self.dashboard_label.config(bg="#3E5770"))
+        self.dashboard_label.bind("<Leave>", lambda e: self.dashboard_label.config(bg="#2C3E50"))
+        self.dashboard_label.bind("<Button-1>", lambda e: self.open_dashboard_window())
+
+    def open_dashboard_window(self):
+        from dashboard import Dashboard  # Import here to avoid circular import issues
+        Dashboard(self.root, self.username, self.token)
+        self.root.destroy()
 
 
 
-        self.export_button = tk.Button(self.header_frame, text="Export to Excel", 
-                               command=self.export_report, bg="#007BFF", fg="white", font=("Helvetica", 9, "bold"))
+
+        # Export and Print Buttons in Header Section
+        def on_enter(e):
+            e.widget.config(bg="#1ABC9C", fg="white")  # Background changes on hover
+
+        def on_leave(e):
+            e.widget.config(bg="#2C3E50", fg="white")  # Restore default background & text color
+
+        self.export_button = tk.Label(self.header_frame, text="Export to Excel", 
+                                    fg="white", bg="#2C3E50", font=("Helvetica", 9, "bold"), 
+                                    cursor="hand2", padx=10, pady=5)
         self.export_button.pack(side=tk.RIGHT, padx=10, pady=5)
+        self.export_button.bind("<Enter>", on_enter)
+        self.export_button.bind("<Leave>", on_leave)
+        self.export_button.bind("<Button-1>", lambda e: self.export_report())  # Click event
 
-        self.print_button = tk.Button(self.header_frame, text="Print Report", 
-                              command=self.print_report, bg="#28A745", fg="white", font=("Helvetica", 9, "bold"))
-        self.print_button.pack(side=tk.RIGHT, padx=10, pady=5)        
+        self.print_button = tk.Label(self.header_frame, text="Print Report", 
+                                    fg="white", bg="#2C3E50", font=("Helvetica", 9, "bold"), 
+                                    cursor="hand2", padx=10, pady=5)
+        self.print_button.pack(side=tk.RIGHT, padx=10, pady=5)
+        self.print_button.bind("<Enter>", on_enter)
+        self.print_button.bind("<Leave>", on_leave)
+        self.print_button.bind("<Button-1>", lambda e: self.print_report())  # Click event
+        
 
     def update_subheading(self, text, command):
         self.subheading_label.config(text=text)
@@ -159,16 +193,48 @@ class EventManagement:
             messagebox.showwarning("Warning", "Please export the report before printing.")
 
      
-
-        
+    
     def create_event(self):
-        self.clear_right_frame()
-        frame = tk.Frame(self.right_frame, bg="#ffffff", padx=20, pady=20)
-        frame.pack(fill=tk.BOTH, expand=True)
+        """Opens a professional pop-up window for creating a new event."""
+        create_window = tk.Toplevel(self.root)
+        create_window.title("Create Event")
+        create_window.configure(bg="#dddddd")  # Light grey background
 
-        tk.Label(frame, text="Create Event Form", font=("Arial", 14, "bold"), bg="#ffffff").grid(row=0, columnspan=2, pady=10)
+        # Set window size (smaller)
+        window_width = 450
+        window_height = 500
 
-        # Labels & Entry fields
+        # Get screen width and height
+        screen_width = create_window.winfo_screenwidth()
+        screen_height = create_window.winfo_screenheight()
+
+        # Calculate x and y coordinates for centering
+        x_coordinate = (screen_width - window_width) // 2
+        y_coordinate = (screen_height - window_height) // 2
+
+        # Set window geometry
+        create_window.geometry(f"{window_width}x{window_height}+{x_coordinate}+{y_coordinate}")
+
+        # Make the window modal
+        create_window.transient(self.root)
+        create_window.grab_set()
+
+        # === Dark Header ===
+        header_frame = tk.Frame(create_window, bg="#2c3e50", height=40)
+        header_frame.pack(fill=tk.X)
+
+        header_label = tk.Label(header_frame, text="Create Event", font=("Arial", 13, "bold"), fg="white", bg="#2c3e50", pady=5)
+        header_label.pack()
+
+        # === Main Content Frame ===
+        frame = tk.Frame(create_window, bg="#ffffff", padx=15, pady=10, relief="ridge", borderwidth=2)
+        frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+        # === Form Frame Inside Main Frame ===
+        form_frame = tk.Frame(frame, bg="#ffffff", padx=5, pady=5)
+        form_frame.grid(row=0, columnspan=2, pady=5, padx=5, sticky="ew")
+
+        # Event Fields
         fields = [
             ("Organizer", tk.Entry),
             ("Title", tk.Entry),
@@ -183,32 +249,45 @@ class EventManagement:
         ]
 
         self.entries = {}
-        for i, (label, field_type) in enumerate(fields):
-            tk.Label(frame, text=label, font=("Arial", 12), bg="#ffffff").grid(row=i+1, column=0, sticky="w", pady=5)
-            
+
+        for i, (label_text, field_type) in enumerate(fields):
+            label = tk.Label(form_frame, text=label_text, font=("Helvetica", 11, "bold"), bg="#ffffff", fg="#2c3e50")
+            label.grid(row=i, column=0, sticky="w", pady=3, padx=5)
+
             if field_type == tk.Text:
-                entry = field_type(frame, font=("Arial", 12), width=30, height=3)
+                entry = field_type(form_frame, font=("Helvetica", 11), width=28, height=2)  # Reduced height
             elif field_type == DateEntry:
-                entry = field_type(frame, font=("Arial", 12), width=12, background='darkblue', foreground='white', borderwidth=2)
+                entry = field_type(form_frame, font=("Helvetica", 11), width=10, background='darkblue', foreground='white', borderwidth=2)
             else:
-                entry = field_type(frame, font=("Arial", 12), width=25)
-            
-            entry.grid(row=i+1, column=1, padx=10, pady=5)
-            self.entries[label] = entry
+                entry = field_type(form_frame, font=("Helvetica", 11), width=25)
+
+            entry.grid(row=i, column=1, pady=3, padx=5, sticky="ew")
+            self.entries[label_text] = entry  # ✅ Store entries using label text as dictionary key
+
+        # === Buttons Frame (Compact) ===
+        btn_frame = tk.Frame(create_window, bg="#ffffff")
+        btn_frame.pack(pady=10)
 
         # Submit Button
-        submit_btn = ttk.Button(frame, text="Submit Event", command=self.submit_event, style="Bold.TButton")
-        submit_btn.grid(row=len(fields)+1, columnspan=2, pady=10)
+        submit_btn = ttk.Button(btn_frame, text="Submit", command=lambda: self.submit_event(create_window))
+        submit_btn.grid(row=0, column=0, padx=5)
 
-    def submit_event(self):
-        """Collects form data and sends a request to create an event."""
+        # Cancel Button
+        cancel_btn = ttk.Button(btn_frame, text="Cancel", command=create_window.destroy)
+        cancel_btn.grid(row=0, column=1, padx=5)
+
+
+
+
+    def submit_event(self, create_window):
+        """Handles event creation and closes the popup on success."""
         try:
-            created_by = self.username  # Ensure this is properly initialized
-            
+            created_by = self.username  
+
             event_data = {
                 "organizer": self.entries["Organizer"].get(),
                 "title": self.entries["Title"].get(),
-                "description": self.entries["Description"].get("1.0", "end-1c"),  
+                "description": self.entries["Description"].get("1.0", "end-1c"),
                 "start_datetime": self.entries["Start Date"].get_date().strftime("%Y-%m-%d"),
                 "end_datetime": self.entries["End Date"].get_date().strftime("%Y-%m-%d"),
                 "event_amount": self.entries["Event Amount"].get(),
@@ -217,24 +296,25 @@ class EventManagement:
                 "phone_number": self.entries["Phone Number"].get(),
                 "address": self.entries["Address"].get(),
                 "payment_status": "active",
-                "created_by": created_by,  # Ensure username is available
+                "created_by": created_by,
             }
 
-            if not all(event_data.values()):  # Ensure all fields are filled
+            if not all(event_data.values()):  
                 messagebox.showerror("Error", "Please fill in all fields")
                 return
 
-            api_url = "http://127.0.0.1:8000/events/"  # Adjust if needed
+            api_url = "http://127.0.0.1:8000/events/"  
             headers = {"Authorization": f"Bearer {self.token}", "Content-Type": "application/json"}
 
             response = requests.post(api_url, json=event_data, headers=headers)
 
             if response.status_code == 200:
                 response_data = response.json()
-                event_id = response_data.get("id")  # Extract event ID
+                event_id = response_data.get("id")  
 
                 if event_id:
                     messagebox.showinfo("Success", f"Event created successfully!\nEvent ID: {event_id}")
+                    create_window.destroy()  
                 else:
                     messagebox.showerror("Error", "Event ID missing in response.")
 
@@ -246,11 +326,6 @@ class EventManagement:
         except requests.exceptions.RequestException as e:
             messagebox.showerror("Error", f"Request failed: {e}")
 
-    def clear_right_frame(self):
-        """Clears the right frame before displaying new content."""
-        for widget in self.right_frame.winfo_children():
-            widget.destroy()
-   
         
     
     
@@ -441,67 +516,120 @@ class EventManagement:
   
         
         
-        
     def update_event(self):
-        """Creates a form to update an event."""
-        self.clear_right_frame()
-        frame = tk.Frame(self.right_frame, bg="#ffffff", padx=20, pady=20)
-        frame.pack(fill=tk.BOTH, expand=True)
+        """Opens a professional pop-up window for updating an event."""
+        self.update_window = tk.Toplevel(self.root)
+        self.update_window.title("Update Event")
+        self.update_window.configure(bg="#dddddd")  # Light grey background
 
-        tk.Label(frame, text="Update Event Form", font=("Arial", 14, "bold"), bg="#ffffff").grid(row=0, columnspan=2, pady=10)
+        # Set window size (smaller)
+        window_width = 450
+        window_height = 550
 
-        # Labels & Entry fields (based on Create Event fields)
+        # Get screen width and height
+        screen_width = self.update_window.winfo_screenwidth()
+        screen_height = self.update_window.winfo_screenheight()
+
+        # Calculate x and y coordinates for centering
+        x_coordinate = (screen_width - window_width) // 2
+        y_coordinate = (screen_height - window_height) // 2
+
+        # Set window geometry
+        self.update_window.geometry(f"{window_width}x{window_height}+{x_coordinate}+{y_coordinate}")
+
+        # Make the window modal
+        self.update_window.transient(self.root)
+        self.update_window.grab_set()
+
+        # === Header (Dark Background) ===
+        header_frame = tk.Frame(self.update_window, bg="#2c3e50", height=40)
+        header_frame.pack(fill=tk.X)
+
+        header_label = tk.Label(header_frame, text="Update Event", font=("Arial", 13, "bold"), fg="white", bg="#2c3e50", pady=5)
+        header_label.pack()
+
+        # === Main Content Frame ===
+        frame = tk.Frame(self.update_window, bg="#ffffff", padx=15, pady=10, relief="ridge", borderwidth=2)
+        frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+        # === Form Frame Inside Main Frame ===
+        form_frame = tk.Frame(frame, bg="#ffffff", padx=5, pady=5)
+        form_frame.grid(row=0, columnspan=2, pady=5, padx=5, sticky="ew")
+
+        # Event Fields
         fields = [
             ("Event ID", tk.Entry),
             ("Organizer", tk.Entry),
             ("Title", tk.Entry),
-            ("Description", tk.Entry),
-            ("Location", tk.Entry),
-            ("Phone Number", tk.Entry),
-            ("Address", tk.Entry),
+            ("Description", tk.Text),
             ("Start Date", DateEntry),
             ("End Date", DateEntry),
             ("Event Amount", tk.Entry),
             ("Caution Fee", tk.Entry),
-            ("Payment Status", ttk.Combobox)
+            ("Location", tk.Entry),
+            ("Phone Number", tk.Entry),
+            ("Address", tk.Entry),
+            ("Payment Status", ttk.Combobox),
         ]
 
         self.entries = {}
-        for i, (label, field_type) in enumerate(fields):
-            tk.Label(frame, text=label, font=("Arial", 11), bg="#ffffff").grid(row=i+1, column=0, sticky="w", pady=5)
-            if field_type == ttk.Combobox:
-                entry = field_type(frame, values=["pending", "complete", "incomplete", "cancelled"], state="readonly", font=("Arial", 11))
-            elif field_type == DateEntry:
-                entry = field_type(frame, font=("Arial", 11), width=12, background='darkblue', foreground='white', borderwidth=2)
-            else:
-                entry = field_type(frame, font=("Arial", 11), width=25)
-            entry.grid(row=i+1, column=1, padx=10, pady=5)
-            self.entries[label] = entry
 
-        # Submit Button
-        submit_btn = ttk.Button(frame, text="Submit Update", command=self.submit_update_event, style="Bold.TButton")
-        submit_btn.grid(row=len(fields)+1, columnspan=2, pady=10)
+        for i, (label_text, field_type) in enumerate(fields):
+            label = tk.Label(form_frame, text=label_text, font=("Helvetica", 11, "bold"), bg="#ffffff", fg="#2c3e50")
+            label.grid(row=i, column=0, sticky="w", pady=3, padx=5)
+
+            if field_type == tk.Text:
+                entry = field_type(form_frame, font=("Helvetica", 11), width=28, height=2)  # Reduced height
+            elif field_type == DateEntry:
+                entry = field_type(form_frame, font=("Helvetica", 11), width=10, background='darkblue', foreground='white', borderwidth=2)
+            elif field_type == ttk.Combobox:
+                entry = field_type(form_frame, values=["pending", "complete", "incomplete", "cancelled"], state="readonly", width=20)
+                entry.current(0)
+            else:
+                entry = field_type(form_frame, font=("Helvetica", 11), width=25)
+
+            entry.grid(row=i, column=1, pady=3, padx=5, sticky="ew")
+            self.entries[label_text] = entry  # Store entries using label text as dictionary key
+
+        # === Buttons Frame (Compact) ===
+        btn_frame = tk.Frame(self.update_window, bg="#ffffff")
+        btn_frame.pack(pady=10)
+
+        # Update Button
+        update_btn = ttk.Button(btn_frame, text="Update", command=self.submit_update_event)
+        update_btn.grid(row=0, column=0, padx=5)
+
+        # Cancel Button
+        cancel_btn = ttk.Button(btn_frame, text="Cancel", command=self.update_window.destroy)
+        cancel_btn.grid(row=0, column=1, padx=5)
+    
 
     def submit_update_event(self):
         """Collects form data and sends a request to update an event."""
         try:
+            event_id = self.entries["Event ID"].get().strip()
+            if not event_id.isdigit():
+                messagebox.showerror("Error", "Event ID must be a valid number.")
+                return
+            
+            # Collect form data
             event_data = {
-                "organizer": self.entries["Organizer"].get(),
-                "title": self.entries["Title"].get(),
-                "description": self.entries["Description"].get(),
-                "location": self.entries["Location"].get(),
-                "phone_number": self.entries["Phone Number"].get(),
-                "address": self.entries["Address"].get(),
+                "organizer": self.entries["Organizer"].get().strip(),
+                "title": self.entries["Title"].get().strip(),
+                "description": self.entries["Description"].get("1.0", "end").strip(),
+                "location": self.entries["Location"].get().strip(),
+                "phone_number": self.entries["Phone Number"].get().strip(),
+                "address": self.entries["Address"].get().strip(),
                 "start_datetime": self.entries["Start Date"].get_date().strftime("%Y-%m-%d"),
                 "end_datetime": self.entries["End Date"].get_date().strftime("%Y-%m-%d"),
-                "event_amount": float(self.entries["Event Amount"].get() or 0),
-                "caution_fee": float(self.entries["Caution Fee"].get() or 0),
-                "payment_status": self.entries["Payment Status"].get(),
+                "event_amount": float(self.entries["Event Amount"].get().strip() or 0),
+                "caution_fee": float(self.entries["Caution Fee"].get().strip() or 0),
+                "payment_status": self.entries["Payment Status"].get().strip(),
             }
 
-            event_id = self.entries["Event ID"].get()
-            if not event_id or not all(event_data.values()):  # Ensure all fields are filled
-                messagebox.showerror("Error", "Please fill in all fields")
+            # Validate that required fields are not empty
+            if not all(event_data.values()):
+                messagebox.showerror("Error", "All fields must be filled.")
                 return
 
             api_url = f"http://127.0.0.1:8000/events/{event_id}"
@@ -511,73 +639,81 @@ class EventManagement:
 
             if response.status_code == 200:
                 messagebox.showinfo("Success", "Event updated successfully!")
+                self.update_window.destroy()  # ✅ Close popup on success
             else:
                 messagebox.showerror("Error", response.json().get("detail", "Update failed."))
 
-        except KeyError as e:
-            messagebox.showerror("Error", f"Missing entry field: {e}")
         except ValueError:
             messagebox.showerror("Error", "Invalid numeric input for Event Amount or Caution Fee.")
         except requests.exceptions.RequestException as e:
             messagebox.showerror("Error", f"Request failed: {e}")
-
-    def update_subheading(self, text, command):
-        self.subheading_label.config(text=text)
-        command()   
-        
+            
       
     def cancel_event(self):
-        """Creates a form to cancel an event."""
-        self.clear_right_frame()
-        frame = tk.Frame(self.right_frame, bg="#ffffff", padx=20, pady=20)
-        frame.pack(fill=tk.BOTH, expand=True)
+        """Opens a professional pop-up window to cancel an event."""
+        cancel_window = tk.Toplevel(self.root)
+        cancel_window.title("Cancel Event")
+        cancel_window.configure(bg="#dddddd")  # Light grey background
 
-        tk.Label(frame, text="Cancel Event Form", font=("Arial", 14, "bold"), bg="#ffffff").grid(row=0, columnspan=2, pady=10)
+        # Set window size
+        window_width = 450
+        window_height = 270
 
-        # Labels & Entry fields
+        # Get screen width and height
+        screen_width = cancel_window.winfo_screenwidth()
+        screen_height = cancel_window.winfo_screenheight()
+
+        # Center the window
+        x_coordinate = (screen_width - window_width) // 2
+        y_coordinate = (screen_height - window_height) // 2
+
+        cancel_window.geometry(f"{window_width}x{window_height}+{x_coordinate}+{y_coordinate}")
+
+        # Make the window modal
+        cancel_window.transient(self.root)
+        cancel_window.grab_set()
+
+        # === Dark Header ===
+        header_frame = tk.Frame(cancel_window, bg="#2c3e50", height=40)
+        header_frame.pack(fill=tk.X)
+
+        header_label = tk.Label(header_frame, text="Cancel Event", font=("Arial", 13, "bold"), fg="white", bg="#2c3e50", pady=5)
+        header_label.pack()
+
+        # === Main Content Frame ===
+        frame = tk.Frame(cancel_window, bg="#ffffff", padx=15, pady=10, relief="ridge", borderwidth=2)
+        frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+        # === Form Fields ===
         fields = [
             ("Event ID", tk.Entry),
-            ("Cancellation Reason (Required)", tk.Entry),
+            ("Cancellation Reason", tk.Entry),
         ]
 
         self.entries = {}
-        for i, (label, field_type) in enumerate(fields):
-            tk.Label(frame, text=label, font=("Arial", 11), bg="#ffffff").grid(row=i+1, column=0, sticky="w", pady=5)
-            entry = field_type(frame, font=("Arial", 11), width=25)
-            entry.grid(row=i+1, column=1, padx=10, pady=5)
-            self.entries[label] = entry
+
+        for i, (label_text, field_type) in enumerate(fields):
+            label = tk.Label(frame, text=label_text, font=("Helvetica", 11, "bold"), bg="#ffffff", fg="#2c3e50")
+            label.grid(row=i, column=0, sticky="w", pady=5, padx=5)
+
+            entry = field_type(frame, font=("Helvetica", 11), width=25)
+            entry.grid(row=i, column=1, pady=5, padx=5, sticky="ew")
+            self.entries[label_text] = entry
+
+        # === Buttons Frame (Compact) ===
+        btn_frame = tk.Frame(cancel_window, bg="#ffffff")
+        btn_frame.pack(pady=10)
 
         # Submit Button
-        submit_btn = ttk.Button(frame, text="Cancel Event", command=self.submit_cancel_event, style="Bold.TButton")
-        submit_btn.grid(row=len(fields)+1, columnspan=2, pady=10)
+        submit_btn = ttk.Button(btn_frame, text="Submit", command=lambda: self.submit_cancel_event(cancel_window))
+        submit_btn.grid(row=0, column=0, padx=5)
 
-    def cancel_event(self):
-        """Create a UI form to cancel an event."""
-        self.clear_right_frame()
-        frame = tk.Frame(self.right_frame, bg="#ffffff", padx=20, pady=20)
-        frame.pack(fill=tk.BOTH, expand=True)
-
-        tk.Label(frame, text="Cancel Event Form", font=("Arial", 14, "bold"), bg="#ffffff").grid(row=0, columnspan=2, pady=10)
-
-        # Labels & Entry fields
-        fields = [
-            ("Event ID", tk.Entry),
-            ("Cancellation Reason", tk.Entry),  # Ensure this key matches what is used in submit_cancel_event
-        ]
-
-        self.entries = {}
-        for i, (label, field_type) in enumerate(fields):
-            tk.Label(frame, text=label, font=("Arial", 11), bg="#ffffff").grid(row=i+1, column=0, sticky="w", pady=5)
-            entry = field_type(frame, font=("Arial", 11), width=25)
-            entry.grid(row=i+1, column=1, padx=10, pady=5)
-            self.entries[label] = entry  # Ensure the exact key name is used
-
-        # Submit Button
-        submit_btn = ttk.Button(frame, text="Cancel Event", command=self.submit_cancel_event, style="Bold.TButton")
-        submit_btn.grid(row=len(fields)+1, columnspan=2, pady=10)
+        # Cancel Button
+        cancel_btn = ttk.Button(btn_frame, text="Cancel", command=cancel_window.destroy)
+        cancel_btn.grid(row=0, column=1, padx=5)
 
         
-    def submit_cancel_event(self):
+    def submit_cancel_event(self, cancel_window):
         """Sends a request to cancel an event by event ID, including the cancellation reason."""
         try:
             event_id = self.entries["Event ID"].get().strip()  # Ensure input is stripped
@@ -602,6 +738,7 @@ class EventManagement:
             if response.status_code == 200:
                 messagebox.showinfo("Success", f"Event ID {event_id} has been successfully canceled!\n"
                                             f"Cancellation Reason: {cancellation_reason}")
+                cancel_window.destroy()  # Close the pop-up
             else:
                 messagebox.showerror("Error", response.json().get("detail", "Cancellation failed."))
 
@@ -611,22 +748,49 @@ class EventManagement:
             messagebox.showerror("Error", f"Request failed: {e}")
 
                 
-        
+    
+
     def create_event_payment(self):
-        """Displays the create event payment form inside the right frame."""
-        self.clear_right_frame()  # Clear previous content
+        """Opens a centered, professional-looking popup window to create an event payment."""
+        self.payment_window = tk.Toplevel(self.root)
+        self.payment_window.title("Create Event Payment")
+        self.payment_window.configure(bg="#dddddd")  # Light gray background
 
-        frame = tk.Frame(self.right_frame, bg="#ffffff", padx=20, pady=20)
-        frame.pack(fill=tk.BOTH, expand=True)
+        # Set window size
+        window_width = 450
+        window_height = 400
 
-        # Create subheading label
-        tk.Label(frame, text="Create Event Payment", font=("Arial", 14, "bold"), bg="#ffffff").grid(row=0, columnspan=2, pady=10)
+        # Get screen width and height
+        screen_width = self.payment_window.winfo_screenwidth()
+        screen_height = self.payment_window.winfo_screenheight()
 
-        # Form frame
+        # Calculate x and y coordinates for centering
+        x_position = (screen_width - window_width) // 2
+        y_position = (screen_height - window_height) // 2
+
+        # Set window geometry
+        self.payment_window.geometry(f"{window_width}x{window_height}+{x_position}+{y_position}")
+
+        # Make the window modal (disable interactions with main window)
+        self.payment_window.transient(self.root)
+        self.payment_window.grab_set()
+
+        # Top Dark Header
+        header_frame = tk.Frame(self.payment_window, bg="#2c3e50", height=50)
+        header_frame.pack(fill=tk.X)
+
+        header_label = tk.Label(header_frame, text="Create Event Payment", font=("Arial", 14, "bold"), fg="white", bg="#2c3e50", pady=10)
+        header_label.pack()
+
+        # Main Content Frame with Border
+        frame = tk.Frame(self.payment_window, bg="#ffffff", padx=20, pady=20, relief="ridge", borderwidth=3)
+        frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+        # Form Frame Inside Main Frame
         form_frame = tk.Frame(frame, bg="#ffffff", padx=10, pady=10)
-        form_frame.grid(row=1, columnspan=2, pady=10, padx=10, sticky="ew")
+        form_frame.grid(row=0, columnspan=2, pady=10, padx=10, sticky="ew")
 
-        # Labels and Entry fields
+        # Define fields
         labels = ["Event ID:", "Organiser:", "Amount Paid:", "Discount Allowed:", "Payment Method:"]
         self.entries = {}
 
@@ -635,30 +799,30 @@ class EventManagement:
             label.grid(row=i, column=0, sticky="w", pady=5, padx=5)
 
             if label_text == "Payment Method:":
+                # ✅ Use Combobox for payment selection
                 entry = ttk.Combobox(form_frame, values=["Cash", "POS Card", "Bank Transfer"], state="readonly")
-                entry.current(0)
+                entry.current(0)  # Set default selection
             else:
                 entry = tk.Entry(form_frame)
 
             entry.grid(row=i, column=1, pady=5, padx=5, sticky="ew")
-            self.entries[label_text] = entry
+            self.entries[label_text] = entry  # ✅ Store entries properly
 
-        # Submit Button
-        submit_btn = ttk.Button(form_frame, text="Submit Payment", command=self.submit_event_payment)
+        # Submit Button with Modern Styling
+        submit_btn = ttk.Button(frame, text="Submit Payment", command=self.submit_event_payment)
         submit_btn.grid(row=len(labels), column=0, columnspan=2, pady=15)
-
 
     def submit_event_payment(self):
         """Handles submission of event payment to backend."""
         try:
-            # Validate Event ID
+            # Validate and fetch Event ID
             event_id_str = self.entries["Event ID:"].get().strip()
             if not event_id_str.isdigit():
                 messagebox.showerror("Error", "Event ID must be a valid integer.")
                 return
             event_id = int(event_id_str)
 
-            # Validate Organizer Name
+            # Validate Organiser Name
             organiser = self.entries["Organiser:"].get().strip()
             if not organiser:
                 messagebox.showerror("Error", "Organiser name is required.")
@@ -675,10 +839,10 @@ class EventManagement:
             discount_allowed_str = self.entries["Discount Allowed:"].get().strip()
             discount_allowed = float(discount_allowed_str) if discount_allowed_str.replace(".", "", 1).isdigit() else 0.0
 
-            # Validate Payment Method
+            # ✅ Fetch Payment Method correctly
             payment_method = self.entries["Payment Method:"].get().strip()
             if not payment_method:
-                messagebox.showerror("Error", "Payment Method is required.")
+                messagebox.showerror("Error", "Please select a payment method.")
                 return
 
             # Prepare API payload
@@ -692,7 +856,7 @@ class EventManagement:
             }
 
             # API URL for creating event payment
-            url = "http://127.0.0.1:8000/eventpayment/"  # Adjusted API endpoint
+            url = "http://127.0.0.1:8000/eventpayment/"
             headers = {"Authorization": f"Bearer {self.token}", "Content-Type": "application/json"}
 
             # Send request to API
@@ -701,11 +865,11 @@ class EventManagement:
 
             if response.status_code == 200:
                 messagebox.showinfo("Success", f"Event Payment successful!\nEvent ID: {event_id}\nOrganiser: {organiser}")
+                self.payment_window.destroy()     
             else:
                 messagebox.showerror("Error", data.get("detail", "Payment failed."))
         except Exception as e:
-            messagebox.showerror("Error", f"An unexpected error occurred: {e}")
-
+            messagebox.showerror("Error", f"An unexpected error occurred: {e}")   
 
     
     def list_events_payment(self):

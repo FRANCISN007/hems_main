@@ -2,20 +2,6 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 import requests
 
-import os
-import sys
-
-
-#def resource_path(relative_path):
-    #try:
-        #base_path = sys._MEIPASS2
-    #except Exception:
-        #base_path = os.path.abspath(".")
-
-    #return os.path.join(base_path, relative_path)
-
-
-
 class UserManagement:
     def __init__(self, parent, token):
         self.token = token
@@ -25,7 +11,7 @@ class UserManagement:
         self.user_management_window = tk.Toplevel(parent)
         self.user_management_window.title("User Management")
 
-        # Set window size and position at the center
+        # Set window size and position
         window_width = 850
         window_height = 580
         screen_width = self.user_management_window.winfo_screenwidth()
@@ -34,7 +20,7 @@ class UserManagement:
         y_coordinate = (screen_height // 2) - (window_height // 2)
         self.user_management_window.geometry(f"{window_width}x{window_height}+{x_coordinate}+{y_coordinate}")
         
-        self.user_management_window.configure(bg="#e0e0e0")
+        self.user_management_window.configure(bg="#2C2F33")
 
         self.setup_ui()
         self.fetch_users()
@@ -46,28 +32,27 @@ class UserManagement:
         
         header_label = tk.Label(
             self.user_management_window, text="User Management", 
-            font=("Arial", 18, "bold"), bg="#e0e0e0", fg="#333"
+            font=("Arial", 18, "bold"), bg="#2C2F33", fg="white"
         )
         header_label.pack(pady=10)
 
         options_frame = ttk.Frame(self.user_management_window)
         options_frame.pack(fill=tk.X, pady=5, padx=10)
 
-        self.add_button = ttk.Button(options_frame, text="➕ Add User", command=self.add_user)
-        self.add_button.grid(row=0, column=0, padx=5, pady=5, ipadx=5)
+        self.add_button = tk.Button(options_frame, text="➕ Add User", command=self.add_user, bg="#7289DA", fg="white", width=15)
+        self.add_button.grid(row=0, column=0, padx=5, pady=5)
         
-        self.update_button = ttk.Button(options_frame, text="✏️ Update User", command=self.update_user)
-        self.update_button.grid(row=0, column=1, padx=5, pady=5, ipadx=5)
+        self.update_button = tk.Button(options_frame, text="✏️ Update User", command=self.update_user, bg="#F1C40F", fg="black", width=15)
+        self.update_button.grid(row=0, column=1, padx=5, pady=5)
         
-        self.delete_button = ttk.Button(options_frame, text="❌ Delete User", command=self.delete_user)
-        self.delete_button.grid(row=0, column=2, padx=5, pady=5, ipadx=5)
+        self.delete_button = tk.Button(options_frame, text="❌ Delete User", command=self.delete_user, bg="#E74C3C", fg="white", width=15)
+        self.delete_button.grid(row=0, column=2, padx=5, pady=5)
 
         tree_frame = ttk.Frame(self.user_management_window)
         tree_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
         tree_scroll_y = ttk.Scrollbar(tree_frame, orient="vertical")
         tree_scroll_y.pack(side=tk.RIGHT, fill=tk.Y)
-
 
         self.users_treeview = ttk.Treeview(
             tree_frame,
@@ -104,6 +89,10 @@ class UserManagement:
             self.users_treeview.delete(row)
         for user in users:
             self.users_treeview.insert("", tk.END, values=(user["id"], user["username"], user["role"]))
+    
+     
+    
+    
     def add_user(self):
         self.open_user_form("Add User", self.submit_new_user)
 
@@ -139,16 +128,27 @@ class UserManagement:
             except Exception as e:
                 messagebox.showerror("Error", f"Error: {e}")
 
+    
     def open_user_form(self, title, submit_callback, values=None):
         form_window = tk.Toplevel(self.user_management_window)
         form_window.title(title)
-        form_window.geometry("400x400")
+        form_window.geometry("400x350")
+        form_window.configure(bg="#F4F4F4")  # Light background
+
+        # Center the window on the screen
+        form_window.update_idletasks()
+        width = 350
+        height = 300
+        x = (form_window.winfo_screenwidth() // 2) - (width // 2)
+        y = (form_window.winfo_screenheight() // 2) - (height // 2)
+        form_window.geometry(f"{width}x{height}+{x}+{y}")
 
         labels = ["Username", "Password", "Role"]
         entries = {}
 
         for idx, label in enumerate(labels):
-            ttk.Label(form_window, text=f"{label}:").pack(anchor=tk.W, padx=20)
+            label_widget = ttk.Label(form_window, text=f"{label}:", background="#F4F4F4", foreground="black", font=("Arial", 10, "bold"))
+            label_widget.pack(anchor=tk.W, padx=20, pady=2)
 
             if label == "Role":
                 role_combobox = ttk.Combobox(form_window, values=["user", "admin"], state="readonly", width=28)
@@ -164,12 +164,13 @@ class UserManagement:
                     entry.insert(0, values[1])
                 entries[label] = entry
 
-        admin_password_label = ttk.Label(form_window, text="Admin Password:")
+        # Admin Password Field
+        admin_password_label = ttk.Label(form_window, text="Admin Password:", background="#F4F4F4", foreground="black", font=("Arial", 10, "bold"))
         admin_password_entry = ttk.Entry(form_window, width=30, show="*")
 
         def toggle_admin_password(event):
             if role_combobox.get() == "admin":
-                admin_password_label.pack(anchor=tk.W, padx=20)
+                admin_password_label.pack(anchor=tk.W, padx=20, pady=2)
                 admin_password_entry.pack(padx=20, pady=5)
             else:
                 admin_password_label.pack_forget()
@@ -178,8 +179,12 @@ class UserManagement:
         role_combobox.bind("<<ComboboxSelected>>", toggle_admin_password)
         entries["Admin Password"] = admin_password_entry
 
+        # Submit Button with better styling
         submit_button = ttk.Button(form_window, text="Submit", command=lambda: submit_callback(entries, form_window))
         submit_button.pack(pady=20)
+
+        form_window.mainloop()
+
 
     def submit_new_user(self, entries, form_window):
         data = {key.lower(): entry.get() for key, entry in entries.items()}
@@ -201,6 +206,8 @@ class UserManagement:
                 messagebox.showerror("Error", f"Failed to add user: {error_message}")
         except Exception as e:
             messagebox.showerror("Error", f"Error: {e}")
+        
+
 
     def submit_updated_user(self, entries, form_window):
         data = {key.lower(): entry.get() for key, entry in entries.items()}
