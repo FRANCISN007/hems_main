@@ -53,12 +53,12 @@ class PaymentManagement:
         self.left_frame.pack(side=tk.LEFT, fill=tk.Y, padx=0, pady=0)
 
         # Right Section with a border and shadow effect
-        self.right_frame = tk.Frame(self.root, bg="#ECF0F1", width=700, relief="ridge", borderwidth=2)
-        self.right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=20, pady=20)
+        self.right_frame = tk.Frame(self.root, bg="#ffffff", width=700, relief="ridge", borderwidth=2)
+        self.right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=10, pady=10)
 
         # Subheading Label
         self.subheading_label = tk.Label(self.right_frame, text="Select an option",
-                                         font=("Helvetica", 14, "bold"), fg="#2C3E50", bg="#ECF0F1")
+                                         font=("Helvetica", 14, "bold"), fg="#2C3E50", bg="#ffffff")
         self.subheading_label.pack(pady=10)
 
         # Payment Action Buttons
@@ -108,8 +108,8 @@ class PaymentManagement:
     def update_subheading(self, text, command):
         self.subheading_label.config(text=text)
         command()
-        
-                
+
+
     def fetch_and_display_paymentss(self):
         """Fetch booking data from the API"""
         url = "http://127.0.0.1:8000/payments/list"

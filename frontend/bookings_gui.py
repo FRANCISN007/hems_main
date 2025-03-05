@@ -38,18 +38,22 @@ class BookingManagement:
         # Header Section
         self.header_frame = tk.Frame(self.root, bg="#2C3E50", height=50)
         self.header_frame.pack(fill=tk.X)
+        
+        self.title_label = tk.Label(self.header_frame, text="Booking Management",
+                                    font=("Helvetica", 16, "bold"), fg="white", bg="#2C3E50")
+        self.title_label.pack(pady=10)
 
         # Sidebar Section
         self.left_frame = tk.Frame(self.root, bg="#2C3E50", width=220)
         self.left_frame.pack(side=tk.LEFT, fill=tk.Y, padx=0, pady=0)
 
         # Right Section
-        self.right_frame = tk.Frame(self.root, bg="#ECF0F1", width=700)
-        self.right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=20, pady=20)
+        self.right_frame = tk.Frame(self.root, bg="#ffffff", width=700,  relief="ridge", borderwidth=2)
+        self.right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=10, pady=10)
 
         # Subheading Label
         self.subheading_label = tk.Label(self.right_frame, text="Select an option",
-                                         font=("Helvetica", 14, "bold"), fg="#2C3E50", bg="#ECF0F1")
+                                         font=("Helvetica", 14, "bold"), fg="#2C3E50", bg="#ffffff")
         self.subheading_label.pack(pady=10)
 
         # Booking Action Buttons
@@ -77,7 +81,7 @@ class BookingManagement:
             btn.pack(pady=8, padx=15, anchor="w", fill="x")
             self.buttons.append(btn)
 
-        # Dashboard Link
+        
         # Dashboard Link with Circular Border
         self.dashboard_label = tk.Label(
             self.left_frame, text="⬅ Dashboard", cursor="hand2",
