@@ -59,24 +59,24 @@ class EventManagement:
         self.subheading_label = tk.Label(self.right_frame, text="Select an option",
                                          font=("Helvetica", 14, "bold"), fg="#2C3E50", bg="#ffffff")
         self.subheading_label.pack(pady=10)
-
+ 
         # Event Action Buttons
         self.buttons = []
         event_buttons = [
             ("Create Event", self.create_event),
-            ("List Events", self.list_events),
-            ("Search by Event ID", self.search_event_by_id),
-            ("Update Event", self.update_event),
+            ("List All", self.list_events),
+            ("Sort by ID", self.search_event_by_id),
+            ("Update", self.update_event),
             ("Cancel Event", self.cancel_event),
         ]
 
         for text, command in event_buttons:
             btn = tk.Button(self.left_frame, text=text,
                             command=lambda t=text, c=command: self.update_subheading(t, c),
-                            width=18, font=("Helvetica", 10, "bold"), anchor="w", padx=10,
+                            width=10, font=("Helvetica", 10, "bold"), anchor="w", padx=10,
                             bg="#34495E", fg="white", relief="flat", bd=0)
             
-            btn.bind("<Enter>", lambda e, b=btn: b.config(bg="#3E5770"))
+            btn.bind("<Enter>", lambda e, b=btn: b.config(bg="#1ABC9C"))
             btn.bind("<Leave>", lambda e, b=btn: b.config(bg="#34495E"))
             btn.pack(pady=8, padx=15, anchor="w", fill="x")
             self.buttons.append(btn)
@@ -87,20 +87,20 @@ class EventManagement:
 
         # Event Payment Buttons
         payment_buttons = [
-            ("Create Event Payment", self.create_event_payment),
-            ("List Event Payments", self.list_events_payment),
+            ("Create Payment", self.create_event_payment),
+            ("List Payments", self.list_events_payment),
             ("List Payment By Status", self.list_payment_by_status),
-            ("Search by Payment ID", self.search_payment_by_id),
+            ("Sort Payment by ID", self.search_payment_by_id),
             ("Void Payment", self.void_payment),
         ]
 
         for text, command in payment_buttons:
             btn = tk.Button(self.left_frame, text=text,
                             command=lambda t=text, c=command: self.update_subheading(t, c),
-                            width=18, font=("Helvetica", 10, "bold"), anchor="w", padx=10,
+                            width=17, font=("Helvetica", 10, "bold"), anchor="w", padx=10,
                             bg="#34495E", fg="white", relief="flat", bd=0)
             
-            btn.bind("<Enter>", lambda e, b=btn: b.config(bg="#3E5770"))
+            btn.bind("<Enter>", lambda e, b=btn: b.config(bg="#1ABC9C"))
             btn.bind("<Leave>", lambda e, b=btn: b.config(bg="#34495E"))
             btn.pack(pady=8, padx=15, anchor="w", fill="x")
             self.buttons.append(btn)
@@ -362,7 +362,7 @@ class EventManagement:
 
         for col in columns:
             self.tree.heading(col, text=col)
-            self.tree.column(col, width=140, anchor="center")
+            self.tree.column(col, width=100, anchor="center")
 
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
@@ -463,7 +463,7 @@ class EventManagement:
         self.search_tree = ttk.Treeview(table_frame, columns=columns, show="headings")
         for col in columns:
             self.search_tree.heading(col, text=col)
-            self.search_tree.column(col, width=140, anchor="center")
+            self.search_tree.column(col, width=80, anchor="center")
         
         self.search_tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         
@@ -523,7 +523,7 @@ class EventManagement:
         self.update_window.configure(bg="#dddddd")  # Light grey background
 
         # Set window size (smaller)
-        window_width = 450
+        window_width = 600
         window_height = 550
 
         # Get screen width and height
@@ -908,7 +908,7 @@ class EventManagement:
 
         for col in columns:
             self.tree.heading(col, text=col)
-            self.tree.column(col, width=120, anchor="center")
+            self.tree.column(col, width=80, anchor="center")
 
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
@@ -1058,7 +1058,7 @@ class EventManagement:
         
         for col in columns:
             self.tree.heading(col, text=col)
-            self.tree.column(col, width=120, anchor="center")
+            self.tree.column(col, width=80, anchor="center")
         
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         
@@ -1166,7 +1166,7 @@ class EventManagement:
         self.search_tree = ttk.Treeview(table_frame, columns=columns, show="headings")
         for col in columns:
             self.search_tree.heading(col, text=col)
-            self.search_tree.column(col, width=120, anchor="center")
+            self.search_tree.column(col, width=80, anchor="center")
 
         self.search_tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
@@ -1254,7 +1254,7 @@ class EventManagement:
         self.void_payment_tree = ttk.Treeview(table_frame, columns=columns, show="headings")
         for col in columns:
             self.void_payment_tree.heading(col, text=col)
-            self.void_payment_tree.column(col, width=120, anchor="center")
+            self.void_payment_tree.column(col, width=80, anchor="center")
 
         self.void_payment_tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 

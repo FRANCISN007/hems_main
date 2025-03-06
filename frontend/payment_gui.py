@@ -63,11 +63,11 @@ class PaymentManagement:
 
         # Payment Action Buttons
         buttons = [
-            ("Create Payment", self.create_payment),
-            ("List Payments", self.list_payments),
-            ("List Payment By ID", self.search_payment_by_id),
-            ("List Payment By Status", self.list_payments_by_status),
-            ("Total Daily Payment", self.list_total_daily_payments),
+            ("Create", self.create_payment),
+            ("List All", self.list_payments),
+            ("Sort By ID", self.search_payment_by_id),
+            ("Sort By Status", self.list_payments_by_status),
+            ("Daily Payment", self.list_total_daily_payments),
             ("Debtor List", self.debtor_list),
             ("Void Payment", self.void_payment),
         ]
@@ -75,10 +75,10 @@ class PaymentManagement:
         for text, command in buttons:
             btn = tk.Button(self.left_frame, text=text,
                             command=lambda t=text, c=command: self.update_subheading(t, c),
-                            width=18, font=("Helvetica", 10, "bold"), anchor="w", padx=10,
+                            width=9, font=("Helvetica", 10, "bold"), anchor="w", padx=10,
                             bg="#34495E", fg="white", relief="flat", bd=0)
 
-            btn.bind("<Enter>", lambda e, b=btn: b.config(bg="#3E5770"))
+            btn.bind("<Enter>", lambda e, b=btn: b.config(bg="#1ABC9C"))
             btn.bind("<Leave>", lambda e, b=btn: b.config(bg="#34495E"))
             btn.pack(pady=8, padx=15, anchor="w", fill="x")
         
@@ -363,7 +363,7 @@ class PaymentManagement:
         
         for col in columns:
             self.tree.heading(col, text=col)
-            self.tree.column(col, width=120, anchor="center")
+            self.tree.column(col, width=80, anchor="center")
         
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         
@@ -492,7 +492,7 @@ class PaymentManagement:
         self.payment_tree = ttk.Treeview(table_frame, columns=columns, show="headings")
         for col in columns:
             self.payment_tree.heading(col, text=col)
-            self.payment_tree.column(col, width=120, anchor="center")
+            self.payment_tree.column(col, width=80, anchor="center")
         
         self.payment_tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         
@@ -626,7 +626,7 @@ class PaymentManagement:
 
         for col in columns:
             self.tree.heading(col, text=col)
-            self.tree.column(col, width=120, anchor="center")
+            self.tree.column(col, width=80, anchor="center")
 
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
@@ -717,7 +717,7 @@ class PaymentManagement:
         
         for col in columns:
             self.tree.heading(col, text=col)
-            self.tree.column(col, width=120, anchor="center")
+            self.tree.column(col, width=80, anchor="center")
         
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         
@@ -797,7 +797,7 @@ class PaymentManagement:
         self.search_tree = ttk.Treeview(table_frame, columns=columns, show="headings")
         for col in columns:
             self.search_tree.heading(col, text=col)
-            self.search_tree.column(col, width=120, anchor="center")
+            self.search_tree.column(col, width=80, anchor="center")
 
         self.search_tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
@@ -901,7 +901,7 @@ class PaymentManagement:
         self.void_payment_tree = ttk.Treeview(table_frame, columns=columns, show="headings")
         for col in columns:
             self.void_payment_tree.heading(col, text=col)
-            self.void_payment_tree.column(col, width=120, anchor="center")
+            self.void_payment_tree.column(col, width=80, anchor="center")
 
         self.void_payment_tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 

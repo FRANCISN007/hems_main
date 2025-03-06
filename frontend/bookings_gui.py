@@ -59,13 +59,13 @@ class BookingManagement:
         # Booking Action Buttons
         self.buttons = []
         buttons = [
-            ("Create Booking", self.create_booking),
-            ("List Bookings", self.list_bookings),
-            ("List By Status", self.list_bookings_by_status),
-            ("Search Guest Name", self.search_booking),
-            ("Search by Booking ID", self.search_booking_by_id),
-            ("Search By Room No", self.search_booking_by_room),
-            ("Update Booking", self.update_booking),
+            ("Create", self.create_booking),
+            ("List All", self.list_bookings),
+            ("Sort By Status", self.list_bookings_by_status),
+            ("Sort Guest Name", self.search_booking),
+            ("Sort by ID", self.search_booking_by_id),
+            ("Sort By Room", self.search_booking_by_room),
+            ("Update", self.update_booking),
             ("Guest Checkout", self.guest_checkout),
             ("Cancel Booking", self.cancel_booking),
         ]
@@ -73,10 +73,10 @@ class BookingManagement:
         for text, command in buttons:
             btn = tk.Button(self.left_frame, text=text,
                             command=lambda t=text, c=command: self.update_subheading(t, c),
-                            width=16, font=("Helvetica", 10, "bold"), anchor="w", padx=10,
+                            width=12, font=("Helvetica", 10, "bold"), anchor="w", padx=10,
                             bg="#34495E", fg="white", relief="flat", bd=0)
 
-            btn.bind("<Enter>", lambda e, b=btn: b.config(bg="#3E5770"))
+            btn.bind("<Enter>", lambda e, b=btn: b.config(bg="#1ABC9C"))
             btn.bind("<Leave>", lambda e, b=btn: b.config(bg="#34495E"))
             btn.pack(pady=8, padx=15, anchor="w", fill="x")
             self.buttons.append(btn)
@@ -394,7 +394,7 @@ class BookingManagement:
         # Define headings and set column widths
         for col in columns:
             self.tree.heading(col, text=col)
-            self.tree.column(col, width=120, anchor="center")
+            self.tree.column(col, width=80, anchor="center")
 
         # Pack the Treeview inside a scrollable frame
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
@@ -545,7 +545,7 @@ class BookingManagement:
         
         for col in columns:
             self.tree.heading(col, text=col)
-            self.tree.column(col, width=120, anchor="center")
+            self.tree.column(col, width=80, anchor="center")
         
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         
@@ -669,7 +669,7 @@ class BookingManagement:
         self.search_tree = ttk.Treeview(table_frame, columns=columns, show="headings")
         for col in columns:
             self.search_tree.heading(col, text=col)
-            self.search_tree.column(col, width=120, anchor="center")
+            self.search_tree.column(col, width=80, anchor="center")
         
         self.search_tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         
@@ -750,7 +750,7 @@ class BookingManagement:
         self.search_tree = ttk.Treeview(table_frame, columns=columns, show="headings")
         for col in columns:
             self.search_tree.heading(col, text=col)
-            self.search_tree.column(col, width=120, anchor="center")
+            self.search_tree.column(col, width=80, anchor="center")
         
         self.search_tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         
@@ -848,7 +848,7 @@ class BookingManagement:
         self.search_tree = ttk.Treeview(table_frame, columns=columns, show="headings")
         for col in columns:
             self.search_tree.heading(col, text=col)
-            self.search_tree.column(col, width=120, anchor="center")
+            self.search_tree.column(col, width=80, anchor="center")
 
         self.search_tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
