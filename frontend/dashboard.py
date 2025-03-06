@@ -82,7 +82,7 @@ class Dashboard:
         BookingManagement(self.root, self.token)
 
     def manage_payments(self):
-        PaymentManagement(self.root, self.username, self.token)
+        PaymentManagement(self.root, self.token)
 
     def manage_events(self):
         """Opens the Event Management window"""

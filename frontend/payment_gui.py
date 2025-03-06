@@ -20,10 +20,10 @@ import requests
 
 
 class PaymentManagement:
-    def __init__(self, root, token, username):
+    def __init__(self, root, token):
         self.root = tk.Toplevel(root)
         self.root.title("Payment Management")
-        self.username = username  # Ensure this is assigned
+        self.username = "current_user"
         self.root.state("zoomed")
         self.root.configure(bg="#f0f0f0")
         
