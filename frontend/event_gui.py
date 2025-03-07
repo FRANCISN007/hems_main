@@ -195,6 +195,7 @@ class EventManagement:
      
     
     def create_event(self):
+        self.clear_right_frame()
         """Opens a professional pop-up window for creating a new event."""
         create_window = tk.Toplevel(self.root)
         create_window.title("Create Event")
@@ -517,6 +518,7 @@ class EventManagement:
         
         
     def update_event(self):
+        self.clear_right_frame()
         """Opens a professional pop-up window for updating an event."""
         self.update_window = tk.Toplevel(self.root)
         self.update_window.title("Update Event")
@@ -650,6 +652,7 @@ class EventManagement:
             
       
     def cancel_event(self):
+        self.clear_right_frame()
         """Opens a professional pop-up window to cancel an event."""
         cancel_window = tk.Toplevel(self.root)
         cancel_window.title("Cancel Event")
@@ -751,6 +754,7 @@ class EventManagement:
     
 
     def create_event_payment(self):
+        self.clear_right_frame()
         """Opens a centered, professional-looking popup window to create an event payment."""
         self.payment_window = tk.Toplevel(self.root)
         self.payment_window.title("Create Event Payment")

@@ -138,47 +138,57 @@ class RoomManagement:
             
             
             
-
     def list_available_rooms(self):
-        """Fetch and display available rooms."""
+        """Fetch and display available rooms in a structured format."""
         response = api_request("/rooms/available", "GET", token=self.token)
 
         if not response or "available_rooms" not in response:
-            messagebox.showerror("Error", "Failed to fetch available rooms")
+            messagebox.showerror("Error", "Unable to retrieve available rooms. Please try again.")
             return
 
         available_rooms = response["available_rooms"]
-        available_rooms.sort(key=self.natural_sort_key)  # Natural sorting
+        available_rooms.sort(key=self.natural_sort_key)  # Apply natural sorting
         total_available = len(available_rooms)
 
-        # Create window
+        # Create new window
         available_window = tk.Toplevel(self.root)
         available_window.title("Available Rooms")
-        available_window.geometry("550x400")
-        available_window.configure(bg="#f5f5f5")
+        available_window.geometry("550x420")
+        available_window.configure(bg="#EAEAEA")  # Light gray background
 
-        # Styled frame
-        frame = tk.Frame(available_window, bg="white", padx=15, pady=15, relief="ridge", borderwidth=3)
-        frame.pack(padx=10, pady=10, fill="both", expand=True)
+        # Header Frame with subtle border color
+        header_frame = tk.Frame(available_window, bg="white", relief="solid", borderwidth=1, highlightbackground="#B0B0B0")
+        header_frame.pack(fill="x", padx=10, pady=5)
 
-        # Title
-        ttk.Label(frame, text=f"Available Rooms ({total_available})", font=("Helvetica", 14, "bold")).pack(pady=10)
+        ttk.Label(
+            header_frame, 
+            text=f"Available Rooms ({total_available})", 
+            font=("Helvetica", 14, "bold"), 
+            background="white"
+        ).pack(pady=8)
 
-        # Treeview (table)
+        # Main Content Frame
+        content_frame = tk.Frame(available_window, bg="#F5F5F5", padx=10, pady=10, relief="solid", borderwidth=1, highlightbackground="#B0B0B0")
+        content_frame.pack(fill="both", expand=True, padx=10, pady=5)
+
+        # Define Treeview (Table)
         columns = ("Room Number", "Room Type", "Amount")
-        tree = ttk.Treeview(frame, columns=columns, show="headings", height=10)
+        tree = ttk.Treeview(content_frame, columns=columns, show="headings", height=10)
 
+        # Format Columns
         for col in columns:
             tree.heading(col, text=col, anchor="center")
-            tree.column(col, width=150, anchor="center")
+            tree.column(col, width=160, anchor="center")
 
-        tree.pack(pady=10, fill=tk.BOTH, expand=True)
+        tree.pack(pady=5, fill=tk.BOTH, expand=True)
 
-        # Insert room data
+        # Insert available room data
         for room in available_rooms:
             tree.insert("", tk.END, values=(room["room_number"], room["room_type"], room["amount"]))
 
-        ttk.Button(frame, text="Close", command=available_window.destroy).pack(pady=10)
+        # Close Button
+        ttk.Button(available_window, text="Close", command=available_window.destroy).pack(pady=10)
+
 
     
 

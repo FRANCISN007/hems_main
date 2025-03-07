@@ -20,7 +20,7 @@ class UserManagement:
         y_coordinate = (screen_height // 2) - (window_height // 2)
         self.user_management_window.geometry(f"{window_width}x{window_height}+{x_coordinate}+{y_coordinate}")
         
-        self.user_management_window.configure(bg="#2C2F33")
+        self.user_management_window.configure(bg="#2c3e50")
 
         self.setup_ui()
         self.fetch_users()
@@ -32,7 +32,7 @@ class UserManagement:
         
         header_label = tk.Label(
             self.user_management_window, text="User Management", 
-            font=("Arial", 18, "bold"), bg="#2C2F33", fg="white"
+            font=("Arial", 18, "bold"), bg="#2c3e50", fg="white"
         )
         header_label.pack(pady=10)
 
@@ -130,13 +130,13 @@ class UserManagement:
 
     
     def open_user_form(self, title, submit_callback, values=None):
-        """Opens a professional pop-up form for user management."""
+        """Opens a professional pop-up form for user management with a double border."""
         form_window = tk.Toplevel(self.user_management_window)
         form_window.title(title)
         form_window.configure(bg="#f8f9fa")  # Light background
 
         # Set window size and center it
-        window_width, window_height = 400, 350
+        window_width, window_height = 400, 380
         x_coordinate = (form_window.winfo_screenwidth() - window_width) // 2
         y_coordinate = (form_window.winfo_screenheight() - window_height) // 2
         form_window.geometry(f"{window_width}x{window_height}+{x_coordinate}+{y_coordinate}")
@@ -145,12 +145,20 @@ class UserManagement:
         form_window.transient(self.user_management_window)
         form_window.grab_set()
 
+        # 🔹 Outer Border Frame (Dark Gray)
+        outer_frame = tk.Frame(form_window, bg="#2c3e50", padx=3, pady=3)
+        outer_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+
+        # 🔹 Inner Border Frame (Light Gray)
+        inner_frame = tk.Frame(outer_frame, bg="white", padx=5, pady=5)
+        inner_frame.pack(fill=tk.BOTH, expand=True)
+
         # 🔹 Header Section
-        header = tk.Label(form_window, text=title, font=("Arial", 14, "bold"), fg="white", bg="#2c3e50", pady=8)
+        header = tk.Label(inner_frame, text=title, font=("Arial", 14, "bold"), fg="white", bg="#2c3e50", pady=8)
         header.pack(fill=tk.X)
 
         # 🔹 Form Frame
-        form_frame = tk.Frame(form_window, bg="white", padx=15, pady=10)
+        form_frame = tk.Frame(inner_frame, bg="white", padx=15, pady=10)
         form_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
         labels = ["Username", "Password", "Role"]
@@ -176,6 +184,9 @@ class UserManagement:
         # Admin Password Field
         admin_password_label = tk.Label(form_frame, text="Admin Password:", font=("Arial", 11, "bold"), bg="white", fg="#2c3e50")
         admin_password_entry = ttk.Entry(form_frame, width=30, show="*", font=("Arial", 11))
+
+    # Add more components if needed...
+
 
         def toggle_admin_password(event):
             if role_combobox.get() == "admin":

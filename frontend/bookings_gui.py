@@ -232,6 +232,7 @@ class BookingManagement:
     
 
     def create_booking(self):
+        self.clear_right_frame()
         """Opens a professional pop-up window for creating a new booking."""
         create_window = tk.Toplevel(self.root)
         create_window.title("Create Booking")

@@ -38,13 +38,13 @@ class Dashboard:
         self.sidebar = tk.Frame(self.root, bg="#34495E", width=200)
         self.sidebar.pack(side=tk.LEFT, fill=tk.Y)
 
-        # MENU BUTTONS IN SIDEBAR
+        # MENU BUTTONS IN SIDEBAR WITH SYMBOLS
         menu_items = [
-            ("Users", self.manage_users),
-            ("Rooms", self.manage_rooms),
-            ("Bookings", self.manage_bookings),
-            ("Payments", self.manage_payments),
-            ("Events", self.manage_events),
+            ("👤 Users", self.manage_users),         # User icon
+            ("🏨 Rooms", self.manage_rooms),         # Hotel/room icon
+            ("📅 Bookings", self.manage_bookings),   # Calendar/booking icon
+            ("💳 Payments", self.manage_payments),   # Credit card/payment icon
+            ("🎉 Events", self.manage_events),       # Celebration/event icon
         ]
 
         for text, command in menu_items:
