@@ -45,14 +45,14 @@ class LoginGUI:
         row1 = tk.Frame(form_frame, bg="white")
         row1.pack(fill=tk.X, pady=5)
         tk.Label(row1, text="Username:", font=("Arial", 11, "bold"), bg="white", fg="#2c3e50", width=12, anchor="w").pack(side=tk.LEFT)
-        self.username_entry = tk.Entry(row1, font=("Arial", 11), width=25)
+        self.username_entry = tk.Entry(row1, font=("Arial", 11), width=20)
         self.username_entry.pack(side=tk.LEFT, padx=5)
 
         # Password Row (Label + Entry in One Line)
         row2 = tk.Frame(form_frame, bg="white")
         row2.pack(fill=tk.X, pady=5)
         tk.Label(row2, text="Password:", font=("Arial", 11, "bold"), bg="white", fg="#2c3e50", width=12, anchor="w").pack(side=tk.LEFT)
-        self.password_entry = tk.Entry(row2, font=("Arial", 11), width=25, show="*")
+        self.password_entry = tk.Entry(row2, font=("Arial", 11), width=20, show="*")
         self.password_entry.pack(side=tk.LEFT, padx=5)
 
         ttk.Button(frame, text="Login", command=self.login, style="Bold.TButton").pack(pady=10)
@@ -77,21 +77,21 @@ class LoginGUI:
         row1 = tk.Frame(form_frame, bg="white")
         row1.pack(fill=tk.X, pady=5)
         tk.Label(row1, text="Username:", font=("Arial", 11, "bold"), bg="white", fg="#2c3e50", width=12, anchor="w").pack(side=tk.LEFT)
-        self.reg_username_entry = tk.Entry(row1, font=("Arial", 11), width=25)
+        self.reg_username_entry = tk.Entry(row1, font=("Arial", 11), width=20)
         self.reg_username_entry.pack(side=tk.LEFT, padx=5)
 
         # Password Row
         row2 = tk.Frame(form_frame, bg="white")
         row2.pack(fill=tk.X, pady=5)
         tk.Label(row2, text="Password:", font=("Arial", 11, "bold"), bg="white", fg="#2c3e50", width=12, anchor="w").pack(side=tk.LEFT)
-        self.reg_password_entry = tk.Entry(row2, font=("Arial", 11), width=25, show="*")
+        self.reg_password_entry = tk.Entry(row2, font=("Arial", 11), width=20, show="*")
         self.reg_password_entry.pack(side=tk.LEFT, padx=5)
 
         # Role Row
         row3 = tk.Frame(form_frame, bg="white")
         row3.pack(fill=tk.X, pady=5)
         tk.Label(row3, text="Role:", font=("Arial", 11, "bold"), bg="white", fg="#2c3e50", width=12, anchor="w").pack(side=tk.LEFT)
-        self.role_combobox = ttk.Combobox(row3, values=["user", "admin"], state="readonly", font=("Arial", 11), width=23)
+        self.role_combobox = ttk.Combobox(row3, values=["user", "admin"], state="readonly", font=("Arial", 11), width=15)
         self.role_combobox.pack(side=tk.LEFT, padx=5)
         self.role_combobox.current(0)
         self.role_combobox.bind("<<ComboboxSelected>>", self.toggle_admin_password)
