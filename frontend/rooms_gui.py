@@ -148,60 +148,77 @@ class RoomManagement:
             return
 
         available_rooms = response["available_rooms"]
-
-        # Sort available rooms using natural sorting
-        available_rooms.sort(key=self.natural_sort_key)  # Use self.natural_sort_key()
-
-        # Count total available rooms
+        available_rooms.sort(key=self.natural_sort_key)  # Natural sorting
         total_available = len(available_rooms)
 
+        # Create window
         available_window = tk.Toplevel(self.root)
         available_window.title("Available Rooms")
-        available_window.geometry("500x350")
+        available_window.geometry("550x400")
+        available_window.configure(bg="#f5f5f5")
 
-        # Display total available rooms at the top
-        ttk.Label(
-            available_window,
-            text=f"Available Rooms ({total_available})",
-            font=("Helvetica", 14, "bold")
-        ).pack(pady=10)
+        # Styled frame
+        frame = tk.Frame(available_window, bg="white", padx=15, pady=15, relief="ridge", borderwidth=3)
+        frame.pack(padx=10, pady=10, fill="both", expand=True)
 
-        tree = ttk.Treeview(available_window, columns=("Room Number", "Room Type", "Amount"), show="headings")
-        for col in ("Room Number", "Room Type", "Amount"):
-            tree.heading(col, text=col)
+        # Title
+        ttk.Label(frame, text=f"Available Rooms ({total_available})", font=("Helvetica", 14, "bold")).pack(pady=10)
+
+        # Treeview (table)
+        columns = ("Room Number", "Room Type", "Amount")
+        tree = ttk.Treeview(frame, columns=columns, show="headings", height=10)
+
+        for col in columns:
+            tree.heading(col, text=col, anchor="center")
             tree.column(col, width=150, anchor="center")
+
         tree.pack(pady=10, fill=tk.BOTH, expand=True)
 
+        # Insert room data
         for room in available_rooms:
             tree.insert("", tk.END, values=(room["room_number"], room["room_type"], room["amount"]))
 
-        ttk.Button(available_window, text="Close", command=available_window.destroy).pack(pady=10)
+        ttk.Button(frame, text="Close", command=available_window.destroy).pack(pady=10)
 
     
 
     def open_room_form(self):
         form = tk.Toplevel(self.root)
         form.title("Add Room")
-        form.geometry("300x300")
+        form.geometry("350x320")
+        form.resizable(False, False)
+        
+        # Border Frame
+        container = tk.Frame(form, bg="#f8f9fa", padx=15, pady=15, relief="groove", bd=3)
+        container.pack(fill="both", expand=True, padx=10, pady=10)
 
-        tk.Label(form, text="Room Number:").pack()
-        room_number_entry = tk.Entry(form)
-        room_number_entry.pack()
+        # Title Label
+        title_label = tk.Label(container, text="Add New Room", font=("Arial", 12, "bold"), bg="#f8f9fa")
+        title_label.pack(pady=5)
 
-        tk.Label(form, text="Room Type:").pack()
-        room_type_entry = tk.Entry(form)
-        room_type_entry.pack()
+        # Room Number
+        tk.Label(container, text="Room Number:", bg="#f8f9fa").pack(anchor="w")
+        room_number_entry = tk.Entry(container, width=30)
+        room_number_entry.pack(pady=3)
 
-        tk.Label(form, text="Amount:").pack()
-        amount_entry = tk.Entry(form)
-        amount_entry.pack()
+        # Room Type
+        tk.Label(container, text="Room Type:", bg="#f8f9fa").pack(anchor="w")
+        room_type_entry = tk.Entry(container, width=30)
+        room_type_entry.pack(pady=3)
 
-        tk.Label(form, text="Status:").pack()
+        # Amount
+        tk.Label(container, text="Amount:", bg="#f8f9fa").pack(anchor="w")
+        amount_entry = tk.Entry(container, width=30)
+        amount_entry.pack(pady=3)
+
+        # Status Dropdown
+        tk.Label(container, text="Status:", bg="#f8f9fa").pack(anchor="w")
         status_options = ["available"]
-        status_entry = ttk.Combobox(form, values=status_options, state="readonly")
-        status_entry.pack()
+        status_entry = ttk.Combobox(container, values=status_options, state="readonly", width=27)
+        status_entry.pack(pady=3)
         status_entry.current(0)
 
+        # Submit Function
         def submit():
             room_number = room_number_entry.get()
             response = api_request("/rooms", "GET", token=self.token)
@@ -225,9 +242,12 @@ class RoomManagement:
             else:
                 messagebox.showerror("Error", "Failed to add room")
 
-        submit_button = tk.Button(form, text="Submit", command=submit)
+        # Submit Button with Style
+        submit_button = tk.Button(container, text="Submit", command=submit, bg="#007BFF", fg="white",
+                                font=("Arial", 10, "bold"), padx=10, pady=3, relief="raised", bd=2)
         submit_button.pack(pady=10)
 
+        
     def update_room(self):
         """Update selected room details."""
         selected = self.tree.selection()
@@ -235,61 +255,65 @@ class RoomManagement:
             messagebox.showwarning("Warning", "Please select a room to update")
             return
 
-    # Get selected room details
+        # Get selected room details
         values = self.tree.item(selected[0], "values")
         room_number = values[0]  # Current room number
-        
-        
 
-    # Fetch the full room details from API
         # Fetch the full room details from API
         response = api_request(f"/rooms/{room_number}", "GET", token=self.token)
 
-# # Debugging: Print response to see what is returned
-        #print("API Response:", response)
-
-# Ensure the response contains valid data
+        # Ensure the response contains valid data
         if not response or not isinstance(response, dict) or "room_number" not in response:
             messagebox.showerror("Error", f"Failed to fetch room details. Response: {response}")
             return
 
         room_data = response  # Assign the response directly if valid
 
-    # Prevent updates if the room is checked-in
+        # Prevent updates if the room is checked-in
         if room_data["status"] == "checked-in":
             messagebox.showwarning("Warning", "Room cannot be updated as it is currently checked-in")
             return
 
-    # Create update window
+        # Create update window
         update_window = tk.Toplevel(self.root)
         update_window.title("Update Room")
-        update_window.geometry("300x300")
+        update_window.geometry("350x320")
+        update_window.resizable(False, False)
 
-    # Room Number
-        tk.Label(update_window, text="Room Number:").pack()
-        room_number_entry = tk.Entry(update_window)
+        # Border Frame
+        container = tk.Frame(update_window, bg="#f8f9fa", padx=15, pady=15, relief="groove", bd=3)
+        container.pack(fill="both", expand=True, padx=10, pady=10)
+
+        # Title Label
+        title_label = tk.Label(container, text="Update Room Details", font=("Arial", 12, "bold"), bg="#f8f9fa")
+        title_label.pack(pady=5)
+
+        # Room Number
+        tk.Label(container, text="Room Number:", bg="#f8f9fa").pack(anchor="w")
+        room_number_entry = tk.Entry(container, width=30)
         room_number_entry.insert(0, room_data["room_number"])
-        room_number_entry.pack()
+        room_number_entry.pack(pady=3)
 
-    # Room Type
-        tk.Label(update_window, text="Room Type:").pack()
-        room_type_entry = tk.Entry(update_window)
+        # Room Type
+        tk.Label(container, text="Room Type:", bg="#f8f9fa").pack(anchor="w")
+        room_type_entry = tk.Entry(container, width=30)
         room_type_entry.insert(0, room_data["room_type"])
-        room_type_entry.pack()
+        room_type_entry.pack(pady=3)
 
-    # Amount
-        tk.Label(update_window, text="Amount:").pack()
-        amount_entry = tk.Entry(update_window)
+        # Amount
+        tk.Label(container, text="Amount:", bg="#f8f9fa").pack(anchor="w")
+        amount_entry = tk.Entry(container, width=30)
         amount_entry.insert(0, str(room_data["amount"]))
-        amount_entry.pack()
+        amount_entry.pack(pady=3)
 
-    # Status Dropdown
-        tk.Label(update_window, text="Select New Status:").pack()
+        # Status Dropdown
+        tk.Label(container, text="Select New Status:", bg="#f8f9fa").pack(anchor="w")
         status_options = ["available"]
-        status_entry = ttk.Combobox(update_window, values=status_options, state="readonly")
-        status_entry.pack()
+        status_entry = ttk.Combobox(container, values=status_options, state="readonly", width=27)
+        status_entry.pack(pady=3)
         status_entry.set(room_data["status"])  # Set current status as default
 
+        # Submit Function
         def submit_update():
             """Submit updated room data to API."""
             new_room_number = room_number_entry.get()
@@ -297,19 +321,19 @@ class RoomManagement:
             new_amount = amount_entry.get()
             new_status = status_entry.get()
 
-        # Validate input
+            # Validate input
             if not new_room_number or not new_room_type or not new_amount:
                 messagebox.showwarning("Warning", "All fields must be filled")
                 return
 
-        # Convert amount to float
+            # Convert amount to float
             try:
                 new_amount = float(new_amount)
             except ValueError:
                 messagebox.showwarning("Warning", "Amount must be a number")
                 return
 
-        # Prepare update payload
+            # Prepare update payload
             data = {
                 "room_number": new_room_number,
                 "room_type": new_room_type,
@@ -317,7 +341,7 @@ class RoomManagement:
                 "status": new_status
             }
 
-        # Send update request
+            # Send update request
             response = api_request(f"/rooms/{room_number}", "PUT", data, self.token)
             if response:
                 messagebox.showinfo("Success", "Room updated successfully")
@@ -326,9 +350,11 @@ class RoomManagement:
             else:
                 messagebox.showerror("Error", "Failed to update room")
 
-    # Submit Button
-        submit_button = tk.Button(update_window, text="Update", command=submit_update)
+        # Submit Button with Style
+        submit_button = tk.Button(container, text="Update", command=submit_update, bg="#28A745", fg="white",
+                                font=("Arial", 10, "bold"), padx=10, pady=3, relief="raised", bd=2)
         submit_button.pack(pady=10)
+
 
 
     def delete_room(self):
