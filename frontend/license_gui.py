@@ -77,33 +77,34 @@ class LicenseSplashScreen(tk.Toplevel):
             return
 
         try:
-            # Debugging: print the payload to verify the data
-            
-
-            # Modify the request to send data as query parameters
+            # Send request with query parameters
             response = requests.post(
                 f"{API_URL}/generate?license_password={license_password}&key={key}", 
-                headers={"Content-Type": "application/json"}  # Set content-type as JSON
+                headers={"Content-Type": "application/json"}
             )
 
-            # Check for response status code to debug error
-            #print(f"Response status: {response.status_code}")
-            #rint(f"Response body: {response.text}")
-
-            response.raise_for_status()  # Check if the request was successful (status code 200)
-            new_license = response.json()  # Parse the response JSON
+            response.raise_for_status()  # Raise an exception if HTTP error occurs
+            new_license = response.json()  # Parse response JSON
 
             messagebox.showinfo("License Generated", f"New License Key: {new_license['key']}")
 
         except requests.exceptions.HTTPError as err:
-        # ✅ Check for incorrect password response
-            if response.status_code == 401:  # Assuming 401 is returned for wrong password
-                messagebox.showerror("Error", "Wrong password entered.")
+            if response.status_code == 400:
+                # ✅ Handle duplicate license key error
+                error_message = response.json().get("detail", "License key already exists.")
+                messagebox.showerror("Error", error_message)
+            elif response.status_code == 403:
+                messagebox.showerror("Error", "Invalid license password.")
             else:
-                messagebox.showerror("Error", "Wrong password entered.")
+                messagebox.showerror("Error", f"HTTP Error: {response.status_code} - {response.text}")
+
+        except requests.exceptions.RequestException as e:
+            messagebox.showerror("Error", f"Request failed: {e}")
 
         except Exception as e:
             messagebox.showerror("Error", f"An unexpected error occurred: {e}")
+
+
 
     def verify_license(self):
         key = self.verify_key_entry.get()

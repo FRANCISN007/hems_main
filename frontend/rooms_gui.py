@@ -70,7 +70,7 @@ class RoomManagement:
         ]
 
         for idx, (text, command) in enumerate(buttons):
-            btn = ttk.Button(btn_frame, text=text, command=command, width=16)
+            btn = ttk.Button(btn_frame, text=text, command=command, width=18)
             btn.grid(row=0, column=idx, padx=5, pady=5)
 
             # Disable buttons for non-admin users

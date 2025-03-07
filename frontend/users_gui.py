@@ -130,48 +130,57 @@ class UserManagement:
 
     
     def open_user_form(self, title, submit_callback, values=None):
+        """Opens a professional pop-up form for user management."""
         form_window = tk.Toplevel(self.user_management_window)
         form_window.title(title)
-        form_window.geometry("400x350")
-        form_window.configure(bg="#F4F4F4")  # Light background
+        form_window.configure(bg="#f8f9fa")  # Light background
 
-        # Center the window on the screen
-        form_window.update_idletasks()
-        width = 350
-        height = 300
-        x = (form_window.winfo_screenwidth() // 2) - (width // 2)
-        y = (form_window.winfo_screenheight() // 2) - (height // 2)
-        form_window.geometry(f"{width}x{height}+{x}+{y}")
+        # Set window size and center it
+        window_width, window_height = 400, 350
+        x_coordinate = (form_window.winfo_screenwidth() - window_width) // 2
+        y_coordinate = (form_window.winfo_screenheight() - window_height) // 2
+        form_window.geometry(f"{window_width}x{window_height}+{x_coordinate}+{y_coordinate}")
+
+        # Make it modal
+        form_window.transient(self.user_management_window)
+        form_window.grab_set()
+
+        # 🔹 Header Section
+        header = tk.Label(form_window, text=title, font=("Arial", 14, "bold"), fg="white", bg="#2c3e50", pady=8)
+        header.pack(fill=tk.X)
+
+        # 🔹 Form Frame
+        form_frame = tk.Frame(form_window, bg="white", padx=15, pady=10)
+        form_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
         labels = ["Username", "Password", "Role"]
         entries = {}
 
-        for idx, label in enumerate(labels):
-            label_widget = ttk.Label(form_window, text=f"{label}:", background="#F4F4F4", foreground="black", font=("Arial", 10, "bold"))
-            label_widget.pack(anchor=tk.W, padx=20, pady=2)
-
+        for label in labels:
+            tk.Label(form_frame, text=label, font=("Arial", 11, "bold"), bg="white", fg="#2c3e50").pack(anchor="w")
+            
             if label == "Role":
-                role_combobox = ttk.Combobox(form_window, values=["user", "admin"], state="readonly", width=28)
-                role_combobox.pack(padx=20, pady=5)
+                role_combobox = ttk.Combobox(form_frame, values=["user", "admin"], state="readonly", width=28)
+                role_combobox.pack(pady=5)
                 role_combobox.set(values[2] if values else "user")
                 entries["Role"] = role_combobox
             else:
-                entry = ttk.Entry(form_window, width=30)
+                entry = ttk.Entry(form_frame, width=30, font=("Arial", 11))
                 if label == "Password":
                     entry.config(show="*")
-                entry.pack(padx=20, pady=5)
+                entry.pack(pady=5)
                 if values and label == "Username":
                     entry.insert(0, values[1])
                 entries[label] = entry
 
         # Admin Password Field
-        admin_password_label = ttk.Label(form_window, text="Admin Password:", background="#F4F4F4", foreground="black", font=("Arial", 10, "bold"))
-        admin_password_entry = ttk.Entry(form_window, width=30, show="*")
+        admin_password_label = tk.Label(form_frame, text="Admin Password:", font=("Arial", 11, "bold"), bg="white", fg="#2c3e50")
+        admin_password_entry = ttk.Entry(form_frame, width=30, show="*", font=("Arial", 11))
 
         def toggle_admin_password(event):
             if role_combobox.get() == "admin":
-                admin_password_label.pack(anchor=tk.W, padx=20, pady=2)
-                admin_password_entry.pack(padx=20, pady=5)
+                admin_password_label.pack(anchor="w")
+                admin_password_entry.pack(pady=5)
             else:
                 admin_password_label.pack_forget()
                 admin_password_entry.pack_forget()
@@ -179,11 +188,12 @@ class UserManagement:
         role_combobox.bind("<<ComboboxSelected>>", toggle_admin_password)
         entries["Admin Password"] = admin_password_entry
 
-        # Submit Button with better styling
-        submit_button = ttk.Button(form_window, text="Submit", command=lambda: submit_callback(entries, form_window))
-        submit_button.pack(pady=20)
+        # 🔹 Submit Button
+        submit_btn = ttk.Button(form_window, text="Submit", command=lambda: submit_callback(entries, form_window))
+        submit_btn.pack(pady=10)
 
         form_window.mainloop()
+
 
 
     def submit_new_user(self, entries, form_window):
@@ -192,6 +202,7 @@ class UserManagement:
             messagebox.showerror("Error", "Admin password is required when registering an admin.")
             return
         try:
+            
             response = requests.post(
                 f"{self.api_base_url}/users/register/",
                 json=data,
