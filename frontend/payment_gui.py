@@ -89,7 +89,7 @@ class PaymentManagement:
 
         # Payment Action Buttons
         buttons = [
-            ("Create", self.create_payment),
+            ("Create Payment", self.create_payment),
             ("List All", self.list_payments),
             ("Sort By ID", self.search_payment_by_id),
             ("Sort By Status", self.list_payments_by_status),

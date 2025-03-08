@@ -9,7 +9,6 @@ from utils import load_token, get_user_role
 import os
 from PIL import Image, ImageTk
 
-
 class Dashboard:
     def __init__(self, root, username, token):
         self.root = root
@@ -29,14 +28,22 @@ class Dashboard:
         self.header = tk.Frame(self.root, bg="#2C3E50", height=60)
         self.header.pack(fill=tk.X)
 
-        title_label = tk.Label(self.header, text="Dashboard                                                              Welcome to Hotel & Event Management System    ", fg="white", bg="#2C3E50", 
+        title_label = tk.Label(self.header, text="Dashboard                                                                                  Hotel & Event Management System", fg="white", bg="#2C3E50", 
                                font=("Arial", 14, "bold"))
         title_label.pack(side=tk.LEFT, padx=20, pady=10)
         
+        # SIDEBAR CONTAINER FRAME
+        self.sidebar_container = tk.Frame(self.root, bg="#2C3E50", width=220, bd=2, relief=tk.RIDGE)
+        self.sidebar_container.pack(side=tk.LEFT, fill=tk.Y, padx=10, pady=10)
 
-        # SIDEBAR FRAME
-        self.sidebar = tk.Frame(self.root, bg="#34495E", width=200)
-        self.sidebar.pack(side=tk.LEFT, fill=tk.Y)
+        # SIDEBAR MENU TITLE
+        menu_title = tk.Label(self.sidebar_container, text="MENU", fg="white", bg="#2C3E50", 
+                               font=("Arial", 14, "bold"))
+        menu_title.pack(pady=10)
+
+        # SIDEBAR FRAME (Inside Container)
+        self.sidebar = tk.Frame(self.sidebar_container, bg="#34495E", bd=2, relief=tk.GROOVE)
+        self.sidebar.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
 
         # MENU BUTTONS IN SIDEBAR WITH SYMBOLS
         menu_items = [
@@ -49,23 +56,23 @@ class Dashboard:
 
         for text, command in menu_items:
             btn = tk.Button(self.sidebar, text=text, command=command, fg="white", bg="#2C3E50",
-                            font=("Arial", 12), relief=tk.FLAT, padx=10, pady=5, anchor="w")
+                            font=("Arial", 12), relief=tk.RAISED, padx=10, pady=8, anchor="w", bd=2)
             btn.pack(fill=tk.X, pady=5, padx=10)
             btn.bind("<Enter>", lambda e, b=btn: b.config(bg="#1ABC9C"))
             btn.bind("<Leave>", lambda e, b=btn: b.config(bg="#2C3E50"))
 
         # LOGOUT BUTTON (Under "Events" in Sidebar)
-        logout_btn = tk.Button(self.sidebar, text="Logout", command=self.logout, fg="white", 
-                               bg="#2C3E50", font=("Arial", 12), relief=tk.FLAT, padx=10, pady=5, anchor="w")
-        logout_btn.pack(fill=tk.X, pady=20, padx=10)  # Added more space before logout
-        logout_btn.bind("<Enter>", lambda e: logout_btn.config(bg="#E74C3C"))  # Red on hover
-        logout_btn.bind("<Leave>", lambda e: logout_btn.config(bg="#2C3E50"))  # Back to default
+        logout_btn = tk.Button(self.sidebar, text="🚪 Logout", command=self.logout, fg="white", 
+                               bg="#E74C3C", font=("Arial", 12), relief=tk.RAISED, padx=10, pady=8, anchor="w", bd=2)
+        logout_btn.pack(fill=tk.X, pady=20, padx=10)
+        logout_btn.bind("<Enter>", lambda e: logout_btn.config(bg="#C0392B"))  # Darker red on hover
+        logout_btn.bind("<Leave>", lambda e: logout_btn.config(bg="#E74C3C"))  # Back to default
 
         # MAIN CONTENT FRAME
         self.main_content = tk.Frame(self.root, bg="#ECF0F1", bd=5, relief=tk.RIDGE)
         self.main_content.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
-        welcome_label = tk.Label(self.main_content, text="", 
+        welcome_label = tk.Label(self.main_content, text="Welcome, {}".format(self.username), 
                                  fg="#2C3E50", bg="#ECF0F1", font=("Arial", 14, "bold"))
         welcome_label.pack(pady=20)
 
@@ -94,7 +101,6 @@ class Dashboard:
         from login_gui import LoginGUI
         LoginGUI(root)
         root.mainloop()
-
 
 if __name__ == "__main__":
     token = load_token()
