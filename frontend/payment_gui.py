@@ -90,7 +90,7 @@ class PaymentManagement:
         # Payment Action Buttons
         buttons = [
             ("Create Payment", self.create_payment),
-            ("List All", self.list_payments),
+            ("List Payment", self.list_payments),
             ("Sort By ID", self.search_payment_by_id),
             ("Sort By Status", self.list_payments_by_status),
             ("Daily Payment", self.list_total_daily_payments),
@@ -101,7 +101,7 @@ class PaymentManagement:
         for text, command in buttons:
             btn = tk.Button(self.left_frame, text=text,
                             command=lambda t=text, c=command: self.update_subheading(t, c),
-                            width=9, font=("Helvetica", 10, "bold"), anchor="w", padx=10,
+                            width=10, font=("Arial", 10), anchor="w", padx=10,
                             bg="#34495E", fg="white", relief="flat", bd=0)
 
             btn.bind("<Enter>", lambda e, b=btn: b.config(bg="#1ABC9C"))

@@ -90,16 +90,16 @@ class EventManagement:
         self.buttons = []
         event_buttons = [
             ("Create Event", self.create_event),
-            ("List All", self.list_events),
+            ("List Event", self.list_events),
             ("Sort by ID", self.search_event_by_id),
-            ("Update", self.update_event),
+            ("Update Event", self.update_event),
             ("Cancel Event", self.cancel_event),
         ]
 
         for text, command in event_buttons:
             btn = tk.Button(self.left_frame, text=text,
                             command=lambda t=text, c=command: self.update_subheading(t, c),
-                            width=10, font=("Helvetica", 10, "bold"), anchor="w", padx=10,
+                            width=10, font=("Arial", 10), anchor="w", padx=10,
                             bg="#34495E", fg="white", relief="flat", bd=0)
             
             btn.bind("<Enter>", lambda e, b=btn: b.config(bg="#1ABC9C"))
@@ -115,7 +115,7 @@ class EventManagement:
         payment_buttons = [
             ("Create Payment", self.create_event_payment),
             ("List Payments", self.list_events_payment),
-            ("List Payment By Status", self.list_payment_by_status),
+            ("Payment By Status", self.list_payment_by_status),
             ("Sort Payment by ID", self.search_payment_by_id),
             ("Void Payment", self.void_payment),
         ]
@@ -123,7 +123,7 @@ class EventManagement:
         for text, command in payment_buttons:
             btn = tk.Button(self.left_frame, text=text,
                             command=lambda t=text, c=command: self.update_subheading(t, c),
-                            width=17, font=("Helvetica", 10, "bold"), anchor="w", padx=10,
+                            width=13, font=("Arial", 10), anchor="w", padx=10,
                             bg="#34495E", fg="white", relief="flat", bd=0)
             
             btn.bind("<Enter>", lambda e, b=btn: b.config(bg="#1ABC9C"))

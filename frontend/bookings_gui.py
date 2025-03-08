@@ -92,7 +92,7 @@ class BookingManagement:
         self.buttons = []
         buttons = [
             ("Create Booking", self.create_booking),
-            ("List All", self.list_bookings),
+            ("List Booking", self.list_bookings),
             ("Sort By Status", self.list_bookings_by_status),
             ("Sort Guest Name", self.search_booking),
             ("Sort by ID", self.search_booking_by_id),
@@ -105,7 +105,7 @@ class BookingManagement:
         for text, command in buttons:
             btn = tk.Button(self.left_frame, text=text,
                             command=lambda t=text, c=command: self.update_subheading(t, c),
-                            width=12, font=("Helvetica", 10, "bold"), anchor="w", padx=10,
+                            width=10, font=("Arial", 10), anchor="w", padx=10,
                             bg="#34495E", fg="white", relief="flat", bd=0)
 
             btn.bind("<Enter>", lambda e, b=btn: b.config(bg="#1ABC9C"))
