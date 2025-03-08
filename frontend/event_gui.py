@@ -511,21 +511,24 @@ class EventManagement:
         
         columns = ("ID", "Organizer", "Title", "Event_Amount", "Caution_Fee", "Start Date", "End Date", 
                 "Location", "Phone Number", "Payment Status", "Created_by")
+        
+        if hasattr(self, "tree"):
+            self.tree.destroy()
 
-        self.search_tree = ttk.Treeview(table_frame, columns=columns, show="headings")
+        self.tree = ttk.Treeview(table_frame, columns=columns, show="headings")
         for col in columns:
-            self.search_tree.heading(col, text=col)
-            self.search_tree.column(col, width=80, anchor="center")
+            self.tree.heading(col, text=col)
+            self.tree.column(col, width=80, anchor="center")
         
-        self.search_tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         
-        y_scroll = ttk.Scrollbar(table_frame, orient="vertical", command=self.search_tree.yview)
+        y_scroll = ttk.Scrollbar(table_frame, orient="vertical", command=self.tree.yview)
         y_scroll.pack(side=tk.RIGHT, fill=tk.Y)
-        self.search_tree.configure(yscroll=y_scroll.set)
+        self.tree.configure(yscroll=y_scroll.set)
         
-        x_scroll = ttk.Scrollbar(frame, orient="horizontal", command=self.search_tree.xview)
+        x_scroll = ttk.Scrollbar(frame, orient="horizontal", command=self.tree.xview)
         x_scroll.pack(fill=tk.X)
-        self.search_tree.configure(xscroll=x_scroll.set)
+        self.tree.configure(xscroll=x_scroll.set)
 
     def fetch_event_by_id(self):
         event_id = self.event_id_entry.get().strip()
@@ -544,8 +547,8 @@ class EventManagement:
                 
                 # Ensure the event details exist
                 if event:
-                    self.search_tree.delete(*self.search_tree.get_children())
-                    self.search_tree.insert("", "end", values=(
+                    self.tree.delete(*self.tree.get_children())
+                    self.tree.insert("", "end", values=(
                         event.get("id", ""),
                         event.get("organizer", ""),
                         event.get("title", ""),
@@ -560,7 +563,7 @@ class EventManagement:
                         event.get("created_by", ""),
                     ))
 
-                    self.apply_grid_effect(self.search_tree)
+                    self.apply_grid_effect(self.tree)
                 else:
                     messagebox.showinfo("No Results", "No event found with the provided ID.")
             else:
@@ -1224,20 +1227,23 @@ class EventManagement:
             "Payment Date", "Created By"
         )
 
-        self.search_tree = ttk.Treeview(table_frame, columns=columns, show="headings")
+        if hasattr(self, "tree"):
+            self.tree.destroy()
+
+        self.tree = ttk.Treeview(table_frame, columns=columns, show="headings")
         for col in columns:
-            self.search_tree.heading(col, text=col)
-            self.search_tree.column(col, width=80, anchor="center")
+            self.tree.heading(col, text=col)
+            self.tree.column(col, width=80, anchor="center")
 
-        self.search_tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-        y_scroll = ttk.Scrollbar(table_frame, orient="vertical", command=self.search_tree.yview)
+        y_scroll = ttk.Scrollbar(table_frame, orient="vertical", command=self.tree.yview)
         y_scroll.pack(side=tk.RIGHT, fill=tk.Y)
-        self.search_tree.configure(yscroll=y_scroll.set)
+        self.tree.configure(yscroll=y_scroll.set)
 
-        x_scroll = ttk.Scrollbar(frame, orient="horizontal", command=self.search_tree.xview)
+        x_scroll = ttk.Scrollbar(frame, orient="horizontal", command=self.tree.xview)
         x_scroll.pack(fill=tk.X)
-        self.search_tree.configure(xscroll=x_scroll.set)
+        self.tree.configure(xscroll=x_scroll.set)
 
 
     def fetch_payment_by_id(self):
@@ -1257,7 +1263,7 @@ class EventManagement:
                 payment = response.json()
 
                 if payment:
-                    self.search_tree.delete(*self.search_tree.get_children())
+                    self.tree.delete(*self.tree.get_children())
 
                     # Format amounts
                     event_amount = f"{float(payment.get('event_amount', 0)) :,.2f}"
@@ -1265,7 +1271,7 @@ class EventManagement:
                     discount_allowed = f"{float(payment.get('discount_allowed', 0)) :,.2f}"
                     balance_due = f"{float(payment.get('balance_due', 0)) :,.2f}"
 
-                    self.search_tree.insert("", "end", values=(
+                    self.tree.insert("", "end", values=(
                         payment.get("id", ""),
                         payment.get("event_id", ""),
                         payment.get("organiser", ""),
@@ -1279,7 +1285,7 @@ class EventManagement:
                         payment.get("created_by", ""),
                     ))
 
-                    self.apply_grid_effect(self.search_tree)
+                    self.apply_grid_effect(self.tree)
                 else:
                     messagebox.showinfo("No Results", "No payment found with the provided ID.")
             else:

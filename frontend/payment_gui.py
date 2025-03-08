@@ -869,21 +869,25 @@ class PaymentManagement:
 
         columns = ("ID", "Guest Name", "Room Number", "Amount Paid", "Discount Allowed", "Balance Due", 
                 "Payment Method", "Payment Date", "Status", "Booking ID", "Created_by")
+        
 
-        self.search_tree = ttk.Treeview(table_frame, columns=columns, show="headings")
+        if hasattr(self, "tree"):
+            self.tree.destroy()
+
+        self.tree = ttk.Treeview(table_frame, columns=columns, show="headings")
         for col in columns:
-            self.search_tree.heading(col, text=col)
-            self.search_tree.column(col, width=80, anchor="center")
+            self.tree.heading(col, text=col)
+            self.tree.column(col, width=80, anchor="center")
 
-        self.search_tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-        y_scroll = ttk.Scrollbar(table_frame, orient="vertical", command=self.search_tree.yview)
+        y_scroll = ttk.Scrollbar(table_frame, orient="vertical", command=self.tree.yview)
         y_scroll.pack(side=tk.RIGHT, fill=tk.Y)
-        self.search_tree.configure(yscroll=y_scroll.set)
+        self.tree.configure(yscroll=y_scroll.set)
 
-        x_scroll = ttk.Scrollbar(frame, orient="horizontal", command=self.search_tree.xview)
+        x_scroll = ttk.Scrollbar(frame, orient="horizontal", command=self.tree.xview)
         x_scroll.pack(fill=tk.X)
-        self.search_tree.configure(xscroll=x_scroll.set)
+        self.tree.configure(xscroll=x_scroll.set)
 
     def fetch_payment_by_id(self):
         payment_id = self.payment_id_entry.get().strip()
@@ -903,8 +907,8 @@ class PaymentManagement:
 
                 if data:  # Ensure data exists
                     # ✅ Check if the TreeView exists before modifying it
-                    if hasattr(self, "search_tree") and self.search_tree is not None:
-                        self.search_tree.delete(*self.search_tree.get_children())
+                    if hasattr(self, "tree") and self.tree is not None:
+                        self.tree.delete(*self.tree.get_children())
 
                         # ✅ Extract payment details from the response
                         payment_id = data.get("payment_id", "")
@@ -925,7 +929,7 @@ class PaymentManagement:
                         tag = "voided" if status == "voided" else "normal"
 
                         # ✅ Insert data into TreeView
-                        self.search_tree.insert("", "end", values=(
+                        self.tree.insert("", "end", values=(
                             payment_id, guest_name, room_number, amount_paid, 
                             discount_allowed, balance_due, payment_method, 
                             payment_date, status, booking_id, created_by,
@@ -933,10 +937,10 @@ class PaymentManagement:
 
 
                         # ✅ Apply color formatting
-                        self.search_tree.tag_configure("voided", foreground="red")
-                        self.search_tree.tag_configure("normal", foreground="black")
+                        self.tree.tag_configure("voided", foreground="red")
+                        self.tree.tag_configure("normal", foreground="black")
 
-                        self.apply_grid_effect(self.search_tree)
+                        self.apply_grid_effect(self.tree)
 
                     else:
                         messagebox.showerror("Error", "Payment list is not initialized.")

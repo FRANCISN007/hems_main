@@ -221,6 +221,8 @@ class BookingManagement:
             self.bookings_data = []
             messagebox.showerror("Error", f"API Error: {str(e)}")
 
+
+
     def export_report(self):
         """Export only the visible bookings from the Treeview to Excel"""
         if not hasattr(self, "tree") or not self.tree.get_children():
@@ -813,20 +815,23 @@ class BookingManagement:
         columns = ("ID", "Room", "Guest", "Booking Cost", "Arrival", "Departure", "Status", "Number of Days", 
                 "Booking Type", "Phone Number", "Booking Date", "Payment Status", "Created_by")
         
-        self.search_tree = ttk.Treeview(table_frame, columns=columns, show="headings")
+        if hasattr(self, "tree"):
+            self.tree.destroy()
+        
+        self.tree = ttk.Treeview(table_frame, columns=columns, show="headings")
         for col in columns:
-            self.search_tree.heading(col, text=col)
-            self.search_tree.column(col, width=80, anchor="center")
+            self.tree.heading(col, text=col)
+            self.tree.column(col, width=80, anchor="center")
         
-        self.search_tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         
-        y_scroll = ttk.Scrollbar(table_frame, orient="vertical", command=self.search_tree.yview)
+        y_scroll = ttk.Scrollbar(table_frame, orient="vertical", command=self.tree.yview)
         y_scroll.pack(side=tk.RIGHT, fill=tk.Y)
-        self.search_tree.configure(yscroll=y_scroll.set)
+        self.tree.configure(yscroll=y_scroll.set)
         
-        x_scroll = ttk.Scrollbar(frame, orient="horizontal", command=self.search_tree.xview)
+        x_scroll = ttk.Scrollbar(frame, orient="horizontal", command=self.tree.xview)
         x_scroll.pack(fill=tk.X)
-        self.search_tree.configure(xscroll=x_scroll.set)
+        self.tree.configure(xscroll=x_scroll.set)
 
     def fetch_booking_by_id(self):
         booking_id = self.booking_id_entry.get().strip()
@@ -851,8 +856,8 @@ class BookingManagement:
                 
                 # Ensure the booking details exist
                 if booking:
-                    self.search_tree.delete(*self.search_tree.get_children())
-                    self.search_tree.insert("", "end", values=(
+                    self.tree.delete(*self.tree.get_children())
+                    self.tree.insert("", "end", values=(
                         booking.get("id", ""),
                         booking.get("room_number", ""),
                         booking.get("guest_name", ""),
@@ -869,7 +874,7 @@ class BookingManagement:
                     ))
 
                  # Apply grid effect after inserting data
-                    self.apply_grid_effect(self.search_tree)
+                    self.apply_grid_effect(self.tree)
 
    
                 else:
