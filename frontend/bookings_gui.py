@@ -18,6 +18,7 @@ from payment_gui import PaymentManagement  # Import the Payment GUI
 class BookingManagement:
     def __init__(self, root, token):
         self.root = tk.Toplevel(root)
+        self.tree = ttk.Treeview(self.root)  # Ensure the treeview is initialized
         self.root.title("Booking Management")
         self.root.state("zoomed")
         self.root.geometry("1000x600")
@@ -25,6 +26,10 @@ class BookingManagement:
         self.username = "current_user"
         self.token = token
         self.root.configure(bg="#f0f0f0")
+
+
+    
+
 
         # Set window size and position at the center
         window_width = 1375
@@ -35,13 +40,39 @@ class BookingManagement:
         y_coordinate = (screen_height // 2) - (window_height // 2)
         self.root.geometry(f"{window_width}x{window_height}+{x_coordinate}+{y_coordinate}")
 
-        # Header Section
+        # Header Frame
         self.header_frame = tk.Frame(self.root, bg="#2C3E50", height=50)
         self.header_frame.pack(fill=tk.X)
-        
-        self.title_label = tk.Label(self.header_frame, text="Booking Management",
+
+        # Grid Layout Configuration
+        self.header_frame.grid_columnconfigure(0, weight=1)  # Left spacing
+        self.header_frame.grid_columnconfigure(1, weight=2)  # Center (title)
+        self.header_frame.grid_columnconfigure(2, weight=1)  # Right (actions)
+
+        # Title Label (Centered Properly)
+        self.title_label = tk.Label(self.header_frame, text="                                                               Booking Management",
                                     font=("Helvetica", 16, "bold"), fg="white", bg="#2C3E50")
-        self.title_label.pack(pady=10)
+        self.title_label.grid(row=0, column=1, pady=10, sticky="ew")  # Full width, ensures centering
+
+        # Action Frame (Right Side)
+        self.action_frame = tk.Frame(self.header_frame, bg="#2C3E50")
+        self.action_frame.grid(row=0, column=2, padx=20, sticky="e")  # Stays aligned to the right
+
+        # Export to Excel (Plain Text, No Border)
+        self.export_label = tk.Label(self.action_frame, text="📊 Export to Excel",
+                                    font=("Helvetica", 10, "bold"), fg="white", bg="#2C3E50", cursor="hand2")
+        self.export_label.pack(side=tk.RIGHT, padx=10)
+        self.export_label.bind("<Enter>", lambda e: self.export_label.config(fg="#D3D3D3"))
+        self.export_label.bind("<Leave>", lambda e: self.export_label.config(fg="white"))
+        self.export_label.bind("<Button-1>", lambda e: self.export_report())
+
+        # Print Report (Plain Text, No Border)
+        self.print_label = tk.Label(self.action_frame, text="🖨 Print Report",
+                                    font=("Helvetica", 10, "bold"), fg="white", bg="#2C3E50", cursor="hand2")
+        self.print_label.pack(side=tk.RIGHT, padx=10)
+        self.print_label.bind("<Enter>", lambda e: self.print_label.config(fg="#D3D3D3"))
+        self.print_label.bind("<Leave>", lambda e: self.print_label.config(fg="white"))
+        self.print_label.bind("<Button-1>", lambda e: self.print_report())
 
         # Sidebar Section
         self.left_frame = tk.Frame(self.root, bg="#2C3E50", width=220)
@@ -93,6 +124,20 @@ class BookingManagement:
         self.dashboard_label.bind("<Enter>", lambda e: self.dashboard_label.config(bg="#3E5770"))
         self.dashboard_label.bind("<Leave>", lambda e: self.dashboard_label.config(bg="#2C3E50"))
         self.dashboard_label.bind("<Button-1>", lambda e: self.open_dashboard_window())
+
+    def apply_grid_effect(self, tree=None):
+        if tree is None:
+            tree = self.tree  # Default to main tree if none is provided
+        
+        for i, item in enumerate(tree.get_children()):
+            if i % 2 == 0:
+                tree.item(item, tags=("evenrow",))
+            else:
+                tree.item(item, tags=("oddrow",))
+
+        tree.tag_configure("evenrow", background="#f2f2f2")  # Light gray
+        tree.tag_configure("oddrow", background="white")      # White
+
 
     def open_dashboard_window(self):
         from dashboard import Dashboard  # Import here to avoid circular import issues
@@ -354,14 +399,16 @@ class BookingManagement:
             messagebox.showerror("Error", f"Request failed: {e}")
 
     
+
     def list_bookings(self):
         self.clear_right_frame()
         
-        # Create a new frame for the table with scrollable functionality
+        
+        # Create a new frame for the table
         frame = tk.Frame(self.right_frame, bg="#ffffff", padx=10, pady=10)
         frame.pack(fill=tk.BOTH, expand=True)
 
-        tk.Label(frame, text="List Bookings", font=("Arial", 14, "bold"), bg="#ffffff").pack(pady=10)
+        tk.Label(frame, text="List Bookings Report", font=("Arial", 14, "bold"), bg="#ffffff").pack(pady=10)
 
         filter_frame = tk.Frame(frame, bg="#ffffff")
         filter_frame.pack(pady=5)
@@ -382,23 +429,28 @@ class BookingManagement:
         fetch_btn.grid(row=0, column=4, padx=10, pady=5)
 
         # Create a frame to hold the treeview and scrollbars
-        table_frame = tk.Frame(frame, bg="#ffffff")
-        table_frame.pack(fill=tk.BOTH, expand=True)
+        table_frame = tk.Frame(frame, bg="#ffffff", bd=1, relief="solid")  # Solid border for grid effect
+        table_frame.pack(fill=tk.BOTH, expand=True, pady=5)
 
         # Define Treeview columns
         columns = ("ID", "Room", "Guest", "Booking Cost", "Arrival", "Departure", "Status", "Number of Days", 
                 "Booking Type", "Phone Number", "Booking Date", "Payment Status", "Created_by")
 
         # Create a Treeview widget
-        self.tree = ttk.Treeview(table_frame, columns=columns, show="headings")
+        style = ttk.Style()
+        style.configure("Treeview", rowheight=25, background="white", fieldbackground="white", borderwidth=1)
+        style.configure("Treeview.Heading", font=("Arial", 11, "bold"), background="#2c3e50", foreground="white")
+        style.map("Treeview", background=[("selected", "#b3d1ff")])
+
+        self.tree = ttk.Treeview(table_frame, columns=columns, show="headings", height=15)  # Set height for visibility
 
         # Define headings and set column widths
         for col in columns:
-            self.tree.heading(col, text=col)
-            self.tree.column(col, width=80, anchor="center")
+            self.tree.heading(col, text=col, anchor="center")
+            self.tree.column(col, width=90, anchor="center")  # Adjust column width
 
         # Pack the Treeview inside a scrollable frame
-        self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=5, pady=5)
 
         # Add vertical scrollbar
         y_scroll = ttk.Scrollbar(table_frame, orient="vertical", command=self.tree.yview)
@@ -410,10 +462,11 @@ class BookingManagement:
         x_scroll.pack(fill=tk.X)
         self.tree.configure(xscroll=x_scroll.set)
 
-        # Label to display total booking cost (initialized empty)
+        # Label to display total booking cost
         self.total_booking_cost_label = tk.Label(frame, text="", font=("Arial", 12, "bold"), bg="#ffffff", fg="blue")
         self.total_booking_cost_label.pack(pady=10)
 
+        
 
     def fetch_bookings(self, start_date_entry, end_date_entry):
         """Fetch bookings from the API and populate the table, while calculating total booking cost."""
@@ -428,7 +481,7 @@ class BookingManagement:
             response = requests.get(api_url, params=params, headers=headers)
             if response.status_code == 200:
                 data = response.json()
-                #print("API Response:", data)  # Debugging output
+                # print("API Response:", data)  # Debugging output
 
                 if isinstance(data, dict) and "bookings" in data:
                     bookings = data["bookings"]
@@ -460,15 +513,16 @@ class BookingManagement:
                         booking.get("booking_date", ""),
                         booking.get("payment_status", ""),                    
                         booking.get("created_by", ""),
-                    
-
                     ))
 
-                # Display total booking cost in green
+                # Apply grid effect after inserting data
+                self.apply_grid_effect()
+
+                # Display total booking cost
                 self.total_booking_cost_label.config(
                     text=f"Total Booking Cost: {total_booking_cost:,.2f}"
                 )
-
+            
             else:
                 messagebox.showerror("Error", response.json().get("detail", "Failed to retrieve bookings."))
 
@@ -620,6 +674,10 @@ class BookingManagement:
                                 booking.get("created_by", ""),
                             ), tags=(tag,))
 
+                        # Apply grid effect after inserting data
+                        self.apply_grid_effect()
+
+
                         self.tree.tag_configure("cancelled", foreground="red")
                         self.tree.tag_configure("normal", foreground="black")
                         self.total_cost_label.config(text=f"Total Booking Cost: {total_cost:,.2f}")
@@ -681,13 +739,15 @@ class BookingManagement:
         x_scroll = ttk.Scrollbar(frame, orient="horizontal", command=self.search_tree.xview)
         x_scroll.pack(fill=tk.X)
         self.search_tree.configure(xscroll=x_scroll.set)
-
+    
     def fetch_booking_by_guest_name(self):
         guest_name = self.search_entry.get().strip()
         if not guest_name:
             messagebox.showerror("Error", "Please enter a guest name to search.")
             return
+
         
+         
         api_url ="http://127.0.0.1:8000/bookings/search"
         params = {"guest_name": guest_name}
         headers = {"Authorization": f"Bearer {self.token}"}
@@ -716,6 +776,11 @@ class BookingManagement:
                         booking.get("payment_status", ""),
                        
                     ))
+            
+                # Apply grid effect after inserting data
+                self.apply_grid_effect(self.search_tree)
+
+    
             else:
                 messagebox.showinfo("No result", response.json().get("detail", "No bookings found."))
         except requests.exceptions.RequestException as e:
@@ -802,6 +867,11 @@ class BookingManagement:
                         booking.get("payment_status", ""),                       
                         booking.get("created_by", ""),
                     ))
+
+                 # Apply grid effect after inserting data
+                    self.apply_grid_effect(self.search_tree)
+
+   
                 else:
                     messagebox.showinfo("No Results", "No booking found with the provided ID.")
             else:
@@ -917,6 +987,10 @@ class BookingManagement:
                             booking.get("payment_status", ""),
                             
                         ))
+                    # Apply grid effect after inserting data
+                    self.apply_grid_effect(self.search_tree)
+
+    
                 else:
                     messagebox.showinfo("No Results", f"No bookings found for Room {room_number} between {formatted_start_date} and {formatted_end_date}.")
             else:

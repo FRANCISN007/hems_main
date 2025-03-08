@@ -39,13 +39,39 @@ class EventManagement:
         y_coordinate = (screen_height // 2) - (window_height // 2)
         self.root.geometry(f"{window_width}x{window_height}+{x_coordinate}+{y_coordinate}")
 
-        # Header Section
+        # Header Frame
         self.header_frame = tk.Frame(self.root, bg="#2C3E50", height=50)
         self.header_frame.pack(fill=tk.X)
-        
-        self.title_label = tk.Label(self.header_frame, text="Event Management",
+
+        # Grid Layout Configuration
+        self.header_frame.grid_columnconfigure(0, weight=1)  # Left spacing
+        self.header_frame.grid_columnconfigure(1, weight=2)  # Center (title)
+        self.header_frame.grid_columnconfigure(2, weight=1)  # Right (actions)
+
+        # Title Label (Centered Properly)
+        self.title_label = tk.Label(self.header_frame, text="                                                               Event Management",
                                     font=("Helvetica", 16, "bold"), fg="white", bg="#2C3E50")
-        self.title_label.pack(pady=10)
+        self.title_label.grid(row=0, column=1, pady=10, sticky="ew")  # Full width, ensures centering
+
+        # Action Frame (Right Side)
+        self.action_frame = tk.Frame(self.header_frame, bg="#2C3E50")
+        self.action_frame.grid(row=0, column=2, padx=20, sticky="e")  # Stays aligned to the right
+
+        # Export to Excel (Plain Text, No Border)
+        self.export_label = tk.Label(self.action_frame, text="📊 Export to Excel",
+                                    font=("Helvetica", 10, "bold"), fg="white", bg="#2C3E50", cursor="hand2")
+        self.export_label.pack(side=tk.RIGHT, padx=10)
+        self.export_label.bind("<Enter>", lambda e: self.export_label.config(fg="#D3D3D3"))
+        self.export_label.bind("<Leave>", lambda e: self.export_label.config(fg="white"))
+        self.export_label.bind("<Button-1>", lambda e: self.export_report())
+
+        # Print Report (Plain Text, No Border)
+        self.print_label = tk.Label(self.action_frame, text="🖨 Print Report",
+                                    font=("Helvetica", 10, "bold"), fg="white", bg="#2C3E50", cursor="hand2")
+        self.print_label.pack(side=tk.RIGHT, padx=10)
+        self.print_label.bind("<Enter>", lambda e: self.print_label.config(fg="#D3D3D3"))
+        self.print_label.bind("<Leave>", lambda e: self.print_label.config(fg="white"))
+        self.print_label.bind("<Button-1>", lambda e: self.print_report())
 
         # Sidebar Section
         self.left_frame = tk.Frame(self.root, bg="#2C3E50", width=220)
@@ -116,6 +142,21 @@ class EventManagement:
         self.dashboard_label.bind("<Enter>", lambda e: self.dashboard_label.config(bg="#3E5770"))
         self.dashboard_label.bind("<Leave>", lambda e: self.dashboard_label.config(bg="#2C3E50"))
         self.dashboard_label.bind("<Button-1>", lambda e: self.open_dashboard_window())
+
+
+    def apply_grid_effect(self, tree=None):
+        if tree is None:
+            tree = self.tree  # Default to main tree if none is provided
+        
+        for i, item in enumerate(tree.get_children()):
+            if i % 2 == 0:
+                tree.item(item, tags=("evenrow",))
+            else:
+                tree.item(item, tags=("oddrow",))
+
+        tree.tag_configure("evenrow", background="#f2f2f2")  # Light gray
+        tree.tag_configure("oddrow", background="white")      # White
+   
 
     def open_dashboard_window(self):
         from dashboard import Dashboard  # Import here to avoid circular import issues
@@ -354,18 +395,26 @@ class EventManagement:
         fetch_btn = ttk.Button(filter_frame, text="🔍 Fetch Events", command=lambda: self.fetch_events(self.start_date, self.end_date))
         fetch_btn.grid(row=0, column=4, padx=10, pady=5)
 
-        # ---------------- Event Table ---------------- #
+                # ---------------- Event Table ---------------- #
         table_frame = tk.Frame(frame, bg="#ffffff")
         table_frame.pack(fill=tk.BOTH, expand=True)
 
-        columns = ("ID", "Organizer", "Title", "Event_Amount", "Caution_Fee", "Start Date", "End Date", "Location", "Phone", "Status", "created_by")
+        # Apply bold font styling for Treeview headings
+        style = ttk.Style()
+        style.theme_use("clam")  # Ensures styling is applied
+        style.configure("Treeview.Heading", font=("Helvetica", 10, "bold"), foreground="black")
+
+        columns = ("ID", "Organizer", "Title", "Event_Amount", "Caution_Fee", 
+                "Start Date", "End Date", "Location", "Phone", "Status", "created_by")
+
         self.tree = ttk.Treeview(table_frame, columns=columns, show="headings")
 
         for col in columns:
-            self.tree.heading(col, text=col)
-            self.tree.column(col, width=100, anchor="center")
+            self.tree.heading(col, text=col, anchor="center")  # Centered heading
+            self.tree.column(col, width=80, anchor="center")    # Adjust width and center text
 
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
 
         # Scrollbars
         y_scroll = ttk.Scrollbar(table_frame, orient="vertical", command=self.tree.yview)
@@ -412,6 +461,8 @@ class EventManagement:
                         event.get("payment_status", ""),
                         event.get("created_by", ""),
                     ))
+
+                self.apply_grid_effect()
 
                 self.total_label.config(text=f"Total Event Amount: {total_amount:,.2f}")
 
@@ -508,6 +559,8 @@ class EventManagement:
                         event.get("payment_status", ""),
                         event.get("created_by", ""),
                     ))
+
+                    self.apply_grid_effect(self.search_tree)
                 else:
                     messagebox.showinfo("No Results", "No event found with the provided ID.")
             else:
@@ -974,6 +1027,8 @@ class EventManagement:
                         payment.get("payment_date", ""),
                         payment.get("created_by", ""),
                     ))
+
+                    self.apply_grid_effect()
                 
                 self.total_payment_label.config(
                     text=f"Total Payments: {total_amount_paid:,.2f}"
@@ -1121,6 +1176,8 @@ class EventManagement:
                             payment.get("created_by", ""),
                         ))
 
+                    self.apply_grid_effect()
+
                     # Update Total Payment Label
                     self.total_cost_label.config(text=f"Total Payment Amount: {total_amount:,.2f}")
                 else:
@@ -1221,6 +1278,8 @@ class EventManagement:
                         payment.get("payment_date", ""),
                         payment.get("created_by", ""),
                     ))
+
+                    self.apply_grid_effect(self.search_tree)
                 else:
                     messagebox.showinfo("No Results", "No payment found with the provided ID.")
             else:

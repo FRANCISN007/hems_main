@@ -77,6 +77,8 @@ class RoomManagement:
             if self.user_role != "admin" and text in ["➕ Add Room", "✏️ Update Room", "❌ Delete Room"]:
                 btn.config(state=tk.DISABLED)
 
+                
+
     def natural_sort_key(self, room):
         """Sort room numbers correctly, handling both numeric and alphanumeric values."""
         room_number = str(room.get("room_number", ""))  # Ensure it's a string

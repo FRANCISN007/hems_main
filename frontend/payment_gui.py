@@ -31,7 +31,7 @@ class PaymentManagement:
         self.payments_data = []
         self.last_exported_file = None
 
-        # Set window size and position at the center
+        # Set window size and position
         window_width = 1375
         window_height = 600
         screen_width = self.root.winfo_screenwidth()
@@ -40,19 +40,45 @@ class PaymentManagement:
         y_coordinate = (screen_height // 2) - (window_height // 2)
         self.root.geometry(f"{window_width}x{window_height}+{x_coordinate}+{y_coordinate}")
 
-        # Header Section
+        # Header Frame
         self.header_frame = tk.Frame(self.root, bg="#2C3E50", height=50)
         self.header_frame.pack(fill=tk.X)
-        
-        self.title_label = tk.Label(self.header_frame, text="Payment Management",
+
+        # Grid Layout Configuration
+        self.header_frame.grid_columnconfigure(0, weight=1)  # Left spacing
+        self.header_frame.grid_columnconfigure(1, weight=2)  # Center (title)
+        self.header_frame.grid_columnconfigure(2, weight=1)  # Right (actions)
+
+        # Title Label (Centered Properly)
+        self.title_label = tk.Label(self.header_frame, text="                                                               Payment Management",
                                     font=("Helvetica", 16, "bold"), fg="white", bg="#2C3E50")
-        self.title_label.pack(pady=10)
+        self.title_label.grid(row=0, column=1, pady=10, sticky="ew")  # Full width, ensures centering
+
+        # Action Frame (Right Side)
+        self.action_frame = tk.Frame(self.header_frame, bg="#2C3E50")
+        self.action_frame.grid(row=0, column=2, padx=20, sticky="e")  # Stays aligned to the right
+
+        # Export to Excel (Plain Text, No Border)
+        self.export_label = tk.Label(self.action_frame, text="📊 Export to Excel",
+                                    font=("Helvetica", 10, "bold"), fg="white", bg="#2C3E50", cursor="hand2")
+        self.export_label.pack(side=tk.RIGHT, padx=10)
+        self.export_label.bind("<Enter>", lambda e: self.export_label.config(fg="#D3D3D3"))
+        self.export_label.bind("<Leave>", lambda e: self.export_label.config(fg="white"))
+        self.export_label.bind("<Button-1>", lambda e: self.export_report())
+
+        # Print Report (Plain Text, No Border)
+        self.print_label = tk.Label(self.action_frame, text="🖨 Print Report",
+                                    font=("Helvetica", 10, "bold"), fg="white", bg="#2C3E50", cursor="hand2")
+        self.print_label.pack(side=tk.RIGHT, padx=10)
+        self.print_label.bind("<Enter>", lambda e: self.print_label.config(fg="#D3D3D3"))
+        self.print_label.bind("<Leave>", lambda e: self.print_label.config(fg="white"))
+        self.print_label.bind("<Button-1>", lambda e: self.print_report())
 
         # Sidebar Section
         self.left_frame = tk.Frame(self.root, bg="#2C3E50", width=220)
         self.left_frame.pack(side=tk.LEFT, fill=tk.Y, padx=0, pady=0)
 
-        # Right Section with a border and shadow effect
+        # Right Section
         self.right_frame = tk.Frame(self.root, bg="#ffffff", width=700, relief="ridge", borderwidth=2)
         self.right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=10, pady=10)
 
@@ -94,7 +120,28 @@ class PaymentManagement:
         self.dashboard_label.bind("<Leave>", lambda e: self.dashboard_label.config(bg="#2C3E50"))
         self.dashboard_label.bind("<Button-1>", lambda e: self.open_dashboard_window())
 
+    def update_subheading(self, text, command):
+        self.subheading_label.config(text=text)
+        command()
+
+
+
+
     
+    def apply_grid_effect(self, tree=None):
+        if tree is None:
+            tree = self.tree  # Default to main tree if none is provided
+        
+        for i, item in enumerate(tree.get_children()):
+            if i % 2 == 0:
+                tree.item(item, tags=("evenrow",))
+            else:
+                tree.item(item, tags=("oddrow",))
+
+        tree.tag_configure("evenrow", background="#f2f2f2")  # Light gray
+        tree.tag_configure("oddrow", background="white")      # White
+
+
 
     def open_dashboard_window(self):
         from dashboard import Dashboard
@@ -108,6 +155,9 @@ class PaymentManagement:
     def update_subheading(self, text, command):
         self.subheading_label.config(text=text)
         command()
+
+
+    
 
 
     def fetch_and_display_paymentss(self):
@@ -131,8 +181,10 @@ class PaymentManagement:
 
  
 
+    
+
     def export_report(self):
-        """Export only the visible payments from the Treeview to Excel"""
+        """Export only the visible bookings from the Treeview to Excel"""
         if not hasattr(self, "tree") or not self.tree.get_children():
             messagebox.showwarning("Warning", "No data available to export.")
             return
@@ -151,7 +203,7 @@ class PaymentManagement:
 
         # Save in user's Downloads folder
         download_dir = os.path.join(os.path.expanduser("~"), "Downloads")
-        file_path = os.path.join(download_dir, "payments_report.xlsx")
+        file_path = os.path.join(download_dir, "bookings_report.xlsx")
 
         try:
             df.to_excel(file_path, index=False)  # Export properly formatted Excel
@@ -161,6 +213,7 @@ class PaymentManagement:
             messagebox.showerror("Error", "Permission denied! Close the file if it's open and try again.")
         except Exception as e:
             messagebox.showerror("Error", f"Error exporting to Excel: {e}")
+
 
 
 
@@ -423,6 +476,8 @@ class PaymentManagement:
                             payment.get("created_by", "N/A"),  # Ensure there's a fallback if "created_by" is missing
                         ))
 
+                    self.apply_grid_effect()
+
                 # Ensure any previous total label is removed before adding a new one
                 for widget in self.right_frame.winfo_children():
                     if isinstance(widget, tk.Label) and "Total Payment" in widget.cget("text"):
@@ -480,32 +535,38 @@ class PaymentManagement:
         fetch_btn.grid(row=0, column=6, padx=10, pady=5)
         
         
+        
         # Table Frame
         table_frame = tk.Frame(frame, bg="#ffffff")
         table_frame.pack(fill=tk.BOTH, expand=True)
+
+        
+
         
         columns = ("ID", "Guest Name", "Room Number", "Amount Paid", "Discount", "Balance Due", "Payment Method", "Payment Date", "Status", "Booking ID", "Created_by")
         
-        if hasattr(self, "payment_tree"):
-            self.payment_tree.destroy()
+        if hasattr(self, "tree"):
+            self.tree.destroy()
         
-        self.payment_tree = ttk.Treeview(table_frame, columns=columns, show="headings")
+        self.tree = ttk.Treeview(table_frame, columns=columns, show="headings")
         for col in columns:
-            self.payment_tree.heading(col, text=col)
-            self.payment_tree.column(col, width=80, anchor="center")
+            self.tree.heading(col, text=col)
+            self.tree.column(col, width=80, anchor="center")
         
-        self.payment_tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         
-        y_scroll = ttk.Scrollbar(table_frame, orient="vertical", command=self.payment_tree.yview)
+        y_scroll = ttk.Scrollbar(table_frame, orient="vertical", command=self.tree.yview)
         y_scroll.pack(side=tk.RIGHT, fill=tk.Y)
-        self.payment_tree.configure(yscroll=y_scroll.set)
+        self.tree.configure(yscroll=y_scroll.set)
         
-        x_scroll = ttk.Scrollbar(frame, orient="horizontal", command=self.payment_tree.xview)
+        x_scroll = ttk.Scrollbar(frame, orient="horizontal", command=self.tree.xview)
         x_scroll.pack(fill=tk.X)
-        self.payment_tree.configure(xscroll=x_scroll.set)
+        self.tree.configure(xscroll=x_scroll.set)
 
     def fetch_payments_by_status(self):
         """Fetch payments based on status and date filters."""
+
+
         api_url = "http://127.0.0.1:8000/payments/by-status"
 
         selected_status = self.payment_status_var.get().lower()  # Ensure it's lowercase if required by the backend
@@ -532,7 +593,8 @@ class PaymentManagement:
                 #print("API Response Data:", data)  # Debugging
 
                 if "payments" in data and data["payments"]:
-                    self.payment_tree.delete(*self.payment_tree.get_children())  # Clear previous data
+                    self.tree.delete(*self.tree.get_children())  # Clear previous data
+                    #self.tree.delete(*self.tree.get_children())
                     
                     total_payment = 0  # Initialize total sum
 
@@ -543,7 +605,7 @@ class PaymentManagement:
                         amount_paid = float(payment.get("amount_paid", 0))
                         total_payment += amount_paid
 
-                        self.payment_tree.insert("", "end", values=(
+                        self.tree.insert("", "end", values=(
                             payment.get("payment_id", ""),
                             payment.get("guest_name", ""),
                             payment.get("room_number", ""),
@@ -557,8 +619,14 @@ class PaymentManagement:
                             payment.get("created_by", ""),
                         ), tags=(tag,))
 
-                    self.payment_tree.tag_configure("voided", foreground="red")
-                    self.payment_tree.tag_configure("normal", foreground="black")
+                    
+                    # Apply the effect to the correct treeview (payment_tree)
+                    self.apply_grid_effect(self.tree)
+                    
+
+
+                    self.tree.tag_configure("voided", foreground="red")
+                    self.tree.tag_configure("normal", foreground="black")
 
                     # Display total payment sum below the table
                     if hasattr(self, "total_payment_label"):
@@ -571,6 +639,9 @@ class PaymentManagement:
                         bg="#ffffff", fg="blue"
                     )
                     self.total_payment_label.pack(pady=10)
+
+                    
+                    
 
                 else:
                     messagebox.showinfo("No Results", "No payments found for the selected filters.")
@@ -675,6 +746,8 @@ class PaymentManagement:
                         debtor.get("booking_date", ""),
                         debtor.get("last_payment_date", "")
                     ))
+
+                self.apply_grid_effect()
             else:
                 #messagebox.showinfo("info", response.json().get("detail", "Failed to retrieve debtor list."))
                 messagebox.showinfo("No Results", "No data found for the selected filters.")
@@ -760,7 +833,10 @@ class PaymentManagement:
                         payment.get("payment_date", ""),
                         payment.get("status", ""),
                         payment.get("booking_id", ""),
+ 
                     ))
+
+                self.apply_grid_effect(self.search_tree)    
             else:
                 messagebox.showerror("Error", response.json().get("detail", "Failed to retrieve payments."))
         except requests.exceptions.RequestException as e:
@@ -843,6 +919,8 @@ class PaymentManagement:
                         booking_id = data.get("booking_id", "")
                         created_by = data.get("created_by", "")
 
+                        
+
                         # ✅ Define tag for voided payments
                         tag = "voided" if status == "voided" else "normal"
 
@@ -853,9 +931,12 @@ class PaymentManagement:
                             payment_date, status, booking_id, created_by,
                         ), tags=(tag,))
 
+
                         # ✅ Apply color formatting
                         self.search_tree.tag_configure("voided", foreground="red")
                         self.search_tree.tag_configure("normal", foreground="black")
+
+                        self.apply_grid_effect(self.search_tree)
 
                     else:
                         messagebox.showerror("Error", "Payment list is not initialized.")
@@ -993,6 +1074,8 @@ class PaymentManagement:
                         data.get("booking_payment_status", "N/A"),  # Display updated booking payment_status
                         data.get("created_by", ""),
                     ))
+
+                    self.apply_grid_effect(self.search_tree)
                 else:
                     messagebox.showinfo("No Results", "No payment found with the provided ID.")
             else:
