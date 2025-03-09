@@ -981,22 +981,26 @@ class PaymentManagement:
         table_frame.pack(fill=tk.BOTH, expand=True)
 
         columns = ("Payment ID", "Guest Name", "Room Number", "Amount Paid", "Discount Allowed",
-                "Balance Due", "Payment Method", "Payment Date", "Payment Status", "Booking ID", "Booking Payment Status", "Created_by")
+                "Balance Due", "Payment Method", "Payment Date", "Payment Status", "Booking ID", "Created_by")
 
-        self.void_payment_tree = ttk.Treeview(table_frame, columns=columns, show="headings")
+        if hasattr(self, "tree"):
+            self.tree.destroy()
+
+
+        self.tree = ttk.Treeview(table_frame, columns=columns, show="headings")
         for col in columns:
-            self.void_payment_tree.heading(col, text=col)
-            self.void_payment_tree.column(col, width=80, anchor="center")
+            self.tree.heading(col, text=col)
+            self.tree.column(col, width=80, anchor="center")
 
-        self.void_payment_tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-        y_scroll = ttk.Scrollbar(table_frame, orient="vertical", command=self.void_payment_tree.yview)
+        y_scroll = ttk.Scrollbar(table_frame, orient="vertical", command=self.tree.yview)
         y_scroll.pack(side=tk.RIGHT, fill=tk.Y)
-        self.void_payment_tree.configure(yscroll=y_scroll.set)
+        self.tree.configure(yscroll=y_scroll.set)
 
-        x_scroll = ttk.Scrollbar(frame, orient="horizontal", command=self.void_payment_tree.xview)
+        x_scroll = ttk.Scrollbar(frame, orient="horizontal", command=self.tree.xview)
         x_scroll.pack(fill=tk.X)
-        self.void_payment_tree.configure(xscroll=x_scroll.set)
+        self.tree.configure(xscroll=x_scroll.set)
 
 
     def process_void_payment(self):
@@ -1060,11 +1064,11 @@ class PaymentManagement:
                 data = response.json()
 
                 if data:
-                    if hasattr(self, "void_payment_tree") and self.void_payment_tree is not None:
-                        self.void_payment_tree.delete(*self.void_payment_tree.get_children())  
+                    if hasattr(self, "void_payment_tree") and self.tree is not None:
+                        self.tree.delete(*self.tree.get_children())  
 
                     # Insert payment details with booking payment_status
-                    self.void_payment_tree.insert("", "end", values=(
+                    self.tree.insert("", "end", values=(
                         data.get("payment_id", ""),
                         data.get("guest_name", ""),
                         data.get("room_number", ""),
@@ -1075,11 +1079,10 @@ class PaymentManagement:
                         data.get("payment_date", ""),
                         data.get("status", ""),  # Payment status (should be "voided")
                         data.get("booking_id", ""),
-                        data.get("booking_payment_status", "N/A"),  # Display updated booking payment_status
                         data.get("created_by", ""),
                     ))
 
-                    self.apply_grid_effect(self.search_tree)
+                    self.apply_grid_effect(self.tree)
                 else:
                     messagebox.showinfo("No Results", "No payment found with the provided ID.")
             else:

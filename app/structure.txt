@@ -50,6 +50,8 @@ HEMS-main/
 
 
 %USERPROFILE%\AppData\Local\programs
+[System.Environment]::SetEnvironmentVariable("Path", $env:Path + ";C:\Program Files\Git\bin", [System.EnvironmentVariableTarget]::Machine)
+
 
 
 📂 Updated Backend Structure

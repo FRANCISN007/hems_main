@@ -16,7 +16,7 @@ class WelcomeWindow(tk.Toplevel):
         # Create falling text with a stylish font
         self.text_id = self.canvas.create_text(
             self.winfo_screenwidth() // 2, 100,  
-            text="Welcome to Hotel\nand\nEvent Management System",  
+            text="Welcome to Hotel\nand\nEvent Management",  
             font=("Algerian", 50, "bold"),  # Stylish font
             fill="gold", justify="center"
         )
