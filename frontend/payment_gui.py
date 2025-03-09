@@ -31,6 +31,15 @@ class PaymentManagement:
         self.payments_data = []
         self.last_exported_file = None
 
+
+
+    # Set application icon
+        icon_path = os.path.abspath("frontend/icon.ico")
+        if os.path.exists(icon_path):
+            self.root.iconbitmap(icon_path)
+
+
+            
         # Set window size and position
         window_width = 1375
         window_height = 600
