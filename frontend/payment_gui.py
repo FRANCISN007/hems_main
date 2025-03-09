@@ -836,7 +836,7 @@ class PaymentManagement:
  
                     ))
 
-                self.apply_grid_effect(self.search_tree)    
+                self.apply_grid_effect(self.tree)    
             else:
                 messagebox.showerror("Error", response.json().get("detail", "Failed to retrieve payments."))
         except requests.exceptions.RequestException as e:
