@@ -45,25 +45,23 @@ class EventManagement:
         y_coordinate = (screen_height // 2) - (window_height // 2)
         self.root.geometry(f"{window_width}x{window_height}+{x_coordinate}+{y_coordinate}")
 
+        # Main Container Frame
+        self.container = tk.Frame(self.root, bg="#ffffff", padx=10, pady=10)
+        self.container.pack(fill=tk.BOTH, expand=True)
+
         # Header Frame
-        self.header_frame = tk.Frame(self.root, bg="#2C3E50", height=50)
-        self.header_frame.pack(fill=tk.X)
-
-        # Grid Layout Configuration
-        self.header_frame.grid_columnconfigure(0, weight=1)  # Left spacing
-        self.header_frame.grid_columnconfigure(1, weight=2)  # Center (title)
-        self.header_frame.grid_columnconfigure(2, weight=1)  # Right (actions)
-
-        # Title Label (Centered Properly)
-        self.title_label = tk.Label(self.header_frame, text="                                                               Event Management",
+        self.header_frame = tk.Frame(self.container, bg="#2C3E50", height=60)
+        self.header_frame.pack(fill=tk.X, pady=(0, 5))
+        
+        self.title_label = tk.Label(self.header_frame, text="Event Management", 
                                     font=("Helvetica", 16, "bold"), fg="white", bg="#2C3E50")
-        self.title_label.grid(row=0, column=1, pady=10, sticky="ew")  # Full width, ensures centering
-
-        # Action Frame (Right Side)
+        self.title_label.pack(pady=2)
+        
+        # ==== New Action Frame (Right Side of Header) ====
         self.action_frame = tk.Frame(self.header_frame, bg="#2C3E50")
-        self.action_frame.grid(row=0, column=2, padx=20, sticky="e")  # Stays aligned to the right
+        self.action_frame.pack(side=tk.RIGHT, padx=20)  
 
-        # Export to Excel (Plain Text, No Border)
+        # Export to Excel
         self.export_label = tk.Label(self.action_frame, text="📊 Export to Excel",
                                     font=("Helvetica", 10, "bold"), fg="white", bg="#2C3E50", cursor="hand2")
         self.export_label.pack(side=tk.RIGHT, padx=10)
@@ -71,7 +69,7 @@ class EventManagement:
         self.export_label.bind("<Leave>", lambda e: self.export_label.config(fg="white"))
         self.export_label.bind("<Button-1>", lambda e: self.export_report())
 
-        # Print Report (Plain Text, No Border)
+        # Print Report
         self.print_label = tk.Label(self.action_frame, text="🖨 Print Report",
                                     font=("Helvetica", 10, "bold"), fg="white", bg="#2C3E50", cursor="hand2")
         self.print_label.pack(side=tk.RIGHT, padx=10)
@@ -79,12 +77,26 @@ class EventManagement:
         self.print_label.bind("<Leave>", lambda e: self.print_label.config(fg="white"))
         self.print_label.bind("<Button-1>", lambda e: self.print_report())
 
-        # Sidebar Section
-        self.left_frame = tk.Frame(self.root, bg="#2C3E50", width=220)
-        self.left_frame.pack(side=tk.LEFT, fill=tk.Y, padx=0, pady=0)
 
-        # Right Section with a border and shadow effect
-        self.right_frame = tk.Frame(self.root, bg="#ffffff", width=700, relief="ridge", borderwidth=2)
+         # ==== Main Content Frame (Holds Sidebar + Right Section) ====
+        self.main_frame = tk.Frame(self.container, bg="#f0f0f0")
+        self.main_frame.pack(fill=tk.BOTH, expand=True)
+
+         # ==== Menu Container (With "Menu" Heading) ====
+        self.Menu = tk.Frame(self.main_frame, bg="#2C3E50", width=230)
+        self.Menu.pack(side=tk.LEFT, fill=tk.Y)
+
+        # === "Menu" Heading ===
+        self.menu_label = tk.Label(self.Menu, text="MENU", font=("Helvetica", 12, "bold"), 
+                                   fg="white", bg="#34495E", pady=5)
+        self.menu_label.pack(fill=tk.X)
+
+        # Sidebar Section (Inside `Menu` Frame)
+        self.left_frame = tk.Frame(self.Menu, bg="#2C3E50", width=220)
+        self.left_frame.pack(fill=tk.BOTH, expand=True)
+
+        # Right Section (Main Content)
+        self.right_frame = tk.Frame(self.main_frame, bg="#ffffff", relief="ridge", borderwidth=2)
         self.right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=10, pady=10)
 
         # Subheading Label
@@ -137,16 +149,27 @@ class EventManagement:
             btn.pack(pady=8, padx=15, anchor="w", fill="x")
             self.buttons.append(btn)
 
-        # Dashboard Link with Circular Border
-        self.dashboard_label = tk.Label(
-            self.left_frame, text="⬅ Dashboard", cursor="hand2",
-            font=("Helvetica", 10, "bold"), fg="white", bg="#2C3E50",
-            padx=10, pady=5, relief="solid", borderwidth=2, highlightthickness=2,
-            highlightbackground="white", highlightcolor="white"
+        # Dashboard Link
+            self.dashboard_label = tk.Label(
+            self.left_frame,
+            text="⬅ Dashboard",
+            cursor="hand2",
+            font=("Helvetica", 10, "bold"),
+            fg="white",
+            bg="#1A5276",  # Deep Blue Background
+            padx=10,
+            pady=5,
+            relief="solid",
+            borderwidth=2
         )
-        self.dashboard_label.pack(pady=15, padx=15, anchor="w", fill="x")
-        self.dashboard_label.bind("<Enter>", lambda e: self.dashboard_label.config(bg="#3E5770"))
-        self.dashboard_label.bind("<Leave>", lambda e: self.dashboard_label.config(bg="#2C3E50"))
+        self.dashboard_label.pack(pady=15, padx=10, anchor="w", fill="x")
+
+
+        # Change background color when hovering over
+        self.dashboard_label.bind("<Enter>", lambda e: self.dashboard_label.config(bg="#154360"))  # Darker Blue on Hover
+        self.dashboard_label.bind("<Leave>", lambda e: self.dashboard_label.config(bg="#1A5276"))  # Reset on Leave
+
+        # Click event to open dashboard
         self.dashboard_label.bind("<Button-1>", lambda e: self.open_dashboard_window())
 
 
