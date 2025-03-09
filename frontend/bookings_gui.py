@@ -49,9 +49,9 @@ class BookingManagement:
         self.header_frame = tk.Frame(self.container, bg="#2C3E50", height=60)
         self.header_frame.pack(fill=tk.X, pady=(0, 5))
         
-        self.title_label = tk.Label(self.header_frame, text="Booking Management", 
-                                    font=("Helvetica", 16, "bold"), fg="white", bg="#2C3E50")
-        self.title_label.pack(pady=2)
+        self.title_label = tk.Label(self.header_frame, text="📅 Booking Management", 
+                                    font=("Helvetica", 16, "bold"), fg="gold", bg="#2C3E50")
+        self.title_label.pack(pady=0)
         
         # ==== New Action Frame (Right Side of Header) ====
         self.action_frame = tk.Frame(self.header_frame, bg="#2C3E50")

@@ -25,11 +25,11 @@ class Dashboard:
             self.root.iconbitmap(icon_path)
         
         # HEADER FRAME
-        self.header = tk.Frame(self.root, bg="#2C3E50", height=60)
+        self.header = tk.Frame(self.root,  bg="#2C3E50", height=60)
         self.header.pack(fill=tk.X)
 
-        title_label = tk.Label(self.header, text="Dashboard                                                                                  Hotel & Event Management System", fg="white", bg="#2C3E50", 
-                               font=("Arial", 14, "bold"))
+        title_label = tk.Label(self.header, text="Dashboard                                                                                  🏨Hotel & Event Management System", fg="gold", bg="#2C3E50", 
+                               font=("Arial", 14, "bold"), )
         title_label.pack(side=tk.LEFT, padx=20, pady=10)
         
         # SIDEBAR CONTAINER FRAME
