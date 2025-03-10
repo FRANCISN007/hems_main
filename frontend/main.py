@@ -1,5 +1,6 @@
 import tkinter as tk
 from license_gui import LicenseGUI
+
 from login_gui import LoginGUI
 import requests
 from tkinter import messagebox
@@ -8,9 +9,7 @@ import os
 import sys
 import win32print
 import win32ui
-from frontend.welcome import WelcomeWindow
-
-
+#from frontend.welcome import WelcomeWindow
 
 
 
@@ -45,9 +44,9 @@ class Application:
             self.show_license_screen()
 
     def show_license_screen(self):
-        # License input screen for the user
         self.license_screen = LicenseGUI(self.root, self.show_login_screen)
         self.license_screen.pack()
+
 
     def show_login_screen(self):
         if hasattr(self, 'license_screen'):
