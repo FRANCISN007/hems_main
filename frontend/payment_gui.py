@@ -7,8 +7,10 @@ from datetime import datetime
 import pytz
 from tkinter import ttk, Tk
 import tkinter as tk
+import customtkinter as ctk
 import os
 import pandas as pd
+from CTkMessagebox import CTkMessagebox
 
 from tkinter import Tk, Button, messagebox
 from utils import export_to_excel, print_excel
@@ -275,103 +277,110 @@ class PaymentManagement:
         
         
 
-    def create_payment(self):
-        """Opens a professional pop-up window for creating a new payment."""
-        create_window = tk.Toplevel(self.root)
-        create_window.title("Create Payment")
-        create_window.configure(bg="#dddddd")  # Light grey background
 
-        # Set window size
+
+    def create_payment(self):
+        """Opens a modern CTk pop-up window for creating a new payment."""
+        create_window = ctk.CTkToplevel(self.root)
+        create_window.title("Create Payment")
+        create_window.geometry("500x400")
+        create_window.resizable(False, False)
+
+        # Center the window
+        # Get screen width and height
         window_width = 500
-        window_height = 400
-        screen_width = create_window.winfo_screenwidth()
-        screen_height = create_window.winfo_screenheight()
+        window_height = 320
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
+
+        # Calculate position
         x_coordinate = (screen_width - window_width) // 2
         y_coordinate = (screen_height - window_height) // 2
+
+        # Apply geometry
         create_window.geometry(f"{window_width}x{window_height}+{x_coordinate}+{y_coordinate}")
+
 
         # Make it modal
         create_window.transient(self.root)
         create_window.grab_set()
 
-        # 🔹 Dark Header
-        header_frame = tk.Frame(create_window, bg="#2c3e50", height=50)
-        header_frame.pack(fill=tk.X)
+        # 🔹 Header
+        header_label = ctk.CTkLabel(create_window, text="Create Payment", font=("Arial", 16, "bold"))
+        header_label.pack(pady=10)
 
-        header_label = tk.Label(header_frame, text="Create Payment", font=("Arial", 14, "bold"), fg="white", bg="#2c3e50", pady=10)
-        header_label.pack()
-
-        # 🔹 Main Content Frame with Border
-        frame = tk.Frame(create_window, bg="#ffffff", padx=20, pady=20, relief="ridge", borderwidth=3)
-        frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
-
-        # 🔹 Form Frame Inside Main Frame
-        form_frame = tk.Frame(frame, bg="#ffffff", padx=10, pady=10)
-        form_frame.grid(row=0, columnspan=2, pady=10, padx=10, sticky="ew")
+        # 🔹 Form Frame
+        form_frame = ctk.CTkFrame(create_window, corner_radius=10)
+        form_frame.pack(fill="both", expand=True, padx=20, pady=10)
 
         # 📌 Payment Fields
         fields = [
-            ("Booking ID", tk.Entry),
-            ("Amount Paid", tk.Entry),
-            ("Discount Allowed", tk.Entry),
-            ("Payment Method", ttk.Combobox),
+            ("Booking ID", ctk.CTkEntry),
+            ("Amount Paid", ctk.CTkEntry),
+            ("Discount Allowed", ctk.CTkEntry),
+            ("Payment Method", ctk.CTkComboBox),
             ("Payment Date", DateEntry),
         ]
 
         self.entries = {}
 
         for i, (label, field_type) in enumerate(fields):
-            lbl = tk.Label(form_frame, text=label, font=("Helvetica", 12, "bold"), bg="#ffffff", fg="#2c3e50")
-            lbl.grid(row=i, column=0, sticky="w", pady=5, padx=5)
+            lbl = ctk.CTkLabel(form_frame, text=label, font=("Arial", 12))
+            lbl.grid(row=i, column=0, sticky="w", padx=10, pady=5)
 
-            if field_type == ttk.Combobox:
-                entry = field_type(form_frame, values=["Cash", "POS Card", "Bank Transfer"], state="readonly", font=("Helvetica", 12), width=20)
+            if field_type == ctk.CTkComboBox:
+                entry = field_type(form_frame, values=["Cash", "POS Card", "Bank Transfer"], state="readonly", width=200)
             elif field_type == DateEntry:
-                entry = field_type(form_frame, font=("Helvetica", 12), width=12, background='darkblue', foreground='white', borderwidth=2)
+                entry = field_type(form_frame, width=15, background='darkblue', foreground='white', borderwidth=2)
             else:
-                entry = field_type(form_frame, font=("Helvetica", 12), width=25)
+                entry = field_type(form_frame, width=200)
 
-            entry.grid(row=i, column=1, pady=5, padx=5, sticky="ew")
-            self.entries[label] = entry  # ✅ Store entry reference with correct label text
+            entry.grid(row=i, column=1, pady=5, padx=15, sticky="ew")
+            self.entries[label] = entry  # ✅ Store entry reference
 
         # 🔹 Submit Button
-        btn_frame = tk.Frame(frame, bg="#ffffff")
-        btn_frame.grid(row=len(fields), columnspan=2, pady=15)
+        btn_frame = ctk.CTkFrame(form_frame)
+        btn_frame.grid(row=len(fields), column=0, columnspan=2, pady=15)
 
-        submit_btn = ttk.Button(btn_frame, text="Submit Payment", command=lambda: self.submit_payment(create_window), style="Bold.TButton")
-        submit_btn.pack()
-
+        submit_btn = ctk.CTkButton(btn_frame, text="Submit Payment", width=200, command=lambda: self.submit_payment(create_window))
+        submit_btn.pack(pady=5)
 
 
 
     def submit_payment(self, create_window):
         """Handles payment submission to the backend and closes the pop-up window."""
         try:
+            # ✅ Validate Booking ID
             booking_id_str = self.entries["Booking ID"].get().strip()
             if not booking_id_str.isdigit():
-                messagebox.showerror("Error", "Booking ID must be a valid integer.")
+                CTkMessagebox(title="Error", message="Booking ID must be a valid integer.", icon="cancel")
                 return
             booking_id = int(booking_id_str)
 
+            # ✅ Validate Amount Paid
             amount_paid_str = self.entries["Amount Paid"].get().strip()
             if not amount_paid_str.replace(".", "", 1).isdigit():
-                messagebox.showerror("Error", "Amount Paid must be a valid number.")
+                CTkMessagebox(title="Error", message="Amount Paid must be a valid number.", icon="cancel")
                 return
             amount_paid = float(amount_paid_str)
 
+            # ✅ Validate Discount Allowed
             discount_allowed_str = self.entries["Discount Allowed"].get().strip()
             discount_allowed = float(discount_allowed_str) if discount_allowed_str.replace(".", "", 1).isdigit() else 0.0
 
+            # ✅ Validate Payment Method
             payment_method = self.entries["Payment Method"].get().strip()
             if not payment_method:
-                messagebox.showerror("Error", "Payment Method is required.")
+                CTkMessagebox(title="Error", message="Payment Method is required.", icon="cancel")
                 return
 
+            # ✅ Validate Payment Date
             payment_date = self.entries["Payment Date"].get_date()
             payment_date = datetime(payment_date.year, payment_date.month, payment_date.day, 0, 0, 0, 0)
             payment_date = pytz.utc.localize(payment_date)
             payment_date_iso = payment_date.isoformat()
 
+            # ✅ Prepare Data
             payload = {
                 "amount_paid": amount_paid,
                 "discount_allowed": discount_allowed,
@@ -379,9 +388,9 @@ class PaymentManagement:
                 "payment_date": payment_date_iso,
             }
 
+            # ✅ Send Request
             url = f"http://127.0.0.1:8000/payments/{booking_id}"
             headers = {"Authorization": f"Bearer {self.token}", "Content-Type": "application/json"}
-
             response = requests.post(url, json=payload, headers=headers)
             data = response.json()
 
@@ -390,17 +399,26 @@ class PaymentManagement:
                 if payment_details:
                     payment_id = payment_details.get("payment_id")
                     created_by = payment_details.get("created_by")
-                    messagebox.showinfo(
-                        "Success", 
-                        f"Payment created successfully!\nPayment ID: {payment_id}\nCreated By: {created_by}"
-                    )
-                    create_window.destroy()  # Close the pop-up window
+                    
+                    # Close the pop-up first
+                    create_window.destroy()
+
+                    # Delay the messagebox slightly to avoid grab conflict
+                    self.root.after(100, lambda: CTkMessagebox(
+                        title="Success", 
+                        message=f"Payment created successfully!\nPayment ID: {payment_id}\nCreated By: {created_by}", 
+                        icon="check"
+                    ))
                 else:
-                    messagebox.showerror("Error", "Payment ID missing in response.")
+                    create_window.destroy()  # Ensure the window is closed before showing the error
+                    self.root.after(100, lambda: CTkMessagebox(title="Error", message="Payment ID missing in response.", icon="cancel"))
             else:
-                messagebox.showerror("Error", data.get("detail", "Payment failed."))
+                create_window.destroy()
+                self.root.after(100, lambda: CTkMessagebox(title="Error", message=data.get("detail", "Payment failed."), icon="cancel"))
+
         except Exception as e:
-            messagebox.showerror("Error", f"An unexpected error occurred: {e}")
+            create_window.destroy()
+            self.root.after(100, lambda: CTkMessagebox(title="Error", message=f"An unexpected error occurred: {e}", icon="cancel"))
 
 
 

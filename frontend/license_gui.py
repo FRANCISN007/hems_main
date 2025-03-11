@@ -1,11 +1,9 @@
 import tkinter as tk
-from tkinter import messagebox
+from CTkMessagebox import CTkMessagebox
 import requests
 from login_gui import LoginGUI
 from PIL import Image, ImageTk
 import os
-
-
 
 API_URL = "http://127.0.0.1:8000/license"  # FastAPI server URL
 
@@ -23,16 +21,13 @@ class LicenseGUI(tk.Toplevel):
 
         # Try using ICO first
         if os.path.exists(icon_ico_path):
-            self.iconbitmap(icon_ico_path)  # ✅ Fixed: Use `self`, not `self.root`
+            self.iconbitmap(icon_ico_path)
         elif os.path.exists(icon_png_path):
             try:
-                # Load and resize the PNG icon
                 icon_img = Image.open(icon_png_path)
-                icon_resized = icon_img.resize((80, 80))  # Adjust size (e.g., 128x128 if needed)
+                icon_resized = icon_img.resize((80, 80))
                 self.icon_image = ImageTk.PhotoImage(icon_resized)
-
-                # Set the resized icon
-                self.iconphoto(True, self.icon_image)  # ✅ Fixed: Use `self`, not `self.root`
+                self.iconphoto(True, self.icon_image)
             except Exception as e:
                 print(f"Error loading PNG icon: {e}")
         else:
@@ -73,44 +68,37 @@ class LicenseGUI(tk.Toplevel):
         key = self.key_entry.get()
 
         if not license_password or not key:
-            messagebox.showerror("Input Error", "Please enter both license password and key.")
+            CTkMessagebox(title="Input Error", message="Please enter both license password and key.", icon="cancel")
             return
 
         try:
-            # Send request with query parameters
             response = requests.post(
                 f"{API_URL}/generate?license_password={license_password}&key={key}", 
                 headers={"Content-Type": "application/json"}
             )
-
-            response.raise_for_status()  # Raise an exception if HTTP error occurs
-            new_license = response.json()  # Parse response JSON
-
-            messagebox.showinfo("License Generated", f"New License Key: {new_license['key']}")
+            response.raise_for_status()
+            new_license = response.json()
+            CTkMessagebox(title="License Generated", message=f"New License Key: {new_license['key']}", icon="check")
 
         except requests.exceptions.HTTPError as err:
             if response.status_code == 400:
-                # ✅ Handle duplicate license key error
                 error_message = response.json().get("detail", "License key already exists.")
-                messagebox.showerror("Error", error_message)
+                CTkMessagebox(title="Error", message=error_message, icon="cancel")
             elif response.status_code == 403:
-                messagebox.showerror("Error", "Invalid license password.")
+                CTkMessagebox(title="Error", message="Invalid license password.", icon="cancel")
             else:
-                messagebox.showerror("Error", f"HTTP Error: {response.status_code} - {response.text}")
+                CTkMessagebox(title="Error", message=f"HTTP Error: {response.status_code} - {response.text}", icon="cancel")
 
         except requests.exceptions.RequestException as e:
-            messagebox.showerror("Error", f"Request failed: {e}")
-
+            CTkMessagebox(title="Error", message=f"Request failed: {e}", icon="cancel")
         except Exception as e:
-            messagebox.showerror("Error", f"An unexpected error occurred: {e}")
-
-
+            CTkMessagebox(title="Error", message=f"An unexpected error occurred: {e}", icon="cancel")
 
     def verify_license(self):
         key = self.verify_key_entry.get()
 
         if not key:
-            messagebox.showerror("Input Error", "Please enter a license key.")
+            CTkMessagebox(title="Input Error", message="Please enter a license key.", icon="cancel")
             return
 
         try:
@@ -119,16 +107,22 @@ class LicenseGUI(tk.Toplevel):
             result = response.json()
 
             if result["valid"]:
-                messagebox.showinfo("License Valid", "The license key is valid!")
-                self.destroy()
-                login_window = tk.Toplevel(self.master)
-                LoginGUI(login_window)
+                msg = CTkMessagebox(title="License Valid", 
+                                    message="The license key is valid!", 
+                                    icon="check", 
+                                    option_1="OK")
+
+                if msg.get() == "OK":  # Only proceed if user clicks OK
+                    self.destroy()
+                    login_window = tk.Toplevel(self.master)
+                    LoginGUI(login_window)
             else:
-                messagebox.showwarning("Invalid License", result["message"])
+                CTkMessagebox(title="Invalid License", message=result["message"], icon="warning")
+
         except requests.exceptions.HTTPError:
-            messagebox.showerror("Error", "Invalid license key")
+            CTkMessagebox(title="Error", message="Invalid license key", icon="cancel")
         except Exception as e:
-            messagebox.showerror("Error", f"An unexpected error occurred: {e}")
+            CTkMessagebox(title="Error", message=f"An unexpected error occurred: {e}", icon="cancel")
 
 # Main Execution
 root = tk.Tk()

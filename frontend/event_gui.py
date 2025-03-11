@@ -264,7 +264,7 @@ class EventManagement:
         create_window.configure(bg="#dddddd")  # Light grey background
 
         # Set window size (smaller)
-        window_width = 450
+        window_width = 650
         window_height = 500
 
         # Get screen width and height
@@ -602,7 +602,7 @@ class EventManagement:
         self.update_window.configure(bg="#dddddd")  # Light grey background
 
         # Set window size (smaller)
-        window_width = 600
+        window_width = 650
         window_height = 550
 
         # Get screen width and height
@@ -838,7 +838,7 @@ class EventManagement:
         self.payment_window.configure(bg="#dddddd")  # Light gray background
 
         # Set window size
-        window_width = 450
+        window_width = 600
         window_height = 400
 
         # Get screen width and height
