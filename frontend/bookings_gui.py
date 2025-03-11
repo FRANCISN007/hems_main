@@ -325,7 +325,7 @@ class BookingManagement:
         create_window.configure(fg_color="#f5f5f5")  # Light background color
 
         # Center the window on the screen
-        window_width = 450
+        window_width = 600
         window_height = 400
         screen_width = create_window.winfo_screenwidth()
         screen_height = create_window.winfo_screenheight()
@@ -385,7 +385,7 @@ class BookingManagement:
             hover_color="#2980b9",
             text_color="white",
             corner_radius=10,
-            width=350,
+            width=450,
             height=40
         )
         submit_btn.grid(row=len(fields), column=0, columnspan=2, pady=25, padx=30, sticky="ew")  # Center the button
