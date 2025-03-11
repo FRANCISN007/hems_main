@@ -9,7 +9,7 @@ import os
 
 API_URL = "http://127.0.0.1:8000/license"  # FastAPI server URL
 
-class LicenseSplashScreen(tk.Toplevel):
+class LicenseGUI(tk.Toplevel):
     def __init__(self, master):
         super().__init__(master)
         self.master = master
@@ -133,5 +133,5 @@ class LicenseSplashScreen(tk.Toplevel):
 # Main Execution
 root = tk.Tk()
 root.withdraw()
-license_splash = LicenseSplashScreen(root)
+license_splash = LicenseGUI(root)
 root.mainloop()

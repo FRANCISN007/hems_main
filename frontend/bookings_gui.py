@@ -4,6 +4,8 @@ from tkcalendar import DateEntry
 import requests
 from utils import BASE_URL
 import datetime 
+import customtkinter as ctk
+from CTkMessagebox import CTkMessagebox
 
 from tkinter import Tk, Button, messagebox
 from utils import export_to_excel, print_excel
@@ -312,74 +314,81 @@ class BookingManagement:
     
 
     def create_booking(self):
+        """Opens a professional pop-up window for creating a new booking with CustomTkinter."""
         self.clear_right_frame()
-        """Opens a professional pop-up window for creating a new booking."""
-        create_window = tk.Toplevel(self.root)
-        create_window.title("Create Booking")
-        create_window.configure(bg="#dddddd")  # Light grey background
 
-        # Set window size
+        # 🔹 Create a new pop-up window
+        create_window = ctk.CTkToplevel(self.root)
+        create_window.title("Create Booking")
+        create_window.geometry("450x500")  # Adjusted height for better spacing
+        create_window.resizable(False, False)
+        create_window.configure(fg_color="#f5f5f5")  # Light background color
+
+        # Center the window on the screen
         window_width = 450
-        window_height = 430
+        window_height = 400
         screen_width = create_window.winfo_screenwidth()
         screen_height = create_window.winfo_screenheight()
         x_coordinate = (screen_width - window_width) // 2
         y_coordinate = (screen_height - window_height) // 2
         create_window.geometry(f"{window_width}x{window_height}+{x_coordinate}+{y_coordinate}")
 
-        # Make it modal
+        # Make the window modal
         create_window.transient(self.root)
         create_window.grab_set()
 
         # 🔹 Dark Header
-        header_frame = tk.Frame(create_window, bg="#2c3e50", height=50)
-        header_frame.pack(fill=tk.X)
+        header_frame = ctk.CTkFrame(create_window, fg_color="#2c3e50", height=50, corner_radius=8)
+        header_frame.pack(fill="x", padx=10, pady=10)
 
-        header_label = tk.Label(header_frame, text="Create Booking", font=("Arial", 14, "bold"), fg="white", bg="#2c3e50", pady=10)
-        header_label.pack()
+        header_label = ctk.CTkLabel(header_frame, text="Create Booking", font=("Arial", 16, "bold"), text_color="white")
+        header_label.pack(pady=10)
 
-        # 🔹 Main Content Frame with Border
-        frame = tk.Frame(create_window, bg="#ffffff", padx=20, pady=20, relief="ridge", borderwidth=3)
-        frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
-
-        # 🔹 Form Frame Inside Main Frame
-        form_frame = tk.Frame(frame, bg="#ffffff", padx=10, pady=10)
-        form_frame.grid(row=0, columnspan=2, pady=10, padx=10, sticky="ew")
+        # 🔹 Main Content Frame
+        frame = ctk.CTkFrame(create_window, fg_color="white", corner_radius=10)
+        frame.pack(fill="both", expand=True, padx=10, pady=10)
 
         # 📌 Booking Fields
         fields = [
-            ("Room Number", tk.Entry),
-            ("Guest Name", tk.Entry),
-            ("Phone Number", tk.Entry),
-            ("Booking Type", ttk.Combobox),
+            ("Room Number", ctk.CTkEntry),
+            ("Guest Name", ctk.CTkEntry),
+            ("Phone Number", ctk.CTkEntry),
+            ("Booking Type", ctk.CTkComboBox),
             ("Arrival Date", DateEntry),
             ("Departure Date", DateEntry),
         ]
 
         self.entries = {}
 
-        for i, (label, field_type) in enumerate(fields):
-            label = tk.Label(form_frame, text=label, font=("Helvetica", 12, "bold"), bg="#ffffff", fg="#2c3e50")
-            label.grid(row=i, column=0, sticky="w", pady=5, padx=5)
+        # Form layout
+        for i, (label_text, field_type) in enumerate(fields):
+            label = ctk.CTkLabel(frame, text=label_text, font=("Helvetica", 12, "bold"), text_color="#2c3e50")
+            label.grid(row=i, column=0, sticky="w", pady=5, padx=10)
 
-            if field_type == ttk.Combobox:
-                entry = field_type(form_frame, values=["checked-in", "reservation", "complimentary"], state="readonly", font=("Helvetica", 12), width=20)
+            if field_type == ctk.CTkComboBox:
+                entry = ctk.CTkComboBox(frame, values=["checked-in", "reservation", "complimentary"], state="readonly",
+                                        font=("Helvetica", 12), width=200)
             elif field_type == DateEntry:
-                entry = field_type(form_frame, font=("Helvetica", 12), width=12, background='darkblue', foreground='white', borderwidth=2)
+                entry = DateEntry(frame, font=("Helvetica", 12), width=12, background='darkblue', foreground='white', borderwidth=2)
             else:
-                entry = field_type(form_frame, font=("Helvetica", 12), width=25)
+                entry = field_type(frame, font=("Helvetica", 12), width=28)
 
-            entry.grid(row=i, column=1, pady=5, padx=5, sticky="ew")
-            self.entries[label.cget("text")] = entry  # ✅ Store entry reference with correct label text
-
-        # 🔹 Submit Button
-        btn_frame = tk.Frame(frame, bg="#ffffff")
-        btn_frame.grid(row=len(fields), columnspan=2, pady=15)
-
-        submit_btn = ttk.Button(btn_frame, text="Submit Booking", command=lambda: self.submit_booking(create_window), style="Bold.TButton")
-        submit_btn.pack()
-
-
+            entry.grid(row=i, column=1, pady=5, padx=10, sticky="ew")
+            self.entries[label_text] = entry  # Store entry reference
+# 🔹 Submit Button with Hover Effect (Centered)
+        submit_btn = ctk.CTkButton(
+            frame,
+            text="Submit Booking",
+            command=lambda: self.submit_booking(create_window),
+            font=("Arial", 14, "bold"),
+            fg_color="#3498db",
+            hover_color="#2980b9",
+            text_color="white",
+            corner_radius=10,
+            width=350,
+            height=40
+        )
+        submit_btn.grid(row=len(fields), column=0, columnspan=2, pady=25, padx=30, sticky="ew")  # Center the button
 
 
 
@@ -388,6 +397,12 @@ class BookingManagement:
         try:
             created_by = self.username  
 
+            # Ensure entries dictionary exists
+            if not hasattr(self, "entries"):
+                messagebox.showerror("Error", "Entry fields are not initialized properly.")
+                return
+
+            # Extract data from form entries
             booking_data = {
                 "room_number": self.entries["Room Number"].get(),
                 "guest_name": self.entries["Guest Name"].get(),
@@ -398,42 +413,82 @@ class BookingManagement:
                 "created_by": created_by,
             }
 
-            if not all(booking_data.values()):  
-                messagebox.showerror("Error", "Please fill in all fields")
+
+            from CTkMessagebox import CTkMessagebox
+
+            if not all(booking_data.values()):
+                CTkMessagebox(
+                    title="Missing Fields",
+                    message="Please fill in all required fields before submitting.",
+                    icon="warning",
+                    option_1="OK"
+                )
                 return
 
             api_url = "http://127.0.0.1:8000/bookings/create/"  
             headers = {"Authorization": f"Bearer {self.token}", "Content-Type": "application/json"}
 
+            # Send POST request
             response = requests.post(api_url, json=booking_data, headers=headers)
+
+            
+
+            from CTkMessagebox import CTkMessagebox
 
             if response.status_code == 200:
                 response_data = response.json()
                 booking_id = response_data.get("booking_details", {}).get("id")  
 
                 if booking_id:
-                    messagebox.showinfo("Success", f"Booking created successfully!\nBooking ID: {booking_id}")
-                    
-                    # Ensure this method exists before calling
+                    create_window.destroy()  # ✅ Close pop-up first
+
+                    CTkMessagebox(
+                        title="Success", 
+                        message=f"Booking created successfully!\nBooking ID: {booking_id}",
+                        icon="check",
+                        option_1="OK"
+                    )
+
+                    # Reset form if method exists
                     if hasattr(self, "reset_booking_form"):
                         self.reset_booking_form()
                     else:
-                        print("reset_booking_form method is missing")
-
-                    create_window.destroy()  # Close the pop-up window
+                        print("Warning: reset_booking_form method is missing.")
 
                 else:
-                    messagebox.showerror("Error", "Booking ID missing in response.")
+                    CTkMessagebox(
+                        title="Error", 
+                        message="Booking ID missing in response.", 
+                        icon="cancel",
+                        option_1="OK"
+                    )
 
             else:
-                messagebox.showerror("Error", response.json().get("detail", "Booking failed."))
+                CTkMessagebox(
+                    title="Error", 
+                    message=response.json().get("detail", "Booking failed."), 
+                    icon="warning",
+                    option_1="OK"
+                )
 
         except KeyError as e:
-            messagebox.showerror("Error", f"Missing entry field: {e}")
-        except requests.exceptions.RequestException as e:
-            messagebox.showerror("Error", f"Request failed: {e}")
+            CTkMessagebox(
+                title="Error", 
+                message=f"Missing entry field: {e}", 
+                icon="warning",
+                option_1="OK"
+            )
 
-    
+        except requests.exceptions.RequestException as e:
+            CTkMessagebox(
+                title="Error", 
+                message=f"Request failed: {e}", 
+                icon="warning",
+                option_1="OK"
+            )
+
+
+
 
     def list_bookings(self):
         self.clear_right_frame()
@@ -1048,73 +1103,89 @@ class BookingManagement:
         self.subheading_label.config(text=text)
         command()
 
+    
+
+
     def update_booking(self):
         self.clear_right_frame()
-        """Opens a professional pop-up window for updating a booking."""
-        update_window = tk.Toplevel(self.root)
-        update_window.title("Update Booking")
-        update_window.configure(bg="#dddddd")  # Light grey background
 
-        # Set window size and center it
-        window_width = 480
-        window_height = 450
+        # Create a new pop-up window
+        update_window = ctk.CTkToplevel(self.root)
+        update_window.title("Update Booking")
+        update_window.geometry("450x550")  # Matching create_booking window size
+        update_window.resizable(False, False)
+        update_window.configure(fg_color="#f5f5f5")  # Light background color
+
+        # Center the window on the screen
+        window_width = 500
+        window_height = 440
         screen_width = update_window.winfo_screenwidth()
         screen_height = update_window.winfo_screenheight()
         x_coordinate = (screen_width - window_width) // 2
         y_coordinate = (screen_height - window_height) // 2
         update_window.geometry(f"{window_width}x{window_height}+{x_coordinate}+{y_coordinate}")
 
-        # Make it modal
+        # Make the window modal
         update_window.transient(self.root)
         update_window.grab_set()
 
-        # 🔹 Dark Header
-        header_frame = tk.Frame(update_window, bg="#2c3e50", height=50)
-        header_frame.pack(fill=tk.X)
+        # Dark Header
+        header_frame = ctk.CTkFrame(update_window, fg_color="#2c3e50", height=50, corner_radius=8)
+        header_frame.pack(fill="x", padx=10, pady=10)
 
-        header_label = tk.Label(header_frame, text="Update Booking", font=("Arial", 14, "bold"), fg="white", bg="#2c3e50", pady=10)
-        header_label.pack()
+        header_label = ctk.CTkLabel(header_frame, text="Update Booking", font=("Arial", 16, "bold"), text_color="white")
+        header_label.pack(pady=10)
 
-        # 🔹 Main Content Frame with Border
-        frame = tk.Frame(update_window, bg="#ffffff", padx=20, pady=20, relief="ridge", borderwidth=3)
-        frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        # Main Content Frame
+        frame = ctk.CTkFrame(update_window, fg_color="white", corner_radius=10)
+        frame.pack(fill="both", expand=True, padx=10, pady=10)
 
-        # 🔹 Form Frame Inside Main Frame
-        form_frame = tk.Frame(frame, bg="#ffffff", padx=10, pady=10)
-        form_frame.grid(row=0, columnspan=2, pady=10, padx=10, sticky="ew")
-
-        # 📌 Booking Fields
+        # Booking Fields
         fields = [
-            ("Booking ID", tk.Entry),  # Unique field for updates
-            ("Room Number", tk.Entry),
-            ("Guest Name", tk.Entry),
-            ("Phone Number", tk.Entry),
-            ("Booking Type", ttk.Combobox),
+            ("Booking ID", ctk.CTkEntry),
+            ("Room Number", ctk.CTkEntry),
+            ("Guest Name", ctk.CTkEntry),
+            ("Phone Number", ctk.CTkEntry),
+            ("Booking Type", ctk.CTkComboBox),
             ("Arrival Date", DateEntry),
             ("Departure Date", DateEntry),
         ]
 
         self.entries = {}
 
-        for i, (label, field_type) in enumerate(fields):
-            tk.Label(form_frame, text=label, font=("Helvetica", 12, "bold"), bg="#ffffff", fg="#2c3e50").grid(row=i, column=0, sticky="w", pady=5, padx=5)
+        # Form layout
+        for i, (label_text, field_type) in enumerate(fields):
+            label = ctk.CTkLabel(frame, text=label_text, font=("Helvetica", 12, "bold"), text_color="#2c3e50")
+            label.grid(row=i, column=0, sticky="w", pady=5, padx=10)
 
-            if field_type == ttk.Combobox:
-                entry = field_type(form_frame, values=["checked-in", "reservation", "complimentary"], state="readonly", font=("Helvetica", 12), width=20)
+            if field_type == ctk.CTkComboBox:
+                entry = ctk.CTkComboBox(frame, values=["checked-in", "reservation", "complimentary"], state="readonly",
+                                        font=("Helvetica", 12), width=200)
             elif field_type == DateEntry:
-                entry = field_type(form_frame, font=("Helvetica", 12), width=12, background='darkblue', foreground='white', borderwidth=2)
+                entry = DateEntry(frame, font=("Helvetica", 12), width=12, background='darkblue', foreground='white', borderwidth=2)
             else:
-                entry = field_type(form_frame, font=("Helvetica", 12), width=25)
+                entry = field_type(frame, font=("Helvetica", 12), width=28)
 
-            entry.grid(row=i, column=1, pady=5, padx=5, sticky="ew")
-            self.entries[label] = entry  # ✅ Store entry reference with correct label text
+            entry.grid(row=i, column=1, pady=5, padx=10, sticky="ew")
+            self.entries[label_text] = entry  # Store entry reference
 
-        # 🔹 Submit Button
-        btn_frame = tk.Frame(frame, bg="#ffffff")
-        btn_frame.grid(row=len(fields), columnspan=2, pady=15)
+        # Submit Button with Hover Effect (Centered)
+        submit_btn = ctk.CTkButton(
+            frame,
+            text="Submit Update",
+            command=lambda: self.submit_update_booking(update_window),
+            font=("Arial", 14, "bold"),
+            fg_color="#3498db",
+            hover_color="#2980b9",
+            text_color="white",
+            corner_radius=10,
+            width=400,
+            height=40
+        )
+        submit_btn.grid(row=len(fields), column=0, columnspan=2, pady=25, padx=30, sticky="ew")  # Center the button
 
-        submit_btn = ttk.Button(btn_frame, text="Submit Update", command=lambda: self.submit_update_booking(update_window), style="Bold.TButton")
-        submit_btn.pack()
+
+
 
     def submit_update_booking(self, update_window):
         """Collects form data and sends a request to update a booking."""
@@ -1129,67 +1200,103 @@ class BookingManagement:
                 "booking_type": self.entries["Booking Type"].get(),
             }
 
-            if not all(booking_data.values()):  # Ensure all fields are filled
-                messagebox.showerror("Error", "Please fill in all fields")
+            # Validate required fields
+            if not all(booking_data.values()):
+                update_window.grab_release()  # Release grab before showing message
+                CTkMessagebox(title="Error", message="Please fill in all fields", icon="cancel", option_1="OK")
                 return
 
-            api_url = f"http://127.0.0.1:8000/bookings/update/?booking_id={booking_data['booking_id']}"  # Adjust if needed
+            # API request
+            api_url = f"http://127.0.0.1:8000/bookings/update/?booking_id={booking_data['booking_id']}"
             headers = {"Authorization": f"Bearer {self.token}", "Content-Type": "application/json"}
 
             response = requests.put(api_url, json=booking_data, headers=headers)
 
             if response.status_code == 200:
-                messagebox.showinfo("Success", "Booking updated successfully!")
-                update_window.destroy()  # Close the update window on success
+                update_window.grab_release()  # Release grab before showing message
+                msgbox = CTkMessagebox(title="Success", message="Booking updated successfully!", icon="check", option_1="OK")
+                if msgbox.get() == "OK":
+                    update_window.destroy()
             else:
-                messagebox.showerror("Error", response.json().get("detail", "Update failed."))
+                update_window.grab_release()  # Release grab before showing message
+                CTkMessagebox(title="Error", message=response.json().get("detail", "Update failed."), icon="warning", option_1="OK")
 
         except KeyError as e:
-            messagebox.showerror("Error", f"Missing entry field: {e}")
+            update_window.grab_release()  # Release grab before showing message
+            CTkMessagebox(title="Error", message=f"Missing entry field: {e}", icon="cancel", option_1="OK")
         except requests.exceptions.RequestException as e:
-            messagebox.showerror("Error", f"Request failed: {e}")
+            update_window.grab_release()  # Release grab before showing message
+            CTkMessagebox(title="Error", message=f"Request failed: {e}", icon="cancel", option_1="OK")
+
+
+    
+#from CTkMessagebox import CTkMessagebox
+
 
     def guest_checkout(self):
+        """Opens a professional pop-up window for guest checkout using CustomTkinter."""
         self.clear_right_frame()
-        """Opens a professional pop-up window for guest checkout."""
-        checkout_window = tk.Toplevel(self.root)
-        checkout_window.title("Guest Checkout")
-        checkout_window.configure(bg="#f8f9fa")  # Light background
 
-        # Set window size and center it
-        window_width, window_height = 360, 200
-        x_coordinate = (checkout_window.winfo_screenwidth() - window_width) // 2
-        y_coordinate = (checkout_window.winfo_screenheight() - window_height) // 2
+        # 🔹 Create a pop-up window
+        checkout_window = ctk.CTkToplevel(self.root)
+        checkout_window.title("Guest Checkout")
+        checkout_window.geometry("400x250")  # Adjusted for better spacing
+        checkout_window.resizable(False, False)
+        checkout_window.configure(fg_color="#f5f5f5")  # Light background color
+
+        # Center the window on the screen
+        window_width = 400
+        window_height = 250
+        screen_width = checkout_window.winfo_screenwidth()
+        screen_height = checkout_window.winfo_screenheight()
+        x_coordinate = (screen_width - window_width) // 2
+        y_coordinate = (screen_height - window_height) // 2
         checkout_window.geometry(f"{window_width}x{window_height}+{x_coordinate}+{y_coordinate}")
 
-        # Make it modal
+        # Make the window modal
         checkout_window.transient(self.root)
         checkout_window.grab_set()
 
-        # 🔹 Header Section
-        header = tk.Label(checkout_window, text="Guest Checkout", font=("Arial", 14, "bold"), fg="white", bg="#2c3e50", pady=8)
-        header.pack(fill=tk.X)
+        # 🔹 Dark Header
+        header_frame = ctk.CTkFrame(checkout_window, fg_color="#2c3e50", height=50, corner_radius=8)
+        header_frame.pack(fill="x", padx=10, pady=10)
 
-        # 🔹 Form Frame
-        form_frame = tk.Frame(checkout_window, bg="white", padx=15, pady=10)
-        form_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        header_label = ctk.CTkLabel(header_frame, text="Guest Checkout", font=("Arial", 16, "bold"), text_color="white")
+        header_label.pack(pady=10)
 
-        # Room Number Field
-        tk.Label(form_frame, text="Room Number", font=("Arial", 11, "bold"), bg="white", fg="#2c3e50").pack(anchor="w")
-        self.room_number_entry = tk.Entry(form_frame, font=("Arial", 11), width=22)
-        self.room_number_entry.pack(pady=5)
+        # 🔹 Main Content Frame
+        frame = ctk.CTkFrame(checkout_window, fg_color="white", corner_radius=10)
+        frame.pack(fill="both", expand=True, padx=10, pady=10)
 
-        # 🔹 Submit Button
-        submit_btn = ttk.Button(checkout_window, text="Checkout Guest", command=lambda: self.submit_guest_checkout(checkout_window), style="Bold.TButton")
-        submit_btn.pack(pady=10)
+        # 📌 Room Number Field
+        label = ctk.CTkLabel(frame, text="Room Number", font=("Helvetica", 12, "bold"), text_color="#2c3e50")
+        label.pack(anchor="w", pady=5, padx=10)
+
+        self.room_number_entry = ctk.CTkEntry(frame, font=("Helvetica", 12), width=200)
+        self.room_number_entry.pack(pady=5, padx=10)
+
+        # 🔹 Checkout Button with Hover Effect
+        submit_btn = ctk.CTkButton(
+            frame,
+            text="Checkout Guest",
+            command=lambda: self.submit_guest_checkout(checkout_window),
+            font=("Arial", 14, "bold"),
+            fg_color="#e74c3c",
+            hover_color="#c0392b",
+            text_color="white",
+            corner_radius=10,
+            width=250,
+            height=40
+        )
+        submit_btn.pack(pady=20)  # Space for better UI
 
     def submit_guest_checkout(self, checkout_window):
         """Sends a request to checkout the guest by room number."""
         try:
-            room_number = self.room_number_entry.get()
+            room_number = self.room_number_entry.get().strip()
 
             if not room_number:
-                messagebox.showerror("Error", "Please enter a room number.")
+                CTkMessagebox(title="Error", message="Please enter a valid room number.", icon="cancel")
                 return
 
             api_url = f"http://127.0.0.1:8000/bookings/{room_number}/"
@@ -1198,13 +1305,18 @@ class BookingManagement:
             response = requests.put(api_url, headers=headers)
 
             if response.status_code == 200:
-                messagebox.showinfo("Success", f"Guest checked out successfully for room number {room_number}!")
-                checkout_window.destroy()  # Close window on success
+                checkout_window.grab_release()  # Release grab before showing message
+                # Show success message and wait for user to acknowledge
+                msgbox = CTkMessagebox(title="Success", message=f"Guest successfully checked out from room {room_number}!",
+                                    icon="check", option_1="OK")
+                if msgbox.get() == "OK":  # Check if user clicked "OK"
+                    checkout_window.destroy()  # Close the window
+
             else:
-                messagebox.showerror("Error", response.json().get("detail", "Checkout failed."))
+                CTkMessagebox(title="Error", message=response.json().get("detail", "Checkout failed."), icon="warning")
 
         except requests.exceptions.RequestException as e:
-            messagebox.showerror("Error", f"Request failed: {e}")
+            CTkMessagebox(title="Error", message=f"Request failed: {e}", icon="cancel")
 
         
             
@@ -1215,15 +1327,19 @@ class BookingManagement:
         command()
 
     
+
+
+
     def cancel_booking(self):
         self.clear_right_frame()
-        """Opens a professional pop-up window for booking cancellation."""
-        cancel_window = tk.Toplevel(self.root)
+        
+        # Open pop-up window
+        cancel_window = ctk.CTkToplevel(self.root)
         cancel_window.title("Cancel Booking")
-        cancel_window.configure(bg="#f8f9fa")  # Light background
+        cancel_window.configure(bg="#f8f9fa")  
 
-        # Set window size and center it
-        window_width, window_height = 380, 250
+        # Window size and position
+        window_width, window_height = 400, 270
         x_coordinate = (cancel_window.winfo_screenwidth() - window_width) // 2
         y_coordinate = (cancel_window.winfo_screenheight() - window_height) // 2
         cancel_window.geometry(f"{window_width}x{window_height}+{x_coordinate}+{y_coordinate}")
@@ -1232,39 +1348,41 @@ class BookingManagement:
         cancel_window.transient(self.root)
         cancel_window.grab_set()
 
-        # 🔹 Header Section
-        header = tk.Label(cancel_window, text="Cancel Booking", font=("Arial", 14, "bold"), fg="white", bg="#2c3e50", pady=8)
-        header.pack(fill=tk.X)
+        # Header
+        header = ctk.CTkLabel(cancel_window, text="Cancel Booking", font=("Arial", 16, "bold"), fg_color="#2c3e50", text_color="white", pady=10)
+        header.pack(fill="x")
 
-        # 🔹 Form Frame
-        form_frame = tk.Frame(cancel_window, bg="white", padx=15, pady=10)
-        form_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        # Form Frame
+        form_frame = ctk.CTkFrame(cancel_window, fg_color="white", corner_radius=10)
+        form_frame.pack(fill="both", expand=True, padx=10, pady=10)
 
         # Booking ID Field
-        tk.Label(form_frame, text="Booking ID", font=("Arial", 11, "bold"), bg="white", fg="#2c3e50").pack(anchor="w")
-        self.booking_id_entry = tk.Entry(form_frame, font=("Arial", 11), width=24)
+        ctk.CTkLabel(form_frame, text="Booking ID", font=("Arial", 12, "bold"), text_color="#2c3e50").pack(anchor="w", pady=(5, 0))
+        self.booking_id_entry = ctk.CTkEntry(form_frame, font=("Arial", 12), width=260)
         self.booking_id_entry.pack(pady=5)
 
-        # Cancellation Reason (Optional)
-        tk.Label(form_frame, text="Cancellation Reason (Optional)", font=("Arial", 11, "bold"), bg="white", fg="#2c3e50").pack(anchor="w")
-        self.cancellation_reason_entry = tk.Entry(form_frame, font=("Arial", 11), width=24)
+        # Cancellation Reason
+        ctk.CTkLabel(form_frame, text="Reason (Optional)", font=("Arial", 12, "bold"), text_color="#2c3e50").pack(anchor="w", pady=(5, 0))
+        self.cancellation_reason_entry = ctk.CTkEntry(form_frame, font=("Arial", 12), width=260)
         self.cancellation_reason_entry.pack(pady=5)
 
-        # 🔹 Submit Button
-        submit_btn = ttk.Button(cancel_window, text="Cancel Booking", command=lambda: self.submit_cancel_booking(cancel_window), style="Bold.TButton")
-        submit_btn.pack(pady=10)
+        # Submit Button
+        submit_btn = ctk.CTkButton(cancel_window, text="Cancel Booking", font=("Arial", 13, "bold"), fg_color="#d9534f", hover_color="#c9302c",
+                                command=lambda: self.submit_cancel_booking(cancel_window))
+        submit_btn.pack(pady=15)
 
     def submit_cancel_booking(self, cancel_window):
-        """Sends a request to cancel the booking by booking ID, with an optional cancellation reason."""
+        """Handles the booking cancellation request."""
         try:
             booking_id = self.booking_id_entry.get().strip()
             cancellation_reason = self.cancellation_reason_entry.get().strip()
 
             if not booking_id:
-                messagebox.showerror("Error", "Please enter a Booking ID.")
+                cancel_window.grab_release()  # Release before showing message
+                CTkMessagebox(title="Error", message="Please enter a Booking ID.", icon="cancel")
                 return
 
-            # Construct API URL
+            # API request
             api_url = f"http://127.0.0.1:8000/bookings/cancel/{booking_id}/"
             if cancellation_reason:
                 api_url += f"?cancellation_reason={requests.utils.quote(cancellation_reason)}"
@@ -1272,19 +1390,32 @@ class BookingManagement:
             headers = {"Authorization": f"Bearer {self.token}", "Content-Type": "application/json"}
             response = requests.post(api_url, headers=headers)
 
+            # Handle response
             if response.status_code == 200:
+                cancel_window.grab_release()  # Ensure grab is released
                 canceled_booking = response.json().get("canceled_booking", {})
-                messagebox.showinfo("Success", f"Booking {canceled_booking.get('id', booking_id)} canceled successfully!\n"
-                                               f"Room Status: {canceled_booking.get('room_status', 'N/A')}\n"
-                                               f"Booking Status: {canceled_booking.get('status', 'N/A')}\n"
-                                               f"Reason: {canceled_booking.get('cancellation_reason', 'None')}")
-                cancel_window.destroy()
+
+                # Success message
+                CTkMessagebox(
+                    title="Success",
+                    message=f"Booking {canceled_booking.get('id', booking_id)} canceled successfully!\n"
+                            f"Room Status: {canceled_booking.get('room_status', 'N/A')}\n"
+                            f"Booking Status: {canceled_booking.get('status', 'N/A')}\n"
+                            f"Reason: {canceled_booking.get('cancellation_reason', 'None')}",
+                    icon="check",
+                )
+
+                # Close window after a short delay
+                cancel_window.after(500, cancel_window.destroy)
+
             else:
-                messagebox.showerror("Error", response.json().get("detail", "Cancellation failed."))
+                cancel_window.grab_release()  # Release before showing message
+                CTkMessagebox(title="Error", message=response.json().get("detail", "Cancellation failed."), icon="warning")
 
         except requests.exceptions.RequestException as e:
-            messagebox.showerror("Error", f"Request failed: {e}")
-    
+            cancel_window.grab_release()
+            CTkMessagebox(title="Error", message=f"Request failed: {e}", icon="cancel")
+
 
 
 
