@@ -82,6 +82,10 @@ class LoginGUI:
         
         try:
             response = requests.post(f"{self.api_base_url}/users/token", data={"username": username, "password": password})
+            if response.status_code == 500:
+                messagebox.showerror("Error", "Invalid username or password.")
+                return
+           
             response.raise_for_status()
             data = response.json()
             token = data.get("access_token")
@@ -94,7 +98,7 @@ class LoginGUI:
 
                 dashboard_root.mainloop()
             else:
-                messagebox.showerror("Error", "Invalid response from server.")
+                messagebox.showerror("Error", "Username or Password invalid.")
         except requests.RequestException as e:
             messagebox.showerror("Error", f"Login failed: {e}")
 
