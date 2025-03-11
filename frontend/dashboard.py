@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import ttk, messagebox
 from users_gui import UserManagement
 from rooms_gui import RoomManagement
 from bookings_gui import BookingManagement
@@ -11,12 +11,18 @@ from PIL import Image, ImageTk
 
 class Dashboard:
     def __init__(self, root, username, token):
+        #self.root = tk.Toplevel(root)
         self.root = root
+        self.tree = ttk.Treeview(self.root)
         self.token = token
         self.username = username
+        #self.root.state("zoomed")
         self.root.title("Hotel & Event Management System")
-        self.root.geometry("1200x700")
-        self.root.state("zoomed")
+        #self.root.geometry("1280x900")
+         # Maximize the window properly
+        self.root.after(100, lambda: self.root.state("zoomed"))  # Ensures full zoom
+
+        
         self.user_role = get_user_role(self.token)
 
         # Set application icon
@@ -25,10 +31,10 @@ class Dashboard:
             self.root.iconbitmap(icon_path)
         
         # HEADER FRAME
-        self.header = tk.Frame(self.root,  bg="#2C3E50", height=60)
+        self.header = tk.Frame(self.root,  bg="#1E3C72", height=60)
         self.header.pack(fill=tk.X)
 
-        title_label = tk.Label(self.header, text="Dashboard                                                                                  🏨Hotel & Event Management System", fg="gold", bg="#2C3E50", 
+        title_label = tk.Label(self.header, text="Dashboard                                                                                  🏨Hotel & Event Management System", fg="gold", bg="#1E3C72", 
                                font=("Arial", 14, "bold"), )
         title_label.pack(side=tk.LEFT, padx=20, pady=10)
         

@@ -90,7 +90,8 @@ class LoginGUI:
                 messagebox.showinfo("Success", "Login successful!")
                 self.root.destroy()
                 dashboard_root = ctk.CTk()
-                Dashboard(dashboard_root, username, token)
+                Dashboard(dashboard_root, username, token)  # ✅ Correct
+
                 dashboard_root.mainloop()
             else:
                 messagebox.showerror("Error", "Invalid response from server.")

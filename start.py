@@ -23,20 +23,21 @@ def start_backend():
         process = subprocess.Popen([PYTHON_EXECUTABLE, "-m", "app.main"], cwd=BASE_DIR)
 
     return process  # No time.sleep() to avoid blocking execution
-
-def show_welcome_screen():
+########
+#def show_welcome_screen():
     """Launch the welcome screen (runs in parallel without blocking)"""
-    welcome_script = os.path.join(BASE_DIR, "frontend", "welcome.py")
+    #welcome_script = os.path.join(BASE_DIR, "frontend", "welcome.py")
 
-    if not os.path.exists(welcome_script):
-        print(f"Error: Welcome screen script not found at {welcome_script}")
-        sys.exit(1)
+    #if not os.path.exists(welcome_script):
+        #print(f"Error: Welcome screen script not found at {welcome_script}")
+        #sys.exit(1)
 
-    subprocess.Popen([PYTHON_EXECUTABLE, welcome_script], cwd=BASE_DIR)  # No time.sleep()
+    #subprocess.Popen([PYTHON_EXECUTABLE, welcome_script], cwd=BASE_DIR)  # No time.sleep()
     # Launch welcome screen and WAIT for it to close
     #process = subprocess.Popen([PYTHON_EXECUTABLE, welcome_script], cwd=BASE_DIR)
     #process.wait()  # Wait for the welcome screen to close before proceeding
-    time.sleep(2)
+    #time.sleep(2)
+   
     
 
 def start_frontend():
@@ -54,7 +55,7 @@ if __name__ == "__main__":
     backend_process = start_backend()
 
     # Step 2: Show Welcome Screen (Runs Parallel)
-    show_welcome_screen()
+    #show_welcome_screen()
 
     # Step 3: Start Frontend Immediately (No Time Gap)
     
