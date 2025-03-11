@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from tkinter import messagebox
+from CTkMessagebox import CTkMessagebox
 import requests
 import os
 from dashboard import Dashboard  # Import the Dashboard class
@@ -72,35 +72,39 @@ class LoginGUI:
         for widget in self.main_frame.winfo_children():
             widget.destroy()
 
+    from CTkMessagebox import CTkMessagebox
+
     def login(self):
         username = self.username_entry.get()
         password = self.password_entry.get()
 
         if not username or not password:
-            messagebox.showerror("Error", "Please enter both username and password.")
+            CTkMessagebox(title="Error", message="Please enter both username and password.", icon="cancel")
             return
-        
+
         try:
             response = requests.post(f"{self.api_base_url}/users/token", data={"username": username, "password": password})
             if response.status_code == 500:
-                messagebox.showerror("Error", "Invalid username or password.")
+                CTkMessagebox(title="Error", message="Invalid username or password.", icon="cancel")
                 return
-           
+
             response.raise_for_status()
             data = response.json()
             token = data.get("access_token")
-            
-            if token:
-                messagebox.showinfo("Success", "Login successful!")
-                self.root.destroy()
-                dashboard_root = ctk.CTk()
-                Dashboard(dashboard_root, username, token)  # ✅ Correct
 
-                dashboard_root.mainloop()
+            if token:
+                msg_box = CTkMessagebox(title="Success", message="Login successful!", icon="check", option_1="OK")
+                if msg_box.get() == "OK":  # Waits for user to click OK
+                    self.root.destroy()
+                    dashboard_root = ctk.CTk()
+                    Dashboard(dashboard_root, username, token)
+                    dashboard_root.mainloop()
             else:
-                messagebox.showerror("Error", "Username or Password invalid.")
+                CTkMessagebox(title="Error", message="Invalid response from server.", icon="cancel")
         except requests.RequestException as e:
-            messagebox.showerror("Error", f"Login failed: {e}")
+            CTkMessagebox(title="Error", message=f"Login failed: {e}", icon="cancel")
+
+
 
     def register(self):
         username = self.reg_username_entry.get()
@@ -109,21 +113,21 @@ class LoginGUI:
         admin_password = self.admin_password_entry.get() if role == "admin" else None
         
         if not username or not password:
-            messagebox.showerror("Error", "Please enter both username and password.")
+            CTkMessagebox(title="Error", message="Please enter both username and password.", icon="cancel")
             return
         
         if role == "admin" and not admin_password:
-            messagebox.showerror("Error", "Admin password is required for admin registration.")
+            CTkMessagebox(title="Error", message="Admin password is required for admin registration.", icon="cancel")
             return
         
         try:
             data = {"username": username, "password": password, "role": role, "admin_password": admin_password}
             response = requests.post(f"{self.api_base_url}/users/register/", json=data)
             response.raise_for_status()
-            messagebox.showinfo("Success", "User registered successfully!")
+            CTkMessagebox(title="Success", message="User registered successfully!", icon="check")
             self.create_login_ui()
         except requests.RequestException as e:
-            messagebox.showerror("Error", f"Registration failed: {e}")
+            CTkMessagebox(title="Error", message=f"Registration failed: {e}", icon="cancel")
 
 if __name__ == "__main__":
     ctk.set_appearance_mode("dark")
