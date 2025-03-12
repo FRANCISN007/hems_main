@@ -718,7 +718,6 @@ class PaymentManagement:
 
         
    
-   
     def debtor_list(self):
         self.clear_right_frame()
 
@@ -742,10 +741,6 @@ class PaymentManagement:
 
         fetch_btn = ttk.Button(filter_frame, text="Fetch Debtor List", command=self.fetch_debtor_list)
         fetch_btn.grid(row=0, column=4, padx=10, pady=5)
-
-        # Update the total label with blue text
-        self.total_label = tk.Label(frame, text="Total Debt Amount: 0", font=("Arial", 12, "bold"), bg="#ffffff", fg="blue")
-        self.total_label.pack(pady=5)
 
         table_frame = tk.Frame(frame, bg="#ffffff")
         table_frame.pack(fill=tk.BOTH, expand=True)
@@ -771,6 +766,9 @@ class PaymentManagement:
         x_scroll.pack(fill=tk.X)
         self.tree.configure(xscroll=x_scroll.set)
 
+        # Placeholder for total label (will be created dynamically after fetching data)
+        self.total_label = None
+
     def fetch_debtor_list(self):
         api_url = "http://127.0.0.1:8000/payments/debtor_list"
         headers = {"Authorization": f"Bearer {self.token}"}
@@ -785,14 +783,14 @@ class PaymentManagement:
             if response.status_code == 200:
                 data = response.json()
 
-                # Update the total debt amount
-                self.total_label.config(text=f"Total Debt Amount: {data.get('total_debt_amount', 0):,.2f}")
-
                 debtors = data.get("debtors", [])
+                total_debt_amount = data.get("total_debt_amount", 0)
+
                 if not debtors:
                     messagebox.showinfo("Info", "No debtors found.")
                     return
 
+                # Clear the table before inserting new data
                 self.tree.delete(*self.tree.get_children())
 
                 for debtor in debtors:
@@ -809,12 +807,21 @@ class PaymentManagement:
                         debtor.get("last_payment_date", "")
                     ))
 
+                # Remove existing total label if it exists
+                if self.total_label:
+                    self.total_label.destroy()
+
+                # Create and position the total debt label at the bottom
+                self.total_label = tk.Label(self.right_frame, text=f"Total Debt Amount: {total_debt_amount:,.2f}",
+                                            font=("Arial", 12, "bold"), bg="#ffffff", fg="blue")
+                self.total_label.pack(side=tk.BOTTOM, pady=10)
+
                 self.apply_grid_effect()
             else:
-                #messagebox.showinfo("info", response.json().get("detail", "Failed to retrieve debtor list."))
                 messagebox.showinfo("No Results", "No data found for the selected filters.")
         except requests.exceptions.RequestException as e:
             messagebox.showerror("Error", f"Request failed: {e}")
+
 
 
     def clear_right_frame(self):
