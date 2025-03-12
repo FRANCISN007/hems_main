@@ -347,38 +347,50 @@ class PaymentManagement:
 
 
 
+    
+    
     def submit_payment(self, create_window):
-        """Handles payment submission to the backend and closes the pop-up window."""
+        """Handles payment submission to the backend and closes the pop-up window only on success."""
         try:
+            errors = []  # Collect all validation errors
+
             # ✅ Validate Booking ID
             booking_id_str = self.entries["Booking ID"].get().strip()
             if not booking_id_str.isdigit():
-                CTkMessagebox(title="Error", message="Booking ID must be a valid integer.", icon="cancel")
-                return
-            booking_id = int(booking_id_str)
+                errors.append("Booking ID must be a valid integer.")
 
             # ✅ Validate Amount Paid
             amount_paid_str = self.entries["Amount Paid"].get().strip()
             if not amount_paid_str.replace(".", "", 1).isdigit():
-                CTkMessagebox(title="Error", message="Amount Paid must be a valid number.", icon="cancel")
-                return
-            amount_paid = float(amount_paid_str)
+                errors.append("Amount Paid must be a valid number.")
 
-            # ✅ Validate Discount Allowed
+            # ✅ Validate Discount Allowed (Optional)
             discount_allowed_str = self.entries["Discount Allowed"].get().strip()
             discount_allowed = float(discount_allowed_str) if discount_allowed_str.replace(".", "", 1).isdigit() else 0.0
 
             # ✅ Validate Payment Method
             payment_method = self.entries["Payment Method"].get().strip()
             if not payment_method:
-                CTkMessagebox(title="Error", message="Payment Method is required.", icon="cancel")
-                return
+                errors.append("Payment Method is required.")
 
             # ✅ Validate Payment Date
-            payment_date = self.entries["Payment Date"].get_date()
-            payment_date = datetime(payment_date.year, payment_date.month, payment_date.day, 0, 0, 0, 0)
-            payment_date = pytz.utc.localize(payment_date)
-            payment_date_iso = payment_date.isoformat()
+            try:
+                payment_date = self.entries["Payment Date"].get_date()
+                payment_date = datetime(payment_date.year, payment_date.month, payment_date.day, 0, 0, 0, 0)
+                payment_date = pytz.utc.localize(payment_date)
+                payment_date_iso = payment_date.isoformat()
+            except Exception:
+                errors.append("Invalid Payment Date. Please select a valid date.")
+
+            # ❌ If there are errors, show all in a single messagebox and stop execution
+            if errors:
+                create_window.grab_release()  # Release grab before showing messagebox
+                CTkMessagebox(title="Error", message="\n".join(errors), icon="cancel")
+                return  # Stop execution
+
+            # ✅ Convert Booking ID and Amount Paid (since we passed validation)
+            booking_id = int(booking_id_str)
+            amount_paid = float(amount_paid_str)
 
             # ✅ Prepare Data
             payload = {
@@ -399,26 +411,27 @@ class PaymentManagement:
                 if payment_details:
                     payment_id = payment_details.get("payment_id")
                     created_by = payment_details.get("created_by")
-                    
-                    # Close the pop-up first
+
+                    # ✅ Close the pop-up window on success
                     create_window.destroy()
 
-                    # Delay the messagebox slightly to avoid grab conflict
+                    # ✅ Show success message with delay
                     self.root.after(100, lambda: CTkMessagebox(
-                        title="Success", 
-                        message=f"Payment created successfully!\nPayment ID: {payment_id}\nCreated By: {created_by}", 
+                        title="Success",
+                        message=f"Payment created successfully!\nPayment ID: {payment_id}\nCreated By: {created_by}",
                         icon="check"
                     ))
                 else:
-                    create_window.destroy()  # Ensure the window is closed before showing the error
-                    self.root.after(100, lambda: CTkMessagebox(title="Error", message="Payment ID missing in response.", icon="cancel"))
+                    create_window.grab_release()
+                    CTkMessagebox(title="Error", message="Payment ID missing in response.", icon="cancel")
+
             else:
-                create_window.destroy()
-                self.root.after(100, lambda: CTkMessagebox(title="Error", message=data.get("detail", "Payment failed."), icon="cancel"))
+                create_window.grab_release()
+                CTkMessagebox(title="Error", message=data.get("detail", "Payment failed."), icon="cancel")
 
         except Exception as e:
-            create_window.destroy()
-            self.root.after(100, lambda: CTkMessagebox(title="Error", message=f"An unexpected error occurred: {e}", icon="cancel"))
+            create_window.grab_release()
+            CTkMessagebox(title="Error", message=f"An unexpected error occurred: {e}", icon="cancel")
 
 
 

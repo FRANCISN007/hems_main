@@ -98,7 +98,7 @@ class LoginGUI:
                     self.root.destroy()
                     dashboard_root = ctk.CTk()
                     Dashboard(dashboard_root, username, token)
-                    dashboard_root.mainloop()
+                    #dashboard_root.mainloop()
             else:
                 CTkMessagebox(title="Error", message="Invalid response from server.", icon="cancel")
         except requests.RequestException as e:
