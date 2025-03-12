@@ -826,79 +826,99 @@ class PaymentManagement:
 
     def list_total_daily_payments(self):
         self.clear_right_frame()
-        
+
         frame = tk.Frame(self.right_frame, bg="#ffffff", padx=10, pady=10)
         frame.pack(fill=tk.BOTH, expand=True)
-        
+
         tk.Label(frame, text="Total Daily Payments", font=("Arial", 14, "bold"), bg="#ffffff").pack(pady=10)
-        
+
         fetch_btn = ttk.Button(
             frame,
             text="Fetch Today's Payments",
             command=self.fetch_total_daily_payments
         )
         fetch_btn.pack(pady=5)
-        
-        # Apply green color to the total amount label
-        self.total_label = tk.Label(frame, text="Total Amount: 0", font=("Arial", 12, "bold"), bg="#ffffff", fg="blue")
-        self.total_label.pack(pady=5)
-        
+
+        # Table for payments
         table_frame = tk.Frame(frame, bg="#ffffff")
         table_frame.pack(fill=tk.BOTH, expand=True)
-        
-        columns = ("ID", "Guest Name", "Room Number", "Amount Paid", "Discount Allowed", "Balance Due", "Payment Method", "Payment Date", "Status", "Booking ID")
-        
+
+        columns = ("ID", "Guest Name", "Room Number", "Amount Paid", "Discount Allowed", "Balance Due",
+                "Payment Method", "Payment Date", "Status", "Booking ID")
+
         self.tree = ttk.Treeview(table_frame, columns=columns, show="headings")
-        
+
         for col in columns:
             self.tree.heading(col, text=col)
             self.tree.column(col, width=80, anchor="center")
-        
+
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        
+
         y_scroll = ttk.Scrollbar(table_frame, orient="vertical", command=self.tree.yview)
         y_scroll.pack(side=tk.RIGHT, fill=tk.Y)
         self.tree.configure(yscroll=y_scroll.set)
-        
+
         x_scroll = ttk.Scrollbar(frame, orient="horizontal", command=self.tree.xview)
         x_scroll.pack(fill=tk.X)
         self.tree.configure(xscroll=x_scroll.set)
 
+        # Frame for horizontal display of totals
+        totals_frame = tk.Frame(frame, bg="#ffffff")
+        totals_frame.pack(fill=tk.X, pady=10)
+
+        self.pos_card_label = tk.Label(totals_frame, text="Total POS Card: 0", font=("Arial", 12), bg="#ffffff", fg="green")
+        self.pos_card_label.pack(side=tk.LEFT, padx=20)
+
+        self.bank_transfer_label = tk.Label(totals_frame, text="Total Bank Transfer: 0", font=("Arial", 12), bg="#ffffff", fg="purple")
+        self.bank_transfer_label.pack(side=tk.LEFT, padx=20)
+
+        self.cash_label = tk.Label(totals_frame, text="Total Cash: 0", font=("Arial", 12), bg="#ffffff", fg="red")
+        self.cash_label.pack(side=tk.LEFT, padx=20)
+
+        # Total Amount Label (Centered Below the Frame)
+        self.total_label = tk.Label(frame, text="Total Amount: 0", font=("Arial", 12, "bold"), bg="#ffffff", fg="blue")
+        self.total_label.pack(pady=5)
+
     def fetch_total_daily_payments(self):
         api_url = "http://127.0.0.1:8000/payments/total_daily_payment"
         headers = {"Authorization": f"Bearer {self.token}"}
-        
+
         try:
             response = requests.get(api_url, headers=headers)
             if response.status_code == 200:
                 data = response.json()
-                
+
                 total_amount = data.get("total_amount", 0)
+                total_by_method = data.get("total_by_method", {"POS Card": 0, "Bank Transfer": 0, "Cash": 0})
+
+                # Update labels with total payment breakdown
                 self.total_label.config(text=f"Total Amount: {total_amount:,.2f}")
+                self.pos_card_label.config(text=f"Total POS Card: {total_by_method.get('POS Card', 0):,.2f}")
+                self.bank_transfer_label.config(text=f"Total Bank Transfer: {total_by_method.get('Bank Transfer', 0):,.2f}")
+                self.cash_label.config(text=f"Total Cash: {total_by_method.get('Cash', 0):,.2f}")
 
                 if "payments" in data:
                     payments = data["payments"]
                 else:
                     payments = []
-                
+
                 self.tree.delete(*self.tree.get_children())
-                
+
                 for payment in payments:
                     self.tree.insert("", "end", values=(
                         payment.get("payment_id", ""),
                         payment.get("guest_name", ""),
                         payment.get("room_number", ""),
                         f"{float(payment.get('amount_paid', 0)) :,.2f}",
-                        f"{float(payment.get('discount allowed', 0)) :,.2f}",
+                        f"{float(payment.get('discount_allowed', 0)) :,.2f}",
                         f"{float(payment.get('balance_due', 0)) :,.2f}",
                         payment.get("payment_method", ""),
                         payment.get("payment_date", ""),
                         payment.get("status", ""),
                         payment.get("booking_id", ""),
- 
                     ))
 
-                self.apply_grid_effect(self.tree)    
+                self.apply_grid_effect(self.tree)
             else:
                 messagebox.showerror("Error", response.json().get("detail", "Failed to retrieve payments."))
         except requests.exceptions.RequestException as e:

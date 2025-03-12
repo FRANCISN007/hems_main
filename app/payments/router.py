@@ -305,7 +305,8 @@ def total_payment(
     current_user: schemas.UserDisplaySchema = Depends(get_current_user),
 ):
     """
-    Retrieve total daily sales and a list of payments for the current day, excluding void payments.
+    Retrieve total daily sales with a breakdown of payment methods (POS Card, Bank Transfer, Cash),
+    and a list of payments for the current day, excluding void payments.
     """
     try:
         # Get the current date
@@ -323,21 +324,38 @@ def total_payment(
                 "message": "No payments found for today.",
                 "total_payments": 0,
                 "total_amount": 0,
+                "total_by_method": {
+                    "POS Card": 0,
+                    "Bank Transfer": 0,
+                    "Cash": 0
+                },
                 "payments": []
             }
 
         # Prepare the list of payment details
         payment_list = []
         total_amount = 0
+
+        # Initialize payment method summary
+        total_by_method = {
+            "POS Card": 0,
+            "Bank Transfer": 0,
+            "Cash": 0
+        }
+
         for payment in payments:
             total_amount += payment.amount_paid
+
+            # Sum payments by method
+            if payment.payment_method in total_by_method:
+                total_by_method[payment.payment_method] += payment.amount_paid
+
             payment_list.append({
                 "payment_id": payment.id,
                 "room_number": payment.room_number,
                 "guest_name": payment.guest_name,
-                #"booking_cost": payment.booking_cost,
                 "amount_paid": payment.amount_paid,
-                "discount allowed": payment.discount_allowed,
+                "discount_allowed": payment.discount_allowed,
                 "balance_due": payment.balance_due,
                 "payment_method": payment.payment_method,
                 "payment_date": payment.payment_date.isoformat(),
@@ -350,6 +368,7 @@ def total_payment(
             "message": "Today's payment data retrieved successfully.",
             "total_payments": len(payment_list),
             "total_amount": total_amount,
+            "total_by_method": total_by_method,
             "payments": payment_list,
         }
 

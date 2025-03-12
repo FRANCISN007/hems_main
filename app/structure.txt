@@ -53,6 +53,7 @@ HEMS-main/
 [System.Environment]::SetEnvironmentVariable("Path", $env:Path + ";C:\Program Files\Git\bin", [System.EnvironmentVariableTarget]::Machine)
 
 $env:Path += ";C:\Program Files\Git\bin;C:\Program Files\Git\cmd"
+after the above, then shut down
 powershell
 
 📂 Updated Backend Structure
