@@ -105,29 +105,38 @@ class LoginGUI:
             CTkMessagebox(title="Error", message=f"Login failed: {e}", icon="cancel")
 
 
-
     def register(self):
-        username = self.reg_username_entry.get()
-        password = self.reg_password_entry.get()
+        username = self.reg_username_entry.get().strip()
+        password = self.reg_password_entry.get().strip()
         role = self.role_combobox.get()
-        admin_password = self.admin_password_entry.get() if role == "admin" else None
-        
+        admin_password = self.admin_password_entry.get().strip() if role == "admin" else None
+
         if not username or not password:
             CTkMessagebox(title="Error", message="Please enter both username and password.", icon="cancel")
             return
-        
+
         if role == "admin" and not admin_password:
             CTkMessagebox(title="Error", message="Admin password is required for admin registration.", icon="cancel")
             return
-        
+
         try:
             data = {"username": username, "password": password, "role": role, "admin_password": admin_password}
             response = requests.post(f"{self.api_base_url}/users/register/", json=data)
-            response.raise_for_status()
-            CTkMessagebox(title="Success", message="User registered successfully!", icon="check")
-            self.create_login_ui()
+
+            if response.status_code == 409:  # ❌ Username already exists
+                CTkMessagebox(title="Error", message="Username already exists. Please choose a different username.", icon="warning")
+
+            elif response.ok:  # ✅ Successful registration (since backend does not return 201)
+                CTkMessagebox(title="Success", message="User registered successfully!", icon="check")
+                self.create_login_ui()
+
+            else:  # ❌ Other errors
+                error_message = response.json().get("detail", "Registration failed.")
+                CTkMessagebox(title="Error", message=f"Error: {error_message}", icon="cancel")
+
         except requests.RequestException as e:
-            CTkMessagebox(title="Error", message=f"Registration failed: {e}", icon="cancel")
+            CTkMessagebox(title="Error", message=f"Registration failed due to network error: {e}", icon="cancel")
+
 
 if __name__ == "__main__":
     ctk.set_appearance_mode("dark")

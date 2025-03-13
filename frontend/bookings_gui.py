@@ -6,6 +6,9 @@ from utils import BASE_URL
 import datetime 
 import customtkinter as ctk
 from CTkMessagebox import CTkMessagebox
+#from customtkinter import CTkMessagebox
+
+
 
 from tkinter import Tk, Button, messagebox
 from utils import export_to_excel, print_excel
@@ -314,19 +317,19 @@ class BookingManagement:
     
 
     def create_booking(self):
-        """Opens a professional pop-up window for creating a new booking with CustomTkinter."""
+        """Opens a pop-up window for creating a new booking with CustomTkinter."""
         self.clear_right_frame()
 
-        # 🔹 Create a new pop-up window
+        # Create a new pop-up window
         create_window = ctk.CTkToplevel(self.root)
         create_window.title("Create Booking")
-        create_window.geometry("450x500")  # Adjusted height for better spacing
+        create_window.geometry("450x500")
         create_window.resizable(False, False)
-        create_window.configure(fg_color="#f5f5f5")  # Light background color
+        create_window.configure(fg_color="#f5f5f5")
 
         # Center the window on the screen
         window_width = 600
-        window_height = 400
+        window_height = 500
         screen_width = create_window.winfo_screenwidth()
         screen_height = create_window.winfo_screenheight()
         x_coordinate = (screen_width - window_width) // 2
@@ -337,28 +340,36 @@ class BookingManagement:
         create_window.transient(self.root)
         create_window.grab_set()
 
-        # 🔹 Dark Header
+        # Header
         header_frame = ctk.CTkFrame(create_window, fg_color="#2c3e50", height=50, corner_radius=8)
         header_frame.pack(fill="x", padx=10, pady=10)
-
         header_label = ctk.CTkLabel(header_frame, text="Create Booking", font=("Arial", 16, "bold"), text_color="white")
         header_label.pack(pady=10)
 
-        # 🔹 Main Content Frame
+        # Main Content Frame
         frame = ctk.CTkFrame(create_window, fg_color="white", corner_radius=10)
         frame.pack(fill="both", expand=True, padx=10, pady=10)
 
-        # 📌 Booking Fields
+        # Booking Fields
         fields = [
             ("Room Number", ctk.CTkEntry),
             ("Guest Name", ctk.CTkEntry),
+            ("Gender", ctk.CTkComboBox),
+            ("Identification Number", ctk.CTkEntry),
+            ("Address", ctk.CTkEntry),
             ("Phone Number", ctk.CTkEntry),
             ("Booking Type", ctk.CTkComboBox),
             ("Arrival Date", DateEntry),
             ("Departure Date", DateEntry),
         ]
 
-        self.entries = {}
+        self.entries = {}  # Dictionary to store entry widgets
+
+        # Combo box values
+        combo_box_values = {
+            "Gender": ["Male", "Female"],
+            "Booking Type": ["checked-in", "reservation", "complimentary"]
+        }
 
         # Form layout
         for i, (label_text, field_type) in enumerate(fields):
@@ -366,7 +377,7 @@ class BookingManagement:
             label.grid(row=i, column=0, sticky="w", pady=5, padx=10)
 
             if field_type == ctk.CTkComboBox:
-                entry = ctk.CTkComboBox(frame, values=["checked-in", "reservation", "complimentary"], state="readonly",
+                entry = ctk.CTkComboBox(frame, values=combo_box_values.get(label_text, []), state="readonly",
                                         font=("Helvetica", 12), width=200)
             elif field_type == DateEntry:
                 entry = DateEntry(frame, font=("Helvetica", 12), width=12, background='darkblue', foreground='white', borderwidth=2)
@@ -374,8 +385,9 @@ class BookingManagement:
                 entry = field_type(frame, font=("Helvetica", 12), width=28)
 
             entry.grid(row=i, column=1, pady=5, padx=10, sticky="ew")
-            self.entries[label_text] = entry  # Store entry reference
-# 🔹 Submit Button with Hover Effect (Centered)
+            self.entries[label_text] = entry  # Store entry in dictionary
+
+        # Submit Button
         submit_btn = ctk.CTkButton(
             frame,
             text="Submit Booking",
@@ -390,22 +402,23 @@ class BookingManagement:
         )
         submit_btn.grid(row=len(fields), column=0, columnspan=2, pady=25, padx=30, sticky="ew")  # Center the button
 
-
-
     def submit_booking(self, create_window):
         """Collects form data and sends a request to create a booking, then closes the pop-up."""
         try:
-            created_by = self.username  
+            created_by = self.username
 
             # Ensure entries dictionary exists
             if not hasattr(self, "entries"):
-                messagebox.showerror("Error", "Entry fields are not initialized properly.")
+                CTkMessagebox(title="Error", message="Entry fields are not initialized properly.", icon="cancel")
                 return
 
-            # Extract data from form entries
+            # Extract data from form
             booking_data = {
                 "room_number": self.entries["Room Number"].get(),
                 "guest_name": self.entries["Guest Name"].get(),
+                "gender": self.entries["Gender"].get(),
+                "identification_number": self.entries["Identification Number"].get(),
+                "address": self.entries["Address"].get(),
                 "phone_number": self.entries["Phone Number"].get(),
                 "arrival_date": self.entries["Arrival Date"].get_date().strftime("%Y-%m-%d"),
                 "departure_date": self.entries["Departure Date"].get_date().strftime("%Y-%m-%d"),
@@ -413,80 +426,45 @@ class BookingManagement:
                 "created_by": created_by,
             }
 
-
-            from CTkMessagebox import CTkMessagebox
-
+            # Check for empty fields
             if not all(booking_data.values()):
-                CTkMessagebox(
-                    title="Missing Fields",
-                    message="Please fill in all required fields before submitting.",
-                    icon="warning",
-                    option_1="OK"
-                )
+                CTkMessagebox(title="Missing Fields", message="Please fill in all required fields before submitting.", icon="warning")
                 return
 
-            api_url = "http://127.0.0.1:8000/bookings/create/"  
+            api_url = "http://127.0.0.1:8000/bookings/create/"
             headers = {"Authorization": f"Bearer {self.token}", "Content-Type": "application/json"}
 
             # Send POST request
             response = requests.post(api_url, json=booking_data, headers=headers)
 
-            
-
-            from CTkMessagebox import CTkMessagebox
-
             if response.status_code == 200:
                 response_data = response.json()
-                booking_id = response_data.get("booking_details", {}).get("id")  
+                booking_id = response_data.get("booking_details", {}).get("id")
 
                 if booking_id:
-                    create_window.destroy()  # ✅ Close pop-up first
-
+                    create_window.destroy()  # Close pop-up window
                     CTkMessagebox(
-                        title="Success", 
+                        title="Success",
                         message=f"Booking created successfully!\nBooking ID: {booking_id}",
-                        icon="check",
-                        option_1="OK"
+                        icon="check"
                     )
 
                     # Reset form if method exists
                     if hasattr(self, "reset_booking_form"):
                         self.reset_booking_form()
-                    else:
-                        print("Warning: reset_booking_form method is missing.")
 
                 else:
-                    CTkMessagebox(
-                        title="Error", 
-                        message="Booking ID missing in response.", 
-                        icon="cancel",
-                        option_1="OK"
-                    )
+                    CTkMessagebox(title="Error", message="Booking ID missing in response.", icon="cancel")
 
             else:
-                CTkMessagebox(
-                    title="Error", 
-                    message=response.json().get("detail", "Booking failed."), 
-                    icon="warning",
-                    option_1="OK"
-                )
+                error_message = response.json().get("detail", "Booking failed.")
+                CTkMessagebox(title="Error", message=error_message, icon="warning")
 
         except KeyError as e:
-            CTkMessagebox(
-                title="Error", 
-                message=f"Missing entry field: {e}", 
-                icon="warning",
-                option_1="OK"
-            )
+            CTkMessagebox(title="Error", message=f"Missing entry field: {e}", icon="warning")
 
         except requests.exceptions.RequestException as e:
-            CTkMessagebox(
-                title="Error", 
-                message=f"Request failed: {e}", 
-                icon="warning",
-                option_1="OK"
-            )
-
+            CTkMessagebox(title="Error", message=f"Request failed: {e}", icon="warning")
 
 
 

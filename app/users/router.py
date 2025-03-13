@@ -31,7 +31,7 @@ def sign_up(user: schemas.UserSchema, db: Session = Depends(get_db)):
     existing_user = user_crud.get_user_by_username(db, user.username)
     if existing_user:
         logger.warning(f"user trying to register but username entered already exist: {user.username}")
-        raise HTTPException(status_code=400, detail="Username already exists")
+        raise HTTPException(status_code=409, detail="Username already exists")
 
     # Check admin registration
     if user.role == "admin":
