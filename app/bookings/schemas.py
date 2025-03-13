@@ -14,6 +14,9 @@ class BookingSchema(BaseModel):
     """
     room_number: str
     guest_name: str
+    gender: Literal["male", "female"]
+    identification_number: Optional[str] = None
+    address: str
     arrival_date: date
     departure_date: date
     booking_type: Literal["checked-in", "reservation", "complimentary"]
@@ -50,6 +53,9 @@ class BookingSchemaResponse(BaseModel):
     id: int
     room_number: str
     guest_name: str
+    gender: Literal["male", "female"]
+    identification_number: str
+    address: str
     arrival_date: date
     departure_date: date
     booking_type: Literal["checked-in", "reservation", "complimentary"]
