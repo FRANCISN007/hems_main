@@ -129,14 +129,16 @@ class UserManagement:
                 messagebox.showerror("Error", f"Error: {e}")
 
     
+
+
     def open_user_form(self, title, submit_callback, values=None):
-        """Opens a professional pop-up form for user management with a double border."""
+        """Opens a professional pop-up form for user management with a clean UI."""
         form_window = tk.Toplevel(self.user_management_window)
         form_window.title(title)
-        form_window.configure(bg="#f8f9fa")  # Light background
+        form_window.configure(bg="#f8f9fa")
 
         # Set window size and center it
-        window_width, window_height = 400, 380
+        window_width, window_height = 500, 400
         x_coordinate = (form_window.winfo_screenwidth() - window_width) // 2
         y_coordinate = (form_window.winfo_screenheight() - window_height) // 2
         form_window.geometry(f"{window_width}x{window_height}+{x_coordinate}+{y_coordinate}")
@@ -145,24 +147,24 @@ class UserManagement:
         form_window.transient(self.user_management_window)
         form_window.grab_set()
 
-        # 🔹 Outer Border Frame (Dark Gray)
-        outer_frame = tk.Frame(form_window, bg="#2c3e50", padx=3, pady=3)
-        outer_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+        # Outer Frame (Dark Gray Border)
+        outer_frame = tk.Frame(form_window, bg="#2c3e50", padx=4, pady=4)
+        outer_frame.pack(fill=tk.BOTH, expand=True, padx=6, pady=6)
 
-        # 🔹 Inner Border Frame (Light Gray)
-        inner_frame = tk.Frame(outer_frame, bg="white", padx=5, pady=5)
+        # Inner Frame (White Background)
+        inner_frame = tk.Frame(outer_frame, bg="white", padx=10, pady=10)
         inner_frame.pack(fill=tk.BOTH, expand=True)
 
-        # 🔹 Header Section
+        # Header Section
         header = tk.Label(inner_frame, text=title, font=("Arial", 14, "bold"), fg="white", bg="#2c3e50", pady=8)
         header.pack(fill=tk.X)
 
-        # 🔹 Form Frame
+        # Form Frame
         form_frame = tk.Frame(inner_frame, bg="white", padx=15, pady=10)
         form_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
         labels = ["Username", "Password", "Role"]
-        entries = {}
+        self.entries = {}
 
         for label in labels:
             tk.Label(form_frame, text=label, font=("Arial", 11, "bold"), bg="white", fg="#2c3e50").pack(anchor="w")
@@ -171,7 +173,7 @@ class UserManagement:
                 role_combobox = ttk.Combobox(form_frame, values=["user", "admin"], state="readonly", width=28)
                 role_combobox.pack(pady=5)
                 role_combobox.set(values[2] if values else "user")
-                entries["Role"] = role_combobox
+                self.entries["Role"] = role_combobox
             else:
                 entry = ttk.Entry(form_frame, width=30, font=("Arial", 11))
                 if label == "Password":
@@ -179,29 +181,57 @@ class UserManagement:
                 entry.pack(pady=5)
                 if values and label == "Username":
                     entry.insert(0, values[1])
-                entries[label] = entry
+                self.entries[label] = entry
 
-        # Admin Password Field
-        admin_password_label = tk.Label(form_frame, text="Admin Password:", font=("Arial", 11, "bold"), bg="white", fg="#2c3e50")
-        admin_password_entry = ttk.Entry(form_frame, width=30, show="*", font=("Arial", 11))
-
-    # Add more components if needed...
-
+        # Admin Password (Initially Hidden)
+        self.admin_password_label = tk.Label(form_frame, text="Admin Password:", font=("Arial", 11, "bold"), bg="white", fg="#2c3e50")
+        self.admin_password_entry = ttk.Entry(form_frame, width=30, show="*", font=("Arial", 11))
+        self.entries["Admin Password"] = self.admin_password_entry
 
         def toggle_admin_password(event):
+            """Show or hide the admin password field based on role selection."""
             if role_combobox.get() == "admin":
-                admin_password_label.pack(anchor="w")
-                admin_password_entry.pack(pady=5)
+                self.admin_password_label.pack(anchor="w")
+                self.admin_password_entry.pack(pady=5)
             else:
-                admin_password_label.pack_forget()
-                admin_password_entry.pack_forget()
+                self.admin_password_label.pack_forget()
+                self.admin_password_entry.pack_forget()
 
         role_combobox.bind("<<ComboboxSelected>>", toggle_admin_password)
-        entries["Admin Password"] = admin_password_entry
 
-        # 🔹 Submit Button
-        submit_btn = ttk.Button(form_window, text="Submit", command=lambda: submit_callback(entries, form_window))
-        submit_btn.pack(pady=10)
+        # Submit Button
+        submit_btn = ttk.Button(form_window, text="Submit", command=lambda: submit_callback(self.entries, form_window))
+        submit_btn.pack(pady=15)
+
+        form_window.mainloop()
+
+    def submit_new_user(self, entries, form_window):
+        """Handles user registration submission."""
+        data = {key.lower(): entry.get() for key, entry in entries.items()}
+        
+        if data["role"] == "admin" and not data["admin password"]:
+            messagebox.showerror("Error", "Admin password is required when registering an admin.")
+            return
+
+        try:
+            response = requests.post(
+                f"{self.api_base_url}/users/register/",
+                json=data,
+                headers={"Authorization": f"Bearer {self.token}"}
+            )
+            
+            if response.status_code in [200, 201]:
+                messagebox.showinfo("Success", "User added successfully.")
+                form_window.destroy()
+                self.fetch_users()
+            else:
+                error_message = response.json().get("detail", response.text)
+                messagebox.showerror("Error", f"Failed to add user: {error_message}")
+        except requests.exceptions.RequestException as e:
+            messagebox.showerror("Error", f"Network error: {e}")
+        except Exception as e:
+            messagebox.showerror("Error", f"Unexpected error: {e}")
+
 
         form_window.mainloop()
 
