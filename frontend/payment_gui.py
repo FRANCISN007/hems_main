@@ -489,7 +489,27 @@ class PaymentManagement:
         x_scroll = ttk.Scrollbar(frame, orient="horizontal", command=self.tree.xview)
         x_scroll.pack(fill=tk.X)
         self.tree.configure(xscroll=x_scroll.set)
-    
+
+
+        # Frame for horizontal display of totals
+        totals_frame = tk.Frame(frame, bg="#ffffff")
+        totals_frame.pack(fill=tk.X, pady=10)
+
+        self.pos_card_label = tk.Label(totals_frame, text="Total POS Card: 0", font=("Arial", 12), bg="#ffffff", fg="green")
+        self.pos_card_label.pack(side=tk.LEFT, padx=20)
+
+        self.bank_transfer_label = tk.Label(totals_frame, text="Total Bank Transfer: 0", font=("Arial", 12), bg="#ffffff", fg="purple")
+        self.bank_transfer_label.pack(side=tk.LEFT, padx=20)
+
+        self.cash_label = tk.Label(totals_frame, text="Total Cash: 0", font=("Arial", 12), bg="#ffffff", fg="red")
+        self.cash_label.pack(side=tk.LEFT, padx=20)
+
+        # Total Amount Label (Centered Below the Frame)
+        self.total_label = tk.Label(frame, text="Total Amount: 0", font=("Arial", 12, "bold"), bg="#ffffff", fg="blue")
+        self.total_label.pack(pady=5)
+
+
+
     def fetch_payments(self):
         api_url = "http://127.0.0.1:8000/payments/list"
         params = {
@@ -500,8 +520,6 @@ class PaymentManagement:
 
         try:
             response = requests.get(api_url, params=params, headers=headers)
-            
-            #print(response.json())  # Debugging: Check the response from the API
 
             if response.status_code == 200:
                 data = response.json()
@@ -511,46 +529,57 @@ class PaymentManagement:
                 elif isinstance(data, list):
                     payments = data
                 else:
-                    messagebox.showinfo("info", "No payments found for the specified criteria")
+                    messagebox.showinfo("Info", "No payments found for the specified criteria")
                     return
 
                 self.tree.delete(*self.tree.get_children())  # Clear the table
 
-                if not payments:
-                    messagebox.showinfo("No Results", "No payments found for the selected date range.")
-                    total_amount = 0  # No payments means total is 0
-                else:
-                    # Calculate the total excluding voided payments
-                    total_amount = sum(payment.get("amount_paid", 0) for payment in payments if payment.get("status") != "voided")
+                total_pos = 0
+                total_bank = 0
+                total_cash = 0
 
+                if payments:
                     for payment in payments:
+                        amount = float(payment.get("amount_paid", 0))
+                        method = payment.get("payment_method", "").lower()
+                        status = payment.get("status", "").lower()
+
+                        # Exclude voided payments from totals
+                        if status == "voided":
+                            continue
+
+                        if method == "pos card":
+                            total_pos += amount
+                        elif method == "bank transfer":
+                            total_bank += amount
+                        elif method == "cash":
+                            total_cash += amount
+
                         self.tree.insert("", "end", values=(
                             payment.get("payment_id", ""),
                             payment.get("guest_name", ""),
                             payment.get("room_number", ""),
-                            f"{float(payment.get('amount_paid', 0)) :,.2f}",  # Format amount_paid
-                            f"{float(payment.get('discount_allowed', 0)) :,.2f}",  # Format discount_allowed
-                            f"{float(payment.get('balance_due', 0)) :,.2f}",  # Format balance_due
+                            f"{amount:,.2f}",
+                            f"{float(payment.get('discount_allowed', 0)) :,.2f}",
+                            f"{float(payment.get('balance_due', 0)) :,.2f}",
                             payment.get("payment_method", ""),
                             payment.get("payment_date", ""),
                             payment.get("status", ""),
                             payment.get("booking_id", ""),
-                            payment.get("created_by", "N/A"),  # Ensure there's a fallback if "created_by" is missing
+                            payment.get("created_by", "N/A"),
                         ))
 
                     self.apply_grid_effect()
 
-                # Ensure any previous total label is removed before adding a new one
-                for widget in self.right_frame.winfo_children():
-                    if isinstance(widget, tk.Label) and "Total Payment" in widget.cget("text"):
-                        widget.destroy()
+                # Update labels with total payment breakdown (excluding voided payments)
+                self.total_label.config(text=f"Total Amount: {total_pos + total_bank + total_cash:,.2f}")
+                self.pos_card_label.config(text=f"Total POS Card: {total_pos:,.2f}")
+                self.bank_transfer_label.config(text=f"Total Bank Transfer: {total_bank:,.2f}")
+                self.cash_label.config(text=f"Total Cash: {total_cash:,.2f}")
 
-                # Display total payment amount at the top
-                self.total_label = tk.Label(self.right_frame, text=f"Total Payment: {total_amount:,.2f}",
-                                            font=("Arial", 12, "bold"), bg="#ffffff", fg="blue")
-                self.total_label.pack(side=tk.TOP, pady=5)
             else:
                 messagebox.showerror("Error", response.json().get("detail", "Failed to retrieve payments."))
+
         except requests.exceptions.RequestException as e:
             messagebox.showerror("Error", f"Request failed: {e}")
 

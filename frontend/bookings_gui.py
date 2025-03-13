@@ -1096,7 +1096,7 @@ class BookingManagement:
 
         # Center the window on the screen
         window_width = 500
-        window_height = 440
+        window_height = 560
         screen_width = update_window.winfo_screenwidth()
         screen_height = update_window.winfo_screenheight()
         x_coordinate = (screen_width - window_width) // 2
@@ -1123,6 +1123,9 @@ class BookingManagement:
             ("Booking ID", ctk.CTkEntry),
             ("Room Number", ctk.CTkEntry),
             ("Guest Name", ctk.CTkEntry),
+            ("Gender", ctk.CTkComboBox),
+            ("Identification Number", ctk.CTkEntry),
+            ("Address", ctk.CTkEntry),
             ("Phone Number", ctk.CTkEntry),
             ("Booking Type", ctk.CTkComboBox),
             ("Arrival Date", DateEntry),
@@ -1131,13 +1134,21 @@ class BookingManagement:
 
         self.entries = {}
 
-        # Form layout
+        combo_box_values = {
+            "Gender": ["Male", "Female"],
+            "Booking Type": ["checked-in", "reservation", "complimentary"]
+        }
+
+        # Store the Booking ID
+        #self.entries["Booking ID"] = booking_id
+
+        # Create form fields
         for i, (label_text, field_type) in enumerate(fields):
             label = ctk.CTkLabel(frame, text=label_text, font=("Helvetica", 12, "bold"), text_color="#2c3e50")
             label.grid(row=i, column=0, sticky="w", pady=5, padx=10)
 
             if field_type == ctk.CTkComboBox:
-                entry = ctk.CTkComboBox(frame, values=["checked-in", "reservation", "complimentary"], state="readonly",
+                entry = ctk.CTkComboBox(frame, values=combo_box_values.get(label_text, []), state="readonly",
                                         font=("Helvetica", 12), width=200)
             elif field_type == DateEntry:
                 entry = DateEntry(frame, font=("Helvetica", 12), width=12, background='darkblue', foreground='white', borderwidth=2)
@@ -1145,7 +1156,7 @@ class BookingManagement:
                 entry = field_type(frame, font=("Helvetica", 12), width=28)
 
             entry.grid(row=i, column=1, pady=5, padx=10, sticky="ew")
-            self.entries[label_text] = entry  # Store entry reference
+            self.entries[label_text] = entry  
 
         # Submit Button with Hover Effect (Centered)
         submit_btn = ctk.CTkButton(
@@ -1172,6 +1183,9 @@ class BookingManagement:
                 "booking_id": self.entries["Booking ID"].get(),
                 "room_number": self.entries["Room Number"].get(),
                 "guest_name": self.entries["Guest Name"].get(),
+                 "gender": self.entries["Gender"].get(),
+                "identification_number": self.entries["Identification Number"].get(),
+                "address": self.entries["Address"].get(),
                 "phone_number": self.entries["Phone Number"].get(),
                 "arrival_date": self.entries["Arrival Date"].get_date().strftime("%Y-%m-%d"),
                 "departure_date": self.entries["Departure Date"].get_date().strftime("%Y-%m-%d"),

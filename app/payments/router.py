@@ -162,9 +162,10 @@ def list_payments(
     """
     List all payments made between the specified start and end date,
     including the total payment amount for the range, excluding voided and cancelled payments from the total calculation.
+    Also provides a summary of total payments for each payment method: Cash, POS Card, and Bank Transfer.
     """
     try:
-        # Set the end date to the end of the day if only the date is provided
+        # Convert dates to datetime objects
         if start_date:
             start_datetime = datetime.combine(start_date, datetime.min.time())
         if end_date:
@@ -173,7 +174,7 @@ def list_payments(
         # Build the base query for payments
         query = db.query(payment_models.Payment)
 
-        # Apply date filters based on provided inputs
+        # Apply date filters
         if start_date and end_date:
             if start_date > end_date:
                 raise HTTPException(
@@ -189,16 +190,21 @@ def list_payments(
         elif end_date:
             query = query.filter(payment_models.Payment.payment_date <= end_datetime)
 
-        # Retrieve all payments within the date range, ordered by payment_date in descending order
+        # Retrieve all payments within the date range, ordered by payment_date
         payments = query.order_by(payment_models.Payment.payment_date.desc()).all()
 
         if not payments:
             logger.info("No payments found for the specified criteria.")
             return {"message": "No payments found for the specified criteria."}
 
+        # Initialize payment method totals
+        total_cash = 0
+        total_pos_card = 0
+        total_bank_transfer = 0
+        total_payment_amount = 0
+
         # Prepare the list of payment details
         payment_list = []
-        total_payment_amount = 0
         for payment in payments:
             payment_list.append({
                 "payment_id": payment.id,
@@ -215,14 +221,26 @@ def list_payments(
                 "created_by": payment.created_by,
             })
 
-            # Add to total_payment_amount if payment status is not "voided" or "cancelled"
+            # Exclude voided and cancelled payments from totals
             if payment.status not in ["voided", "cancelled"]:
                 total_payment_amount += payment.amount_paid
 
+                # Categorize totals by payment method
+                if payment.payment_method.lower() == "cash":
+                    total_cash += payment.amount_paid
+                elif payment.payment_method.lower() == "pos card":
+                    total_pos_card += payment.amount_paid
+                elif payment.payment_method.lower() == "bank transfer":
+                    total_bank_transfer += payment.amount_paid
+
         logger.info(f"Retrieved {len(payment_list)} payments.")
+
         return {
             "total_payments": len(payment_list),
             "total_amount": total_payment_amount,
+            "total_cash": total_cash,
+            "total_pos_card": total_pos_card,
+            "total_bank_transfer": total_bank_transfer,
             "payments": payment_list,
         }
 
