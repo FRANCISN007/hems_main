@@ -193,13 +193,24 @@ class RoomManagement:
 
 
     
-
     def open_room_form(self):
         form = tk.Toplevel(self.root)
         form.title("Add Room")
         form.geometry("350x320")
         form.resizable(False, False)
-        
+
+        # Center the window
+        form.update_idletasks()  # Ensure correct size calculation
+        screen_width = form.winfo_screenwidth()
+        screen_height = form.winfo_screenheight()
+        window_width = 350
+        window_height = 320
+
+        x_position = (screen_width - window_width) // 2
+        y_position = (screen_height - window_height) // 2
+
+        form.geometry(f"{window_width}x{window_height}+{x_position}+{y_position}")
+
         # Border Frame
         container = tk.Frame(form, bg="#f8f9fa", padx=15, pady=15, relief="groove", bd=3)
         container.pack(fill="both", expand=True, padx=10, pady=10)
@@ -229,6 +240,7 @@ class RoomManagement:
         status_entry = ttk.Combobox(container, values=status_options, state="readonly", width=27)
         status_entry.pack(pady=3)
         status_entry.current(0)
+
 
         # Submit Function
         def submit():
@@ -269,7 +281,8 @@ class RoomManagement:
 
         # Get selected room details
         values = self.tree.item(selected[0], "values")
-        room_number = values[0]  # Current room number
+
+        room_number = values[0]  # Ensure this value is correct
 
         # Fetch the full room details from API
         response = api_request(f"/rooms/{room_number}", "GET", token=self.token)
@@ -292,6 +305,18 @@ class RoomManagement:
         update_window.geometry("350x320")
         update_window.resizable(False, False)
 
+        # Center the window
+        update_window.update_idletasks()  # Ensure correct size calculation
+        screen_width = update_window.winfo_screenwidth()
+        screen_height = update_window.winfo_screenheight()
+        window_width = 350
+        window_height = 320
+
+        x_position = (screen_width - window_width) // 2
+        y_position = (screen_height - window_height) // 2
+
+        update_window.geometry(f"{window_width}x{window_height}+{x_position}+{y_position}")
+
         # Border Frame
         container = tk.Frame(update_window, bg="#f8f9fa", padx=15, pady=15, relief="groove", bd=3)
         container.pack(fill="both", expand=True, padx=10, pady=10)
@@ -300,11 +325,15 @@ class RoomManagement:
         title_label = tk.Label(container, text="Update Room Details", font=("Arial", 12, "bold"), bg="#f8f9fa")
         title_label.pack(pady=5)
 
-        # Room Number
+        # Room Number (Ensure case is maintained)
+        # Room Number Entry (Ensure case is preserved)
         tk.Label(container, text="Room Number:", bg="#f8f9fa").pack(anchor="w")
         room_number_entry = tk.Entry(container, width=30)
-        room_number_entry.insert(0, room_data["room_number"])
+
+        # Ensure it is inserted correctly without modification
+        room_number_entry.insert(0, room_data["room_number"])  
         room_number_entry.pack(pady=3)
+
 
         # Room Type
         tk.Label(container, text="Room Type:", bg="#f8f9fa").pack(anchor="w")
@@ -347,11 +376,12 @@ class RoomManagement:
 
             # Prepare update payload
             data = {
-                "room_number": new_room_number,
+                "room_number": str(new_room_number),  # Maintain original case
                 "room_type": new_room_type,
                 "amount": new_amount,
                 "status": new_status
             }
+
 
             # Send update request
             response = api_request(f"/rooms/{room_number}", "PUT", data, self.token)

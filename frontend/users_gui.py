@@ -203,15 +203,20 @@ class UserManagement:
         submit_btn = ttk.Button(form_window, text="Submit", command=lambda: submit_callback(self.entries, form_window))
         submit_btn.pack(pady=15)
 
-        form_window.mainloop()
+        #form_window.mainloop()
 
     def submit_new_user(self, entries, form_window):
-        """Handles user registration submission."""
-        data = {key.lower(): entry.get() for key, entry in entries.items()}
-        
-        if data["role"] == "admin" and not data["admin password"]:
-            messagebox.showerror("Error", "Admin password is required when registering an admin.")
+        """Handles user registration submission with validation for required fields."""
+        data = {key.lower(): entry.get().strip() for key, entry in entries.items()}  # Trim input values
+
+        # Ensure username and password are provided
+        if not data.get("username") or not data.get("password"):
+            messagebox.showerror("Error", "Username and password are required.")
             return
+
+        # Remove admin password if the role is not admin
+        if data.get("role") != "admin":
+            data.pop("admin password", None)  # Remove admin password if not needed
 
         try:
             response = requests.post(
@@ -219,47 +224,24 @@ class UserManagement:
                 json=data,
                 headers={"Authorization": f"Bearer {self.token}"}
             )
-            
+
             if response.status_code in [200, 201]:
                 messagebox.showinfo("Success", "User added successfully.")
                 form_window.destroy()
                 self.fetch_users()
+            elif response.status_code == 409:  # Username already exists
+                messagebox.showerror("Error", "Username already exists. Please choose another one.")
             else:
                 error_message = response.json().get("detail", response.text)
-                messagebox.showerror("Error", f"Failed to add user: {error_message}")
+                messagebox.showerror("Error", f"Failed to add admin, {error_message}, logout and register admin through the register window")
+
         except requests.exceptions.RequestException as e:
             messagebox.showerror("Error", f"Network error: {e}")
         except Exception as e:
             messagebox.showerror("Error", f"Unexpected error: {e}")
 
 
-        form_window.mainloop()
-
-
-
-    def submit_new_user(self, entries, form_window):
-        data = {key.lower(): entry.get() for key, entry in entries.items()}
-        if data["role"] == "admin" and not data["admin password"]:
-            messagebox.showerror("Error", "Admin password is required when registering an admin.")
-            return
-        try:
-            
-            response = requests.post(
-                f"{self.api_base_url}/users/register/",
-                json=data,
-                headers={"Authorization": f"Bearer {self.token}"}
-            )
-            if response.status_code in [200, 201]:
-                messagebox.showinfo("Success", "User added successfully.")
-                form_window.destroy()
-                self.fetch_users()
-            else:
-                error_message = response.json().get("detail", response.text)
-                messagebox.showerror("Error", f"Failed to add user: {error_message}")
-        except Exception as e:
-            messagebox.showerror("Error", f"Error: {e}")
-        
-
+    
 
     def submit_updated_user(self, entries, form_window):
         data = {key.lower(): entry.get() for key, entry in entries.items()}
