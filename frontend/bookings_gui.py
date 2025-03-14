@@ -501,8 +501,8 @@ class BookingManagement:
         table_frame.pack(fill=tk.BOTH, expand=True, pady=5)
 
         # Define Treeview columns
-        columns = ("ID", "Room", "Guest", "Booking Cost", "Arrival", "Departure", "Status", "Number of Days", 
-                "Booking Type", "Phone Number", "Booking Date", "Payment Status", "Created_by")
+        columns = ("ID", "Room", "Guest Name", "Gender", "Booking Cost", "Arrival", "Departure", "Status", "Number of Days", 
+                "Booking Type", "Phone Number", "Booking Date", "Payment Status", "Identification Number", "Address","Created_by")
 
         # Create a Treeview widget
         style = ttk.Style()
@@ -515,7 +515,7 @@ class BookingManagement:
         # Define headings and set column widths
         for col in columns:
             self.tree.heading(col, text=col, anchor="center")
-            self.tree.column(col, width=90, anchor="center")  # Adjust column width
+            self.tree.column(col, width=70, anchor="center")  # Adjust column width
 
         # Pack the Treeview inside a scrollable frame
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=5, pady=5)
@@ -571,6 +571,7 @@ class BookingManagement:
                         booking.get("id", ""),
                         booking.get("room_number", ""),
                         booking.get("guest_name", ""),
+                        booking.get("gender", ""),
                         f"{float(booking.get('booking_cost', 0)) :,.2f}",
                         booking.get("arrival_date", ""),
                         booking.get("departure_date", ""),
@@ -579,7 +580,9 @@ class BookingManagement:
                         booking.get("booking_type", ""),
                         booking.get("phone_number", ""),
                         booking.get("booking_date", ""),
-                        booking.get("payment_status", ""),                    
+                        booking.get("payment_status", ""), 
+                        booking.get("identification_number", ""),  
+                        booking.get("address", ""),                 
                         booking.get("created_by", ""),
                     ))
 
@@ -1095,8 +1098,8 @@ class BookingManagement:
         update_window.configure(fg_color="#f5f5f5")  # Light background color
 
         # Center the window on the screen
-        window_width = 500
-        window_height = 560
+        window_width = 600
+        window_height = 520
         screen_width = update_window.winfo_screenwidth()
         screen_height = update_window.winfo_screenheight()
         x_coordinate = (screen_width - window_width) // 2
@@ -1109,10 +1112,10 @@ class BookingManagement:
 
         # Dark Header
         header_frame = ctk.CTkFrame(update_window, fg_color="#2c3e50", height=50, corner_radius=8)
-        header_frame.pack(fill="x", padx=10, pady=10)
+        header_frame.pack(fill="x", padx=5, pady=5)
 
         header_label = ctk.CTkLabel(header_frame, text="Update Booking", font=("Arial", 16, "bold"), text_color="white")
-        header_label.pack(pady=10)
+        header_label.pack(pady=5)
 
         # Main Content Frame
         frame = ctk.CTkFrame(update_window, fg_color="white", corner_radius=10)

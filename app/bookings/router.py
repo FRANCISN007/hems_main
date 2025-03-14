@@ -188,6 +188,7 @@ def list_bookings(
                 "id": booking.id,
                 "room_number": booking.room_number,
                 "guest_name": booking.guest_name,
+                "gender": booking.gender,
                 "arrival_date": booking.arrival_date,
                 "departure_date": booking.departure_date,
                 "number_of_days": booking.number_of_days,
@@ -196,6 +197,8 @@ def list_bookings(
                 "booking_date": booking.booking_date,
                 "status": booking.status,
                 "payment_status": booking.payment_status,
+                "identification_number": booking.identification_number,
+                "address": booking.address,
                 "booking_cost": booking.booking_cost,
                 "created_by": booking.created_by,
             }
