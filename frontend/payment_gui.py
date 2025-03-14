@@ -442,7 +442,7 @@ class PaymentManagement:
         frame = tk.Frame(self.right_frame, bg="#ffffff", padx=10, pady=10)
         frame.pack(fill=tk.BOTH, expand=True)
         
-        tk.Label(frame, text="List Payments", font=("Arial", 14, "bold"), bg="#ffffff").pack(pady=10)
+        tk.Label(frame, text="List Payments Report", font=("Arial", 14, "bold"), bg="#ffffff").pack(pady=10)
         
         filter_frame = tk.Frame(frame, bg="#ffffff")
         filter_frame.pack(pady=5)
@@ -466,21 +466,24 @@ class PaymentManagement:
         table_frame.pack(fill=tk.BOTH, expand=True)
         
         style = ttk.Style()
-        style.configure("Treeview.Heading", font=("Arial", 12, "bold"))  # Set the font to bold
+        style.theme_use("alt")  # Alternative themes
+
+        style.configure("Treeview.Heading", font=("Arial", 12, "bold"))  # Apply directly to Treeview headings
 
         columns = (
-        "ID", "Guest Name", "Room Number", "Amount Paid", "Discount Allowed",
+        "ID", "Guest Name", "Room Number", "Booking Cost", "Amount Paid", "Discount Allowed",
         "Balance Due", "Payment Method", "Payment Date", "Status", "Booking ID", "Created_by"
         )
 
         self.tree = ttk.Treeview(table_frame, columns=columns, show="headings")
 
-        
+# Apply headings after creating the Treeview
         for col in columns:
-            self.tree.heading(col, text=col)
-            self.tree.column(col, width=80, anchor="center")
-        
+            self.tree.heading(col, text=col, anchor="center")
+            self.tree.column(col, width=100, anchor="center")
+
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
         
         y_scroll = ttk.Scrollbar(table_frame, orient="vertical", command=self.tree.yview)
         y_scroll.pack(side=tk.RIGHT, fill=tk.Y)
@@ -543,25 +546,26 @@ class PaymentManagement:
                         amount = float(payment.get("amount_paid", 0))
                         method = payment.get("payment_method", "").lower()
                         status = payment.get("status", "").lower()
+                        booking_cost = float(payment.get("booking_cost", 0))  # Fetch booking cost
 
-                        # Exclude voided payments from totals
-                        if status == "voided":
-                            continue
+                        # Calculate totals only if the payment is NOT voided
+                        if status != "voided":
+                            if method == "pos card":
+                                total_pos += amount
+                            elif method == "bank transfer":
+                                total_bank += amount
+                            elif method == "cash":
+                                total_cash += amount
 
-                        if method == "pos card":
-                            total_pos += amount
-                        elif method == "bank transfer":
-                            total_bank += amount
-                        elif method == "cash":
-                            total_cash += amount
-
+                        # Insert all payments into the table, including voided ones
                         self.tree.insert("", "end", values=(
                             payment.get("payment_id", ""),
                             payment.get("guest_name", ""),
                             payment.get("room_number", ""),
+                            f"{booking_cost:,.2f}",  # Display booking cost
                             f"{amount:,.2f}",
                             f"{float(payment.get('discount_allowed', 0)) :,.2f}",
-                            f"{float(payment.get('balance_due', 0)) :,.2f}",
+                            f"{float(payment.get('balance_due', 0)) :,.2f}",                           
                             payment.get("payment_method", ""),
                             payment.get("payment_date", ""),
                             payment.get("status", ""),

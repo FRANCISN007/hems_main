@@ -206,12 +206,17 @@ def list_payments(
         # Prepare the list of payment details
         payment_list = []
         for payment in payments:
+            # Fetch the corresponding booking to get booking_cost
+            booking = db.query(booking_models.Booking).filter(
+                booking_models.Booking.id == payment.booking_id
+            ).first()
+
             payment_list.append({
                 "payment_id": payment.id,
                 "guest_name": payment.guest_name,
                 "room_number": payment.room_number,
+                "booking_cost": booking.booking_cost if booking else None,
                 "amount_paid": payment.amount_paid,
-                #"booking_cost": payment.booking_cost,
                 "discount_allowed": payment.discount_allowed,
                 "balance_due": payment.balance_due,
                 "payment_method": payment.payment_method,
@@ -245,15 +250,14 @@ def list_payments(
         }
 
     except HTTPException as e:
-        # Re-raise the HTTP exception
         raise e
     except Exception as e:
-        # Handle unexpected errors
         db.rollback()
         raise HTTPException(
             status_code=500,
             detail=f"An error occurred while retrieving payments: {str(e)}"
         )
+
 
 
 @router.get("/by-status")

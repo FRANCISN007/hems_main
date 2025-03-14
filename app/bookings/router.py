@@ -174,7 +174,10 @@ def list_bookings(
         bookings = query.order_by(booking_models.Booking.booking_date.desc()).all()
         
         # Filter only checked-in bookings for total cost calculation
-        checked_in_bookings = [booking for booking in bookings if booking.status == "checked-in"]
+        #checked_in_bookings = [booking for booking in bookings if booking.status == "checked-in"]
+        checked_in_bookings = [
+            booking for booking in bookings if booking.status in ["checked-in", "checked-out"]
+        ]
 
         # Calculate total booking cost (excluding cancelled bookings)
         total_booking_cost = sum(booking.booking_cost for booking in checked_in_bookings)
