@@ -659,8 +659,8 @@ class BookingManagement:
         table_frame = tk.Frame(frame, bg="#ffffff")
         table_frame.pack(fill=tk.BOTH, expand=True)
 
-        columns = ("ID", "Room", "Guest", "Booking Cost", "Arrival", "Departure", "Status", "Number of Days",
-               "Booking Type", "Phone Number", "Booking Date", "Payment Status", "Created_by")
+        columns = ("ID", "Room", "Guest Name", "Gender", "Booking Cost", "Arrival", "Departure", "Status", "Number of Days", 
+                "Booking Type", "Phone Number", "Booking Date", "Payment Status", "Identification Number", "Address","Created_by")
 
 
         # ✅ Prevent recreation of table on every call
@@ -671,7 +671,7 @@ class BookingManagement:
         
         for col in columns:
             self.tree.heading(col, text=col)
-            self.tree.column(col, width=80, anchor="center")
+            self.tree.column(col, width=70, anchor="center")
         
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         
@@ -733,6 +733,7 @@ class BookingManagement:
                                 booking.get("id", ""),
                                 booking.get("room_number", ""),
                                 booking.get("guest_name", ""),
+                                booking.get("gender", ""),
                                 f"{booking_cost:,.2f}",
                                 booking.get("arrival_date", ""),
                                 booking.get("departure_date", ""),
@@ -741,7 +742,9 @@ class BookingManagement:
                                 booking.get("booking_type", ""),
                                 booking.get("phone_number", ""),
                                 booking.get("booking_date", ""),
-                                booking.get("payment_status", ""),                               
+                                booking.get("payment_status", ""), 
+                                booking.get("identification_number", ""),  
+                                booking.get("address", ""),                               
                                 booking.get("created_by", ""),
                             ), tags=(tag,))
 
@@ -793,13 +796,13 @@ class BookingManagement:
         table_frame = tk.Frame(frame, bg="#ffffff")
         table_frame.pack(fill=tk.BOTH, expand=True)
         
-        columns = ("ID", "Room", "Guest", "Booking Cost", "Arrival", "Departure", "Status", "Number of Days", 
-                "Booking Type", "Phone Number", "Booking Date", "Payment Status")
-        
+        columns = ("ID", "Room", "Guest Name", "Gender", "Booking Cost", "Arrival", "Departure", "Status", "Number of Days", 
+                "Booking Type", "Phone Number", "Booking Date", "Payment Status", "Identification Number", "Address","Created_by")
+
         self.search_tree = ttk.Treeview(table_frame, columns=columns, show="headings")
         for col in columns:
             self.search_tree.heading(col, text=col)
-            self.search_tree.column(col, width=80, anchor="center")
+            self.search_tree.column(col, width=70, anchor="center")
         
         self.search_tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         
@@ -836,6 +839,7 @@ class BookingManagement:
                         booking.get("id", ""),
                         booking.get("room_number", ""),
                         booking.get("guest_name", ""),
+                        booking.get("gender", ""),
                          f"{float(booking.get('booking_cost', 0)) :,.2f}",  # Format booking_cost
                         booking.get("arrival_date", ""),
                         booking.get("departure_date", ""),
@@ -845,6 +849,10 @@ class BookingManagement:
                         booking.get("phone_number", ""),
                         booking.get("booking_date", ""),
                         booking.get("payment_status", ""),
+                        booking.get("identification_number", ""),  
+                        booking.get("address", ""),                               
+                        booking.get("created_by", ""),
+
                        
                     ))
             
@@ -881,16 +889,16 @@ class BookingManagement:
         table_frame = tk.Frame(frame, bg="#ffffff")
         table_frame.pack(fill=tk.BOTH, expand=True)
         
-        columns = ("ID", "Room", "Guest", "Booking Cost", "Arrival", "Departure", "Status", "Number of Days", 
-                "Booking Type", "Phone Number", "Booking Date", "Payment Status", "Created_by")
-        
+        columns = ("ID", "Room", "Guest Name", "Gender", "Booking Cost", "Arrival", "Departure", "Status", "Number of Days", 
+                "Booking Type", "Phone Number", "Booking Date", "Payment Status", "Identification Number", "Address","Created_by")
+
         if hasattr(self, "tree"):
             self.tree.destroy()
         
         self.tree = ttk.Treeview(table_frame, columns=columns, show="headings")
         for col in columns:
             self.tree.heading(col, text=col)
-            self.tree.column(col, width=80, anchor="center")
+            self.tree.column(col, width=70, anchor="center")
         
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         
@@ -930,6 +938,7 @@ class BookingManagement:
                         booking.get("id", ""),
                         booking.get("room_number", ""),
                         booking.get("guest_name", ""),
+                        booking.get("gender", ""),
                         f"{float(booking.get('booking_cost', 0)) :,.2f}",  # Format booking_cost
                         booking.get("arrival_date", ""),
                         booking.get("departure_date", ""),
@@ -938,7 +947,9 @@ class BookingManagement:
                         booking.get("booking_type", ""),
                         booking.get("phone_number", ""),
                         booking.get("booking_date", ""),
-                        booking.get("payment_status", ""),                       
+                        booking.get("payment_status", ""),
+                        booking.get("identification_number", ""),  
+                        booking.get("address", ""),                                                   
                         booking.get("created_by", ""),
                     ))
 
@@ -987,13 +998,13 @@ class BookingManagement:
         table_frame = tk.Frame(frame, bg="#ffffff")
         table_frame.pack(fill=tk.BOTH, expand=True)
 
-        columns = ("ID", "Room", "Guest", "Booking Cost", "Arrival", "Departure", "Status", "Number of Days", 
-                "Booking Type", "Phone Number", "Booking Date", "Payment Status")
+        columns = ("ID", "Room", "Guest Name", "Gender", "Booking Cost", "Arrival", "Departure", "Status", "Number of Days", 
+                "Booking Type", "Phone Number", "Booking Date", "Payment Status", "Identification Number", "Address","Created_by")
 
         self.search_tree = ttk.Treeview(table_frame, columns=columns, show="headings")
         for col in columns:
             self.search_tree.heading(col, text=col)
-            self.search_tree.column(col, width=80, anchor="center")
+            self.search_tree.column(col, width=70, anchor="center")
 
         self.search_tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
@@ -1050,6 +1061,7 @@ class BookingManagement:
                             booking.get("id", ""),
                             booking.get("room_number", ""),
                             booking.get("guest_name", ""),
+                            booking.get("gender", ""),
                             f"{float(booking.get('booking_cost', 0)) :,.2f}",
                             booking.get("arrival_date", ""),
                             booking.get("departure_date", ""),
@@ -1059,6 +1071,10 @@ class BookingManagement:
                             booking.get("phone_number", ""),
                             booking.get("booking_date", ""),
                             booking.get("payment_status", ""),
+                            booking.get("identification_number", ""),  
+                            booking.get("address", ""),                                                   
+                            booking.get("created_by", ""),
+
                             
                         ))
                     # Apply grid effect after inserting data
@@ -1417,13 +1433,13 @@ class BookingManagement:
 
 
 
-class UpdateBooking:
-    def __init__(self, root, token):
-        self.root = tk.Toplevel(root)
-        self.root.title("Update Booking")
-        self.root.geometry("900x600")
-        self.token = token
-        self.root.configure(bg="#f0f0f0")
+#class UpdateBooking:
+    #def __init__(self, root, token):
+        #self.root = tk.Toplevel(root)
+        #self.root.title("Update Booking")
+        #self.root.geometry("900x600")
+        #self.token = token
+        #self.root.configure(bg="#f0f0f0")
         
         
         
