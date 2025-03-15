@@ -393,9 +393,22 @@ class PaymentManagement:
                 payment_date = self.entries["Payment Date"].get_date()
 
                 # Set time to midnight to avoid time drift issues
-                payment_date = datetime(payment_date.year, payment_date.month, payment_date.day, 0, 0, 0, 0)
+                # Define Africa/Lagos timezone
+                lagos_tz = pytz.timezone("Africa/Lagos")
 
-                # ✅ Convert to Africa/Lagos timezone instead of UTC
+                # ✅ Get date from the entry and ensure it has the correct time
+                payment_date = self.entries["Payment Date"].get_date()
+
+                # ✅ Use the current time in Lagos timezone to set the full timestamp
+                current_time_lagos = datetime.now(lagos_tz)
+
+                # ✅ Create payment_date with current time instead of midnight (prevents time drift)
+                payment_date = datetime(
+                    payment_date.year, payment_date.month, payment_date.day, 
+                    current_time_lagos.hour, current_time_lagos.minute, current_time_lagos.second
+                )
+
+                # ✅ Convert to Africa/Lagos timezone
                 payment_date = lagos_tz.localize(payment_date)
 
                 # ✅ Format to ISO 8601 (PostgreSQL compatible)
@@ -1106,6 +1119,9 @@ class PaymentManagement:
      
     def void_payment(self):
         self.clear_right_frame()
+
+
+        
 
         frame = tk.Frame(self.right_frame, bg="#ffffff", padx=10, pady=10)
         frame.pack(fill=tk.BOTH, expand=True)

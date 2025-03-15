@@ -11,6 +11,7 @@ from app.users import schemas
 from app.rooms import models as room_models  # Ensure Room model is imported
 from app.bookings import models as booking_models
 from sqlalchemy.sql import func
+import pytz
 from loguru import logger
 from app.bookings import models  # Import the models module from bookings
 import os
@@ -137,7 +138,7 @@ def create_payment(
                 "payment_id": new_payment.id,
                 "amount_paid": new_payment.amount_paid,
                 "discount_allowed": payment_request.discount_allowed,
-                "payment_date": new_payment.payment_date,
+                "payment_date": new_payment.payment_date.isoformat(),
                 "balance_due": new_payment.balance_due,
                 "void_date": new_payment.void_date.strftime("%Y-%m-%d %H:%M:%S") if new_payment.void_date else "N/A",
                 "status": new_payment.status,
@@ -600,7 +601,11 @@ def void_payment(
 
         # Update payment status to "voided" and set void_date
         payment.status = "voided"
-        payment.void_date = datetime.utcnow()  # Store current UTC time
+
+        lagos_tz = pytz.timezone("Africa/Lagos")
+
+# Store current timestamp in Africa/Lagos timezone
+        payment.void_date = datetime.now(lagos_tz)
 
         # Retrieve the associated booking using payment.booking_id
         booking = db.query(models.Booking).filter(models.Booking.id == payment.booking_id).first()

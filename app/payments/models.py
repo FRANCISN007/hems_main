@@ -22,8 +22,10 @@ class Payment(Base):
     discount_allowed = Column(Float)  # Discount allowed on the payment
     balance_due = Column(Float, default=0.0)
     payment_method = Column(String)
-    payment_date = Column(DateTime, default=get_local_time)  # Store with timezone
-    void_date = Column(DateTime, nullable=True, default=None)  # ✅ Ensure default=None
+    #payment_date = Column(DateTime, default=get_local_time)  # Store with timezone
+    #payment_date = Column(DateTime, default=datetime.utcnow)
+    payment_date = Column(DateTime(timezone=True), server_default=func.now())  # ✅ Ensures correct timezone
+    void_date = Column(DateTime, nullable=True, default=None, server_default=func.now())
     status = Column(String, default="pending")
     created_by = Column(String, nullable=False)  # Track who created the booking
     
