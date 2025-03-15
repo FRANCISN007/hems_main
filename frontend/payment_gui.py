@@ -552,12 +552,7 @@ class PaymentManagement:
 
                 self.tree.delete(*self.tree.get_children())  # Clear the table
 
-                # Fetch summary data directly from API response
-                total_booking_cost = summary.get("total_booking_cost", 0)
-                total_amount_paid = summary.get("total_amount_paid", 0)
-                total_discount = summary.get("total_discount_allowed", 0)
-                total_due = summary.get("total_due", 0)
-
+                
                 total_cash = 0
                 total_pos = 0
                 total_bank = 0
