@@ -1,4 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends, Query
+
+
 from typing import Optional
 from datetime import date, datetime, timedelta, timezone
 from sqlalchemy.orm import Session
@@ -121,6 +123,7 @@ def create_payment(
                 discount_allowed=payment_request.discount_allowed,
                 payment_method=payment_request.payment_method,
                 payment_date=payment_request.payment_date.isoformat(),
+            
             ),
             booking_id=booking_id,
             balance_due=balance_due,
@@ -162,21 +165,18 @@ def list_payments(
     current_user: schemas.UserDisplaySchema = Depends(get_current_user),
 ):
     """
-    List all payments made between the specified start and end date,
-    including the total payment amount for the range, excluding voided and cancelled payments from the total calculation.
-    Also provides a summary of total payments for each payment method: Cash, POS Card, and Bank Transfer.
+    List all payments made between the specified start and end date.
+    Provides a summarized view of total bookings, total amount paid, total discount, and total due.
+    Excludes voided and cancelled payments from the total calculation.
     """
     try:
-        # Convert dates to datetime objects
         if start_date:
             start_datetime = datetime.combine(start_date, datetime.min.time())
         if end_date:
             end_datetime = datetime.combine(end_date, datetime.max.time())
 
-        # Build the base query for payments
         query = db.query(payment_models.Payment)
 
-        # Apply date filters
         if start_date and end_date:
             if start_date > end_date:
                 raise HTTPException(
@@ -192,27 +192,32 @@ def list_payments(
         elif end_date:
             query = query.filter(payment_models.Payment.payment_date <= end_datetime)
 
-        # Retrieve all payments within the date range, ordered by payment_date
         payments = query.order_by(payment_models.Payment.payment_date.desc()).all()
 
         if not payments:
             logger.info("No payments found for the specified criteria.")
             return {"message": "No payments found for the specified criteria."}
 
-        # Initialize payment method totals
+        total_bookings = set()
+        total_booking_cost = 0  # Corrected total booking cost calculation
+        total_amount_paid = 0
+        total_discount_allowed = 0
+        total_due = 0
+
         total_cash = 0
         total_pos_card = 0
         total_bank_transfer = 0
-        total_payment_amount = 0
 
-        # Prepare the list of payment details
         payment_list = []
         for payment in payments:
-            # Fetch the corresponding booking to get booking_cost
             booking = db.query(booking_models.Booking).filter(
                 booking_models.Booking.id == payment.booking_id
             ).first()
-
+            
+            if booking:
+                total_booking_cost += booking.booking_cost  # Include all bookings tied to payments
+                total_bookings.add(payment.booking_id)
+            
             payment_list.append({
                 "payment_id": payment.id,
                 "guest_name": payment.guest_name,
@@ -224,16 +229,15 @@ def list_payments(
                 "payment_method": payment.payment_method,
                 "payment_date": payment.payment_date.isoformat(),
                 "status": payment.status,
-                "void_date": payment.void_date,
+                "void_date": payment.void_date.strftime("%Y-%m-%d %H:%M:%S") if payment.void_date else "N/A",
                 "booking_id": payment.booking_id,
                 "created_by": payment.created_by,
             })
 
-            # Exclude voided and cancelled payments from totals
             if payment.status not in ["voided", "cancelled"]:
-                total_payment_amount += payment.amount_paid
-
-                # Categorize totals by payment method
+                total_amount_paid += payment.amount_paid
+                total_discount_allowed += payment.discount_allowed
+                
                 if payment.payment_method.lower() == "cash":
                     total_cash += payment.amount_paid
                 elif payment.payment_method.lower() == "pos card":
@@ -241,14 +245,24 @@ def list_payments(
                 elif payment.payment_method.lower() == "bank transfer":
                     total_bank_transfer += payment.amount_paid
 
+        # Corrected calculation for total due
+        total_due = total_booking_cost - (total_amount_paid + total_discount_allowed)
+
         logger.info(f"Retrieved {len(payment_list)} payments.")
 
         return {
-            "total_payments": len(payment_list),
-            "total_amount": total_payment_amount,
-            "total_cash": total_cash,
-            "total_pos_card": total_pos_card,
-            "total_bank_transfer": total_bank_transfer,
+            "summary": {
+                "total_bookings": len(total_bookings),
+                "total_booking_cost": total_booking_cost,
+                "total_amount_paid": total_amount_paid,
+                "total_discount_allowed": total_discount_allowed,
+                "total_due": total_due
+            },
+            "payment_method_totals": {
+                "cash": total_cash,
+                "pos_card": total_pos_card,
+                "bank_transfer": total_bank_transfer
+            },
             "payments": payment_list,
         }
 
@@ -260,6 +274,8 @@ def list_payments(
             status_code=500,
             detail=f"An error occurred while retrieving payments: {str(e)}"
         )
+
+
 
 
 
@@ -283,7 +299,7 @@ def list_payments_by_status(
         if start_date:
             query = query.filter(payment_models.Payment.payment_date >= start_date)
         if end_date:
-            query = query.filter(payment_models.Payment.payment_date <= end_date)
+            query = query.filter(payment_models.Payment.payment_date < (end_date + timedelta(days=1)))
 
         # Execute the query
         payments = query.all()
@@ -322,7 +338,7 @@ def list_payments_by_status(
         raise HTTPException(
             status_code=500,
             detail=f"An error occurred: {str(e)}",
-        ) 
+        )
 
 
 @router.get("/total_daily_payment")

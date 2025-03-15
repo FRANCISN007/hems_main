@@ -470,82 +470,68 @@ class PaymentManagement:
 
 
 
-
     def list_payments(self):
         self.clear_right_frame()
-        
+
         frame = tk.Frame(self.right_frame, bg="#ffffff", padx=10, pady=10)
         frame.pack(fill=tk.BOTH, expand=True)
-        
+
         tk.Label(frame, text="List Payments Report", font=("Arial", 14, "bold"), bg="#ffffff").pack(pady=10)
-        
+
+        # Filter Frame
         filter_frame = tk.Frame(frame, bg="#ffffff")
         filter_frame.pack(pady=5)
-        
+
         tk.Label(filter_frame, text="Start Date:", font=("Arial", 11), bg="#ffffff").grid(row=0, column=0, padx=5, pady=5)
         self.start_date = DateEntry(filter_frame, font=("Arial", 11))
         self.start_date.grid(row=0, column=1, padx=5, pady=5)
-        
+
         tk.Label(filter_frame, text="End Date:", font=("Arial", 11), bg="#ffffff").grid(row=0, column=2, padx=5, pady=5)
         self.end_date = DateEntry(filter_frame, font=("Arial", 11))
         self.end_date.grid(row=0, column=3, padx=5, pady=5)
-        
-        fetch_btn = ttk.Button(
-            filter_frame,
-            text="Fetch Payments",
-            command=self.fetch_payments
-        )
+
+        fetch_btn = ttk.Button(filter_frame, text="Fetch Payments", command=self.fetch_payments)
         fetch_btn.grid(row=0, column=4, padx=10, pady=5)
-        
+
+        # Table Frame
         table_frame = tk.Frame(frame, bg="#ffffff")
         table_frame.pack(fill=tk.BOTH, expand=True)
-        
-        style = ttk.Style()
-        style.theme_use("alt")  # Alternative themes
 
-        style.configure("Treeview.Heading", font=("Arial", 12, "bold"))  # Apply directly to Treeview headings
-
-        columns = (
-        "ID", "Guest Name", "Room Number", "Booking Cost", "Amount Paid", "Discount Allowed",
-        "Balance Due", "Payment Method", "Payment Date", "Status", "Void Date", "Booking ID", "Created_by"
-        )
+        columns = ("ID", "Guest Name", "Room Number", "Booking Cost", "Amount Paid", "Discount Allowed",
+                "Balance Due", "Payment Method", "Payment Date", "Status", "Void Date", "Booking ID", "Created_by")
 
         self.tree = ttk.Treeview(table_frame, columns=columns, show="headings")
 
-# Apply headings after creating the Treeview
         for col in columns:
             self.tree.heading(col, text=col, anchor="center")
             self.tree.column(col, width=80, anchor="center")
 
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-        
         y_scroll = ttk.Scrollbar(table_frame, orient="vertical", command=self.tree.yview)
         y_scroll.pack(side=tk.RIGHT, fill=tk.Y)
         self.tree.configure(yscroll=y_scroll.set)
-        
+
         x_scroll = ttk.Scrollbar(frame, orient="horizontal", command=self.tree.xview)
         x_scroll.pack(fill=tk.X)
         self.tree.configure(xscroll=x_scroll.set)
 
+        
+        # Payment Breakdown Frame (Closer to Summary Frame)
+        breakdown_frame = tk.Frame(frame, bg="#ffffff", padx=5, pady=5)  # Reduced padding
+        breakdown_frame.pack(fill=tk.X, pady=5)  # Reduced vertical spacing
 
-        # Frame for horizontal display of totals
-        totals_frame = tk.Frame(frame, bg="#ffffff")
-        totals_frame.pack(fill=tk.X, pady=10)
+        self.total_cash_label = tk.Label(breakdown_frame, text="Total Cash: 0", font=("Arial", 12), bg="#ffffff", fg="red")
+        self.total_cash_label.grid(row=0, column=0, padx=10)  # Reduced horizontal spacing
 
-        self.pos_card_label = tk.Label(totals_frame, text="Total POS Card: 0", font=("Arial", 12), bg="#ffffff", fg="green")
-        self.pos_card_label.pack(side=tk.LEFT, padx=20)
+        self.total_pos_label = tk.Label(breakdown_frame, text="Total POS Card: 0", font=("Arial", 12), bg="#ffffff", fg="blue")
+        self.total_pos_label.grid(row=0, column=1, padx=10)
 
-        self.bank_transfer_label = tk.Label(totals_frame, text="Total Bank Transfer: 0", font=("Arial", 12), bg="#ffffff", fg="purple")
-        self.bank_transfer_label.pack(side=tk.LEFT, padx=20)
+        self.total_bank_label = tk.Label(breakdown_frame, text="Total Bank Transfer: 0", font=("Arial", 12), bg="#ffffff", fg="purple")
+        self.total_bank_label.grid(row=0, column=2, padx=10)
 
-        self.cash_label = tk.Label(totals_frame, text="Total Cash: 0", font=("Arial", 12), bg="#ffffff", fg="red")
-        self.cash_label.pack(side=tk.LEFT, padx=20)
-
-        # Total Amount Label (Centered Below the Frame)
-        self.total_label = tk.Label(frame, text="Total Amount: 0", font=("Arial", 12, "bold"), bg="#ffffff", fg="blue")
-        self.total_label.pack(pady=5)
-
+        self.total_label = tk.Label(breakdown_frame, text="Total Amount: 0", font=("Arial", 12, "bold"), bg="#ffffff", fg="blue")
+        self.total_label.grid(row=0, column=3, padx=10)
 
 
     def fetch_payments(self):
@@ -561,61 +547,60 @@ class PaymentManagement:
 
             if response.status_code == 200:
                 data = response.json()
-
-                if isinstance(data, dict) and "payments" in data:
-                    payments = data["payments"]
-                elif isinstance(data, list):
-                    payments = data
-                else:
-                    messagebox.showinfo("Info", "No payments found for the specified criteria")
-                    return
+                summary = data.get("summary", {})
+                payments = data.get("payments", []) if isinstance(data, dict) else data
 
                 self.tree.delete(*self.tree.get_children())  # Clear the table
 
+                # Fetch summary data directly from API response
+                total_booking_cost = summary.get("total_booking_cost", 0)
+                total_amount_paid = summary.get("total_amount_paid", 0)
+                total_discount = summary.get("total_discount_allowed", 0)
+                total_due = summary.get("total_due", 0)
+
+                total_cash = 0
                 total_pos = 0
                 total_bank = 0
-                total_cash = 0
 
-                if payments:
-                    for payment in payments:
-                        amount = float(payment.get("amount_paid", 0))
-                        method = payment.get("payment_method", "").lower()
-                        status = payment.get("status", "").lower()
-                        booking_cost = float(payment.get("booking_cost", 0))  # Fetch booking cost
+                for payment in payments:
+                    status = payment.get("status", "").lower()
+                    booking_cost = float(payment.get("booking_cost", 0))
+                    amount_paid = float(payment.get("amount_paid", 0))
+                    discount = float(payment.get("discount_allowed", 0))
+                    method = payment.get("payment_method", "").lower()
 
-                        # Calculate totals only if the payment is NOT voided
-                        if status != "voided":
-                            if method == "pos card":
-                                total_pos += amount
-                            elif method == "bank transfer":
-                                total_bank += amount
-                            elif method == "cash":
-                                total_cash += amount
+                    # Exclude voided payments from payment breakdown
+                    if status != "voided":
+                        if method == "cash":
+                            total_cash += amount_paid
+                        elif method == "pos card":
+                            total_pos += amount_paid
+                        elif method == "bank transfer":
+                            total_bank += amount_paid
 
-                        # Insert all payments into the table, including voided ones
-                        self.tree.insert("", "end", values=(
-                            payment.get("payment_id", ""),
-                            payment.get("guest_name", ""),
-                            payment.get("room_number", ""),
-                            f"{booking_cost:,.2f}",  # Display booking cost
-                            f"{amount:,.2f}",
-                            f"{float(payment.get('discount_allowed', 0)) :,.2f}",
-                            f"{float(payment.get('balance_due', 0)) :,.2f}",                           
-                            payment.get("payment_method", ""),
-                            payment.get("payment_date", ""),
-                            payment.get("status", ""),
-                            payment.get("void_date", ""),
-                            payment.get("booking_id", ""),
-                            payment.get("created_by", "N/A"),
-                        ))
+                    # Insert payment into table (lists all payments, including voided ones)
+                    self.tree.insert("", "end", values=(
+                        payment.get("payment_id", ""),
+                        payment.get("guest_name", ""),
+                        payment.get("room_number", ""),
+                        f"{booking_cost:,.2f}",  # Display booking cost
+                        f"{amount_paid:,.2f}",
+                        f"{discount:,.2f}",
+                        f"{booking_cost - (amount_paid + discount):,.2f}",  # Correct Amount Due
+                        payment.get("payment_method", ""),
+                        payment.get("payment_date", ""),
+                        payment.get("status", ""),
+                        payment.get("void_date", ""),
+                        payment.get("booking_id", ""),
+                        payment.get("created_by", "N/A"),
+                    ))
 
-                    self.apply_grid_effect()
-
-                # Update labels with total payment breakdown (excluding voided payments)
-                self.total_label.config(text=f"Total Amount: {total_pos + total_bank + total_cash:,.2f}")
-                self.pos_card_label.config(text=f"Total POS Card: {total_pos:,.2f}")
-                self.bank_transfer_label.config(text=f"Total Bank Transfer: {total_bank:,.2f}")
-                self.cash_label.config(text=f"Total Cash: {total_cash:,.2f}")
+                
+                # Update breakdown labels
+                self.total_cash_label.config(text=f"Total Cash: {total_cash:,.2f}")
+                self.total_pos_label.config(text=f"Total POS Card: {total_pos:,.2f}")
+                self.total_bank_label.config(text=f"Total Bank Transfer: {total_bank:,.2f}")
+                self.total_label.config(text=f"Total Amount: {total_cash + total_pos + total_bank:,.2f}")
 
             else:
                 messagebox.showerror("Error", response.json().get("detail", "Failed to retrieve payments."))
@@ -623,8 +608,13 @@ class PaymentManagement:
         except requests.exceptions.RequestException as e:
             messagebox.showerror("Error", f"Request failed: {e}")
 
-            
- 
+
+
+
+
+
+
+
     def list_payments_by_status(self):
         """Displays the List Payments by Status UI."""
         self.clear_right_frame()
