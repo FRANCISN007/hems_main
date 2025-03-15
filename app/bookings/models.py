@@ -6,6 +6,14 @@ from app.database import Base
 from datetime import datetime
 
 
+import pytz
+from sqlalchemy.sql import func
+
+def get_local_time():
+    lagos_tz = pytz.timezone("Africa/Lagos")
+    return datetime.now(lagos_tz)
+
+booking_date = Column(DateTime, default=get_local_time)
 
 class Booking(Base):
     __tablename__ = "bookings"
@@ -25,7 +33,7 @@ class Booking(Base):
     phone_number = Column(String, nullable=True)
     status = Column(String, default="reserved")
     payment_status = Column(String, default="pending")
-    booking_date = Column(DateTime, default=datetime.utcnow)
+    booking_date = Column(DateTime, default=get_local_time)  # Store with timezone
     is_checked_out = Column(Boolean, default=False)
     cancellation_reason = Column(String, nullable=True)
     deleted = Column(Boolean, default=False)  # Soft delete flag

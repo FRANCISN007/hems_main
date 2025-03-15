@@ -13,6 +13,20 @@ import sys
 import os
 
 
+import pytz
+from datetime import datetime
+
+# Set Africa/Lagos as default timezone in your Python application
+os.environ["TZ"] = "Africa/Lagos"
+
+# Convert UTC to Africa/Lagos
+lagos_tz = pytz.timezone("Africa/Lagos")
+current_time = datetime.now(lagos_tz)
+
+#print("Africa/Lagos Time:", current_time)
+
+
+
 from contextlib import asynccontextmanager
 
 

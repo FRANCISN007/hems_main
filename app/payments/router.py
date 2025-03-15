@@ -139,6 +139,7 @@ def create_payment(
                 "discount_allowed": payment_request.discount_allowed,
                 "payment_date": new_payment.payment_date,
                 "balance_due": new_payment.balance_due,
+                "void_date": new_payment.void_date.strftime("%Y-%m-%d %H:%M:%S") if new_payment.void_date else "N/A",
                 "status": new_payment.status,
                 "created_by": current_user.username,  # Track who processed the payment
             },
@@ -222,6 +223,7 @@ def list_payments(
                 "payment_method": payment.payment_method,
                 "payment_date": payment.payment_date.isoformat(),
                 "status": payment.status,
+                "void_date": payment.void_date,
                 "booking_id": payment.booking_id,
                 "created_by": payment.created_by,
             })
@@ -301,6 +303,7 @@ def list_payments_by_status(
                 "payment_method": payment.payment_method,
                 "payment_date": payment.payment_date.isoformat(),
                 "status": payment.status,
+                "void_date": payment.void_date,
                 "booking_id": payment.booking_id,
                 "created_by": payment.created_by,
             }
@@ -554,6 +557,7 @@ def get_payment_by_id(
             "payment_method": payment.payment_method,
             "payment_date": payment.payment_date.isoformat(),
             "status": payment.status,
+            "void_date": payment.void_date,
             "booking_id": payment.booking_id,
             "created_by": payment.created_by,
         }
@@ -568,9 +572,6 @@ def get_payment_by_id(
             status_code=500,
             detail="An unexpected error occurred while retrieving the payment."
         )
-
-
-
 
 
 
@@ -593,8 +594,13 @@ def void_payment(
                 detail=f"Payment with ID {payment_id} not found."
             )
 
-        # Update payment status to "voided"
+        # Check if the payment is already voided
+        if payment.status == "voided":
+            raise HTTPException(status_code=400, detail="Payment is already voided.")
+
+        # Update payment status to "voided" and set void_date
         payment.status = "voided"
+        payment.void_date = datetime.utcnow()  # Store current UTC time
 
         # Retrieve the associated booking using payment.booking_id
         booking = db.query(models.Booking).filter(models.Booking.id == payment.booking_id).first()
@@ -613,6 +619,7 @@ def void_payment(
             "payment_details": {
                 "payment_id": payment.id,
                 "status": payment.status,
+                "void_date": payment.void_date.strftime("%Y-%m-%d %H:%M:%S"),  # Format date for readability
             },
             "booking_details": {
                 "booking_id": booking.id if booking else None,

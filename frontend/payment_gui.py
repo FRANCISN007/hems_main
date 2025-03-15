@@ -17,6 +17,18 @@ from utils import export_to_excel, print_excel
 import requests
 #from bookings_gui import BookingManagement  # Import the Payment GUI
 
+import pytz
+from datetime import datetime
+
+# Set Africa/Lagos as default timezone in your Python application
+os.environ["TZ"] = "Africa/Lagos"
+
+# Convert UTC to Africa/Lagos
+lagos_tz = pytz.timezone("Africa/Lagos")
+current_time = datetime.now(lagos_tz)
+
+#print("Africa/Lagos Time:", current_time)
+
 
 
 
@@ -373,12 +385,22 @@ class PaymentManagement:
             if not payment_method:
                 errors.append("Payment Method is required.")
 
+            # ✅ Define Africa/Lagos timezone
+            lagos_tz = pytz.timezone("Africa/Lagos")
+
             # ✅ Validate Payment Date
             try:
                 payment_date = self.entries["Payment Date"].get_date()
+
+                # Set time to midnight to avoid time drift issues
                 payment_date = datetime(payment_date.year, payment_date.month, payment_date.day, 0, 0, 0, 0)
-                payment_date = pytz.utc.localize(payment_date)
+
+                # ✅ Convert to Africa/Lagos timezone instead of UTC
+                payment_date = lagos_tz.localize(payment_date)
+
+                # ✅ Format to ISO 8601 (PostgreSQL compatible)
                 payment_date_iso = payment_date.isoformat()
+
             except Exception:
                 errors.append("Invalid Payment Date. Please select a valid date.")
 
@@ -472,7 +494,7 @@ class PaymentManagement:
 
         columns = (
         "ID", "Guest Name", "Room Number", "Booking Cost", "Amount Paid", "Discount Allowed",
-        "Balance Due", "Payment Method", "Payment Date", "Status", "Booking ID", "Created_by"
+        "Balance Due", "Payment Method", "Payment Date", "Status", "Void Date", "Booking ID", "Created_by"
         )
 
         self.tree = ttk.Treeview(table_frame, columns=columns, show="headings")
@@ -480,7 +502,7 @@ class PaymentManagement:
 # Apply headings after creating the Treeview
         for col in columns:
             self.tree.heading(col, text=col, anchor="center")
-            self.tree.column(col, width=100, anchor="center")
+            self.tree.column(col, width=80, anchor="center")
 
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
@@ -569,6 +591,7 @@ class PaymentManagement:
                             payment.get("payment_method", ""),
                             payment.get("payment_date", ""),
                             payment.get("status", ""),
+                            payment.get("void_date", ""),
                             payment.get("booking_id", ""),
                             payment.get("created_by", "N/A"),
                         ))
@@ -638,7 +661,7 @@ class PaymentManagement:
         
 
         
-        columns = ("ID", "Guest Name", "Room Number", "Amount Paid", "Discount", "Balance Due", "Payment Method", "Payment Date", "Status", "Booking ID", "Created_by")
+        columns = ("ID", "Guest Name", "Room Number", "Amount Paid", "Discount", "Balance Due", "Payment Method", "Payment Date", "Status", "Void Date", "Booking ID", "Created_by")
         
         if hasattr(self, "tree"):
             self.tree.destroy()
@@ -710,6 +733,7 @@ class PaymentManagement:
                             payment.get("payment_method", ""),
                             payment.get("payment_date", ""),
                             payment.get("status", ""),
+                            payment.get("void_date", ""),
                             payment.get("booking_id", ""),
                             payment.get("created_by", ""),
                         ), tags=(tag,))
@@ -990,7 +1014,7 @@ class PaymentManagement:
         table_frame.pack(fill=tk.BOTH, expand=True)
 
         columns = ("ID", "Guest Name", "Room Number", "Amount Paid", "Discount Allowed", "Balance Due", 
-                "Payment Method", "Payment Date", "Status", "Booking ID", "Created_by")
+                "Payment Method", "Payment Date", "Status", "Void Date", "Booking ID", "Created_by")
         
 
         if hasattr(self, "tree"):
@@ -1042,6 +1066,7 @@ class PaymentManagement:
                         payment_method = data.get("payment_method", "")
                         payment_date = data.get("payment_date", "")
                         status = data.get("status", "").lower()  # Normalize status
+                        void_date = data.get("void_date", "N/A")  # ✅ Ensure void_date is captured
                         booking_id = data.get("booking_id", "")
                         created_by = data.get("created_by", "")
 
@@ -1054,7 +1079,7 @@ class PaymentManagement:
                         self.tree.insert("", "end", values=(
                             payment_id, guest_name, room_number, amount_paid, 
                             discount_allowed, balance_due, payment_method, 
-                            payment_date, status, booking_id, created_by,
+                            payment_date, status, void_date, booking_id, created_by,
                         ), tags=(tag,))
 
 
@@ -1103,7 +1128,7 @@ class PaymentManagement:
         table_frame.pack(fill=tk.BOTH, expand=True)
 
         columns = ("Payment ID", "Guest Name", "Room Number", "Amount Paid", "Discount Allowed",
-                "Balance Due", "Payment Method", "Payment Date", "Payment Status", "Booking ID", "Created_by")
+                "Balance Due", "Payment Method", "Payment Date", "Payment Status", "Void Date", "Booking ID", "Created_by")
 
         if hasattr(self, "tree"):
             self.tree.destroy()
@@ -1200,6 +1225,7 @@ class PaymentManagement:
                         data.get("payment_method", ""),
                         data.get("payment_date", ""),
                         data.get("status", ""),  # Payment status (should be "voided")
+                        data.get("void_date", ""),
                         data.get("booking_id", ""),
                         data.get("created_by", ""),
                     ))
