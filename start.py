@@ -15,7 +15,7 @@ os.environ["TZ"] = "Africa/Lagos"
 lagos_tz = pytz.timezone("Africa/Lagos")
 current_time = datetime.now(lagos_tz)
 
-print("Africa/Lagos Time:", current_time)
+#print("Africa/Lagos Time:", current_time)
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
