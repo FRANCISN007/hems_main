@@ -93,7 +93,8 @@ def create_booking(
     if overlapping_booking:
         raise HTTPException(
             status_code=400,
-            detail=f"Room {room_number_input} is already booked for the requested dates.",
+            detail=f"Room {room_number_input} is already booked for the requested dates."
+                f"Check Booking ID: {overlapping_booking.id}",
         )
 
     # Calculate booking cost and determine status
