@@ -352,7 +352,7 @@ class PaymentManagement:
 
         # 🔹 Submit Button
         btn_frame = ctk.CTkFrame(form_frame)
-        btn_frame.grid(row=len(fields), column=0, columnspan=2, pady=15)
+        btn_frame.grid(row=len(fields), column=1, columnspan=2, pady=15)
 
         submit_btn = ctk.CTkButton(btn_frame, text="Submit Payment", width=200, command=lambda: self.submit_payment(create_window))
         submit_btn.pack(pady=5)

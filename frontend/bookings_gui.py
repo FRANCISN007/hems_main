@@ -316,6 +316,12 @@ class BookingManagement:
 
     
 
+
+
+
+
+
+
     def create_booking(self):
         """Opens a pop-up window for creating a new booking with CustomTkinter."""
         self.clear_right_frame()
@@ -323,18 +329,16 @@ class BookingManagement:
         # Create a new pop-up window
         create_window = ctk.CTkToplevel(self.root)
         create_window.title("Create Booking")
-        create_window.geometry("450x500")
+        create_window.geometry("650x400")
         create_window.resizable(False, False)
         create_window.configure(fg_color="#f5f5f5")
 
         # Center the window on the screen
-        window_width = 600
-        window_height = 500
         screen_width = create_window.winfo_screenwidth()
         screen_height = create_window.winfo_screenheight()
-        x_coordinate = (screen_width - window_width) // 2
-        y_coordinate = (screen_height - window_height) // 2
-        create_window.geometry(f"{window_width}x{window_height}+{x_coordinate}+{y_coordinate}")
+        x_coordinate = (screen_width - 650) // 2
+        y_coordinate = (screen_height - 400) // 2
+        create_window.geometry(f"650x400+{x_coordinate}+{y_coordinate}")
 
         # Make the window modal
         create_window.transient(self.root)
@@ -350,20 +354,8 @@ class BookingManagement:
         frame = ctk.CTkFrame(create_window, fg_color="white", corner_radius=10)
         frame.pack(fill="both", expand=True, padx=10, pady=10)
 
-        # Booking Fields
-        fields = [
-            ("Room Number", ctk.CTkEntry),
-            ("Guest Name", ctk.CTkEntry),
-            ("Gender", ctk.CTkComboBox),
-            ("Identification Number", ctk.CTkEntry),
-            ("Address", ctk.CTkEntry),
-            ("Phone Number", ctk.CTkEntry),
-            ("Booking Type", ctk.CTkComboBox),
-            ("Arrival Date", DateEntry),
-            ("Departure Date", DateEntry),
-        ]
-
-        self.entries = {}  # Dictionary to store entry widgets
+        # Booking Fields Layout
+        self.entries = {}  # Store entry widgets
 
         # Combo box values
         combo_box_values = {
@@ -371,21 +363,30 @@ class BookingManagement:
             "Booking Type": ["checked-in", "reservation", "complimentary"]
         }
 
-        # Form layout
-        for i, (label_text, field_type) in enumerate(fields):
-            label = ctk.CTkLabel(frame, text=label_text, font=("Helvetica", 12, "bold"), text_color="#2c3e50")
-            label.grid(row=i, column=0, sticky="w", pady=5, padx=10)
+        # Form Grid Layout
+        form_data = [
+            ("Room Number", ctk.CTkEntry, 0, 0), ("Guest Name", ctk.CTkEntry, 0, 2),
+            ("Identification Number", ctk.CTkEntry, 1, 0), ("Gender", ctk.CTkComboBox, 1, 2),
+            ("Address", ctk.CTkEntry, 2, 0, 3),  # Span across columns
+            ("Phone Number", ctk.CTkEntry, 3, 0), ("Booking Type", ctk.CTkComboBox, 3, 2),
+            ("Arrival Date", DateEntry, 4, 0), ("Departure Date", DateEntry, 4, 2),
+        ]
 
+        for label_text, field_type, row, col, colspan in [(*fd, 1) if len(fd) == 4 else fd for fd in form_data]:
+            label = ctk.CTkLabel(frame, text=label_text, font=("Helvetica", 12, "bold"), text_color="#2c3e50")
+            label.grid(row=row, column=col, sticky="w", pady=5, padx=10)
+
+            # Create input fields
             if field_type == ctk.CTkComboBox:
                 entry = ctk.CTkComboBox(frame, values=combo_box_values.get(label_text, []), state="readonly",
                                         font=("Helvetica", 12), width=200)
             elif field_type == DateEntry:
                 entry = DateEntry(frame, font=("Helvetica", 12), width=12, background='darkblue', foreground='white', borderwidth=2)
             else:
-                entry = field_type(frame, font=("Helvetica", 12), width=28)
+                entry = field_type(frame, font=("Helvetica", 12), width=22 if label_text != "Address" else 50)
 
-            entry.grid(row=i, column=1, pady=5, padx=10, sticky="ew")
-            self.entries[label_text] = entry  # Store entry in dictionary
+            entry.grid(row=row, column=col + 1, columnspan=colspan, pady=5, padx=10, sticky="ew")
+            self.entries[label_text] = entry  # Store entry
 
         # Submit Button
         submit_btn = ctk.CTkButton(
@@ -400,7 +401,9 @@ class BookingManagement:
             width=450,
             height=40
         )
-        submit_btn.grid(row=len(fields), column=0, columnspan=2, pady=25, padx=30, sticky="ew")  # Center the button
+        submit_btn.grid(row=5, column=0, columnspan=4, pady=25, padx=30, sticky="ew")  # Center button
+
+
 
     def submit_booking(self, create_window):
         """Collects form data and sends a request to create a booking, then closes the pop-up."""
@@ -1103,81 +1106,76 @@ class BookingManagement:
     
 
 
+
+
     def update_booking(self):
+        """Opens a pop-up window for updating an existing booking with CustomTkinter."""
         self.clear_right_frame()
 
         # Create a new pop-up window
         update_window = ctk.CTkToplevel(self.root)
         update_window.title("Update Booking")
-        update_window.geometry("450x550")  # Matching create_booking window size
+        update_window.geometry("650x400")  # Match create_booking window size
         update_window.resizable(False, False)
-        update_window.configure(fg_color="#f5f5f5")  # Light background color
+        update_window.configure(fg_color="#f5f5f5")
 
         # Center the window on the screen
-        window_width = 600
-        window_height = 520
         screen_width = update_window.winfo_screenwidth()
         screen_height = update_window.winfo_screenheight()
-        x_coordinate = (screen_width - window_width) // 2
-        y_coordinate = (screen_height - window_height) // 2
-        update_window.geometry(f"{window_width}x{window_height}+{x_coordinate}+{y_coordinate}")
+        x_coordinate = (screen_width - 650) // 2
+        y_coordinate = (screen_height - 400) // 2
+        update_window.geometry(f"650x400+{x_coordinate}+{y_coordinate}")
 
         # Make the window modal
         update_window.transient(self.root)
         update_window.grab_set()
 
-        # Dark Header
+        # Header
         header_frame = ctk.CTkFrame(update_window, fg_color="#2c3e50", height=50, corner_radius=8)
-        header_frame.pack(fill="x", padx=5, pady=5)
-
+        header_frame.pack(fill="x", padx=10, pady=10)
         header_label = ctk.CTkLabel(header_frame, text="Update Booking", font=("Arial", 16, "bold"), text_color="white")
-        header_label.pack(pady=5)
+        header_label.pack(pady=10)
 
         # Main Content Frame
         frame = ctk.CTkFrame(update_window, fg_color="white", corner_radius=10)
         frame.pack(fill="both", expand=True, padx=10, pady=10)
 
-        # Booking Fields
-        fields = [
-            ("Booking ID", ctk.CTkEntry),
-            ("Room Number", ctk.CTkEntry),
-            ("Guest Name", ctk.CTkEntry),
-            ("Gender", ctk.CTkComboBox),
-            ("Identification Number", ctk.CTkEntry),
-            ("Address", ctk.CTkEntry),
-            ("Phone Number", ctk.CTkEntry),
-            ("Booking Type", ctk.CTkComboBox),
-            ("Arrival Date", DateEntry),
-            ("Departure Date", DateEntry),
-        ]
-
+        # Store entries
         self.entries = {}
 
+        # Combo box values
         combo_box_values = {
             "Gender": ["Male", "Female"],
             "Booking Type": ["checked-in", "reservation", "complimentary"]
         }
 
-        # Store the Booking ID
-        #self.entries["Booking ID"] = booking_id
+        # Form Grid Layout
+        form_data = [
+            ("Booking ID", ctk.CTkEntry, 0, 0),
+            ("Room Number", ctk.CTkEntry, 1, 0), ("Guest Name", ctk.CTkEntry, 1, 2),
+            ("Identification Number", ctk.CTkEntry, 2, 0), ("Gender", ctk.CTkComboBox, 2, 2),
+            ("Address", ctk.CTkEntry, 3, 0, 3),  # Span across columns
+            ("Phone Number", ctk.CTkEntry, 4, 0), ("Booking Type", ctk.CTkComboBox, 4, 2),
+            ("Arrival Date", DateEntry, 5, 0), ("Departure Date", DateEntry, 5, 2),
+        ]
 
-        # Create form fields
-        for i, (label_text, field_type) in enumerate(fields):
+        for label_text, field_type, row, col, colspan in [(*fd, 1) if len(fd) == 4 else fd for fd in form_data]:
             label = ctk.CTkLabel(frame, text=label_text, font=("Helvetica", 12, "bold"), text_color="#2c3e50")
-            label.grid(row=i, column=0, sticky="w", pady=5, padx=10)
+            label.grid(row=row, column=col, sticky="w", pady=5, padx=10)
 
+            # Create input fields
             if field_type == ctk.CTkComboBox:
                 entry = ctk.CTkComboBox(frame, values=combo_box_values.get(label_text, []), state="readonly",
                                         font=("Helvetica", 12), width=200)
             elif field_type == DateEntry:
                 entry = DateEntry(frame, font=("Helvetica", 12), width=12, background='darkblue', foreground='white', borderwidth=2)
             else:
-                entry = field_type(frame, font=("Helvetica", 12), width=28)
+                entry = field_type(frame, font=("Helvetica", 12), width=22 if label_text != "Address" else 50)
 
-            entry.grid(row=i, column=1, pady=5, padx=10, sticky="ew")
-            self.entries[label_text] = entry  
+            entry.grid(row=row, column=col + 1, columnspan=colspan, pady=5, padx=10, sticky="ew")
+            self.entries[label_text] = entry  # Store entry
 
-        # Submit Button with Hover Effect (Centered)
+        # Submit Button
         submit_btn = ctk.CTkButton(
             frame,
             text="Submit Update",
@@ -1187,10 +1185,10 @@ class BookingManagement:
             hover_color="#2980b9",
             text_color="white",
             corner_radius=10,
-            width=400,
+            width=450,
             height=40
         )
-        submit_btn.grid(row=len(fields), column=0, columnspan=2, pady=25, padx=30, sticky="ew")  # Center the button
+        submit_btn.grid(row=6, column=0, columnspan=4, pady=25, padx=30, sticky="ew")  # Center button
 
 
 

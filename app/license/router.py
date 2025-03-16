@@ -5,11 +5,13 @@ from app.users.auth import get_current_user
 from app.license import schemas, services
 from app.users import schemas
 from app.license import schemas as license_schemas
+from loguru import logger
 
 import os
 
 router = APIRouter()
 
+logger.add("app.log", rotation="500 MB", level="DEBUG")
 
 # Hardcoded admin password (better to store in an environment variable)
 ADMIN_LICENSE_PASSWORD = os.getenv("ADMIN_LICENSE_PASSWORD")
