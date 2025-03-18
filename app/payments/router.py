@@ -58,12 +58,14 @@ def create_payment(
             status_code=400,
             detail=f"Transaction time {payment_request.payment_date} cannot be in the future."
         )
+     # Convert payment date to Lagos time zone for proper comparison
+    payment_date = payment_request.payment_date.astimezone(lagos_tz)
     
-    # Prevent entering a past date unless the user is an admin
-    if payment_request.payment_date < transaction_time and current_user.role != "admin":
+     # Restrict non-admin users to posting only for the current full day
+    if payment_date.date() < transaction_time.date() and current_user.role != "admin":
         raise HTTPException(
             status_code=400,
-            detail="Only admins are allowed to enter a past date for payments."
+            detail="Only admin is allowed to enter a past date for payments."
         )
 
     # Fetch the booking record
@@ -74,6 +76,17 @@ def create_payment(
     if not booking_record:
         raise HTTPException(
             status_code=404, detail=f"Booking with ID {booking_id} does not exist."
+
+        )
+    
+    # Convert booking_date to Lagos timezone
+    booking_date = booking_record.booking_date.astimezone(lagos_tz)
+
+    # Prevent posting a payment date earlier than the booking date
+    if payment_date.date() < booking_date.date():
+        raise HTTPException(
+            status_code=400,
+            detail=f"Payment date cannot be earlier than the booking date ({booking_date.date()})."
         )
 
     # Fetch the room associated with the booking
@@ -90,12 +103,7 @@ def create_payment(
             detail=f"Booking ID {booking_id} must be checked-in or reserved to make a payment.",
         )
     
-    # Prevent duplicate payments by checking for existing complete payments
-    if booking_record.payment_status == "payment completed":
-        raise HTTPException(
-            status_code=400,
-            detail=f"Booking ID {booking_id} already has a completed payment."
-        )
+    
 
     # Calculate total due based on number of days and room price
     total_due = booking_record.number_of_days * room.amount
