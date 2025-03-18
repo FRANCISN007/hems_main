@@ -41,7 +41,9 @@ def create_payment(
     """
     Create a new payment for a booking, considering discounts and payment history.
     """
-    transaction_time = datetime.now(timezone.utc)
+    #transaction_time = datetime.now(timezone.utc)
+    lagos_tz = pytz.timezone("Africa/Lagos")
+    transaction_time = datetime.now(lagos_tz)
 
     # Validate that payment_date is timezone-aware
     if payment_request.payment_date.tzinfo is None:
@@ -55,6 +57,13 @@ def create_payment(
         raise HTTPException(
             status_code=400,
             detail=f"Transaction time {payment_request.payment_date} cannot be in the future."
+        )
+    
+    # Prevent entering a past date unless the user is an admin
+    if payment_request.payment_date < transaction_time and current_user.role != "admin":
+        raise HTTPException(
+            status_code=400,
+            detail="Only admins are allowed to enter a past date for payments."
         )
 
     # Fetch the booking record

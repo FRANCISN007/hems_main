@@ -2,32 +2,37 @@ import os
 import sys
 import subprocess
 import time
-
-
-
-import pytz
+#import pytz
 from datetime import datetime
 
-# Set Africa/Lagos as default timezone in your Python application
+# Set Africa/Lagos as the default timezone
 os.environ["TZ"] = "Africa/Lagos"
 
 # Convert UTC to Africa/Lagos
-lagos_tz = pytz.timezone("Africa/Lagos")
-current_time = datetime.now(lagos_tz)
+#lagos_tz = pytz.timezone("Africa/Lagos")
+#current_time = datetime.now(lagos_tz)
 
-#print("Africa/Lagos Time:", current_time)
+# Determine BASE_DIR dynamically
+if getattr(sys, 'frozen', False):  # If running from an Inno Setup installation
+    BASE_DIR = os.path.dirname(sys.executable)  # Use the directory where the EXE is located
+else:  # If running from the development environment
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
+# Check for Python executable
+PYTHON_VENV = os.path.join(BASE_DIR, "env", "Scripts", "python.exe")  # Virtual environment (Development)
+PYTHON_EMBED = os.path.join(BASE_DIR, "python-3.10.11-embed-amd64", "python.exe")  # Embedded Python (Installer)
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-PYTHON_EXECUTABLE = os.path.join(BASE_DIR, "env", "Scripts", "python.exe")  # Ensure correct path
-
-# Check if Python executable exists
-if not os.path.exists(PYTHON_EXECUTABLE):
-    print(f"Error: Python executable not found at {PYTHON_EXECUTABLE}")
+# Determine which Python executable to use
+if os.path.exists(PYTHON_VENV):
+    PYTHON_EXECUTABLE = PYTHON_VENV
+elif os.path.exists(PYTHON_EMBED):
+    PYTHON_EXECUTABLE = PYTHON_EMBED
+else:
+    print("Error: No valid Python environment found.")
     sys.exit(1)
 
 def start_backend():
-    """Starts the FastAPI backend using the virtual environment"""
+    """Starts the FastAPI backend using the appropriate Python environment."""
     backend_script = os.path.join(BASE_DIR, "app", "main.py")
 
     if not os.path.exists(backend_script):
@@ -35,28 +40,12 @@ def start_backend():
         sys.exit(1)
 
     with open("error.log", "w") as log_file:
-        process = subprocess.Popen([PYTHON_EXECUTABLE, "-m", "app.main"], cwd=BASE_DIR)
-
-    return process  # No time.sleep() to avoid blocking execution
-########
-#def show_welcome_screen():
-    """Launch the welcome screen (runs in parallel without blocking)"""
-    #welcome_script = os.path.join(BASE_DIR, "frontend", "welcome.py")
-
-    #if not os.path.exists(welcome_script):
-        #print(f"Error: Welcome screen script not found at {welcome_script}")
-        #sys.exit(1)
-
-    #subprocess.Popen([PYTHON_EXECUTABLE, welcome_script], cwd=BASE_DIR)  # No time.sleep()
-    # Launch welcome screen and WAIT for it to close
-    #process = subprocess.Popen([PYTHON_EXECUTABLE, welcome_script], cwd=BASE_DIR)
-    #process.wait()  # Wait for the welcome screen to close before proceeding
-    #time.sleep(2)
-   
+        process = subprocess.Popen([PYTHON_EXECUTABLE, "-m", "app.main"], cwd=BASE_DIR, stderr=log_file)
     
+    return process  # Keep running in the background
 
 def start_frontend():
-    """Starts the Tkinter frontend using the virtual environment"""
+    """Starts the Tkinter frontend using the appropriate Python environment."""
     frontend_script = os.path.join(BASE_DIR, "frontend", "main.py")
 
     if not os.path.exists(frontend_script):
@@ -66,17 +55,13 @@ def start_frontend():
     subprocess.Popen([PYTHON_EXECUTABLE, frontend_script], cwd=BASE_DIR)
 
 if __name__ == "__main__":
-    # Step 1: Start Backend First (No Delay)
+    # Step 1: Start Backend First
     backend_process = start_backend()
 
-    # Step 2: Show Welcome Screen (Runs Parallel)
-    #show_welcome_screen()
-
-    # Step 3: Start Frontend Immediately (No Time Gap)
-    
+    # Step 2: Start Frontend
     start_frontend()
 
-    # Step 4: Keep Backend Running in the Background
+    # Step 3: Keep Backend Running in the Background
     try:
         while True:
             time.sleep(1)
