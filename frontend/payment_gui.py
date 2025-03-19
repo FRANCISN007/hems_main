@@ -811,7 +811,7 @@ class PaymentManagement:
 
         for col in columns:
             self.tree.heading(col, text=col)
-            self.tree.column(col, width=80, anchor="center")
+            self.tree.column(col, width=100, anchor="center")
 
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
@@ -823,8 +823,17 @@ class PaymentManagement:
         x_scroll.pack(fill=tk.X)
         self.tree.configure(xscroll=x_scroll.set)
 
-        # Placeholder for total label (will be created dynamically after fetching data)
-        self.total_label = None
+        # Create a frame for displaying total debt amounts in a row
+        self.total_frame = tk.Frame(self.right_frame, bg="#ffffff", pady=10)
+        self.total_frame.pack(fill=tk.X)
+
+        self.total_current_label = tk.Label(self.total_frame, text="Total Current Debt: 0.00", font=("Arial", 12, "bold"),
+                                            bg="#ffffff", fg="blue")
+        self.total_current_label.grid(row=0, column=0, padx=20, pady=5)
+
+        self.total_gross_label = tk.Label(self.total_frame, text="Total Gross Debt: 0.00", font=("Arial", 12, "bold"),
+                                        bg="#ffffff", fg="red")
+        self.total_gross_label.grid(row=0, column=1, padx=20, pady=5)
 
     def fetch_debtor_list(self):
         api_url = "http://127.0.0.1:8000/payments/debtor_list"
@@ -841,14 +850,15 @@ class PaymentManagement:
                 data = response.json()
 
                 debtors = data.get("debtors", [])
-                total_debt_amount = data.get("total_debt_amount", 0)
+                total_current_debt = data.get("total_current_debt", 0)  # Filtered debt
+                total_gross_debt = data.get("total_gross_debt", 0)  # Overall debt
+
+                # Clear the table before inserting new data
+                self.tree.delete(*self.tree.get_children())
 
                 if not debtors:
                     messagebox.showinfo("Info", "No debtors found.")
                     return
-
-                # Clear the table before inserting new data
-                self.tree.delete(*self.tree.get_children())
 
                 for debtor in debtors:
                     self.tree.insert("", "end", values=(
@@ -864,14 +874,9 @@ class PaymentManagement:
                         debtor.get("last_payment_date", "")
                     ))
 
-                # Remove existing total label if it exists
-                if self.total_label:
-                    self.total_label.destroy()
-
-                # Create and position the total debt label at the bottom
-                self.total_label = tk.Label(self.right_frame, text=f"Total Debt Amount: {total_debt_amount:,.2f}",
-                                            font=("Arial", 12, "bold"), bg="#ffffff", fg="blue")
-                self.total_label.pack(side=tk.BOTTOM, pady=10)
+                # Update labels with correct values
+                self.total_current_label.config(text=f"Total Current Debt: {total_current_debt:,.2f}")
+                self.total_gross_label.config(text=f"Total Gross Debt: {total_gross_debt:,.2f}")
 
                 self.apply_grid_effect()
             else:

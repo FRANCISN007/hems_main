@@ -481,7 +481,8 @@ def get_debtor_list(
             raise HTTPException(status_code=404, detail="No debtor bookings found in the given date range.")
 
         debtor_list = []
-        total_debt_amount = 0  # Initialize total debt amount
+        total_debt_amount = 0  # Current total debt in date range
+        total_database_debt = 0  # Total debt in the database
 
         # Iterate through each booking
         for booking in bookings:
@@ -533,6 +534,31 @@ def get_debtor_list(
                 })
                 total_debt_amount += balance_due
 
+        # Calculate the total debt in the database (without date filter)
+        all_bookings = db.query(booking_models.Booking).filter(
+            booking_models.Booking.status != "cancelled",
+            booking_models.Booking.payment_status != "complimentary"
+        ).all()
+
+        for booking in all_bookings:
+            room = db.query(room_models.Room).filter(
+                room_models.Room.room_number == booking.room_number
+            ).first()
+            if not room:
+                continue
+
+            total_due = booking.number_of_days * room.amount
+            all_payments = db.query(payment_models.Payment).filter(
+                payment_models.Payment.booking_id == booking.id,
+                payment_models.Payment.status != "voided"
+            ).all()
+
+            total_paid = sum(
+                payment.amount_paid + (payment.discount_allowed or 0)
+                for payment in all_payments
+            )
+            total_database_debt += max(total_due - total_paid, 0)
+
         # Raise an exception if no debtors are found
         if not debtor_list:
             raise HTTPException(status_code=404, detail="No debtors found in the given date range.")
@@ -545,7 +571,8 @@ def get_debtor_list(
 
         return {
             "total_debtors": len(debtor_list),
-            "total_debt_amount": total_debt_amount,
+            "total_current_debt": total_debt_amount,  # Current total debt within date range
+            "total_gross_debt": total_database_debt,  # Total debt across entire database
             "debtors": debtor_list,
         }
 
@@ -555,6 +582,7 @@ def get_debtor_list(
             status_code=500,
             detail="An error occurred while retrieving the debtor list.",
         )
+
 
 
 
