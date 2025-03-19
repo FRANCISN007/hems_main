@@ -824,16 +824,16 @@ class PaymentManagement:
         self.tree.configure(xscroll=x_scroll.set)
 
         # Create a frame for displaying total debt amounts in a row
-        self.total_frame = tk.Frame(self.right_frame, bg="#ffffff", pady=10)
+        self.total_frame = tk.Frame(self.right_frame, bg="#ffffff", pady=2)
         self.total_frame.pack(fill=tk.X)
 
         self.total_current_label = tk.Label(self.total_frame, text="Total Current Debt: 0.00", font=("Arial", 12, "bold"),
                                             bg="#ffffff", fg="blue")
-        self.total_current_label.grid(row=0, column=0, padx=20, pady=5)
+        self.total_current_label.grid(row=0, column=0, padx=120, pady=2)
 
         self.total_gross_label = tk.Label(self.total_frame, text="Total Gross Debt: 0.00", font=("Arial", 12, "bold"),
                                         bg="#ffffff", fg="red")
-        self.total_gross_label.grid(row=0, column=1, padx=20, pady=5)
+        self.total_gross_label.grid(row=0, column=1, padx=20, pady=2)
 
     def fetch_debtor_list(self):
         api_url = "http://127.0.0.1:8000/payments/debtor_list"
@@ -933,7 +933,7 @@ class PaymentManagement:
 
         # Frame for horizontal display of totals
         totals_frame = tk.Frame(frame, bg="#ffffff")
-        totals_frame.pack(fill=tk.X, pady=10)
+        totals_frame.pack(fill=tk.X, pady=5)
 
         self.pos_card_label = tk.Label(totals_frame, text="Total POS Card: 0", font=("Arial", 12), bg="#ffffff", fg="green")
         self.pos_card_label.pack(side=tk.LEFT, padx=20)
