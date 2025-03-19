@@ -439,6 +439,12 @@ def total_payment(
         )
 
 
+lagos_tz = pytz.timezone("Africa/Lagos")
+
+def make_timezone_aware(dt):
+    """Convert naive datetime to Lagos timezone or adjust existing timezone-aware datetime."""
+    return lagos_tz.localize(dt) if dt.tzinfo is None else dt.astimezone(lagos_tz)
+
 @router.get("/debtor_list")
 def get_debtor_list(
     start_date: Optional[date] = Query(None, description="date format-yyyy-mm-dd"),
@@ -454,14 +460,14 @@ def get_debtor_list(
                 detail="Start date cannot be later than end date, check your date entry"
             )
 
-        # Set the start and end dates to the beginning and end of the day, if provided
-        start_datetime = datetime.combine(start_date, datetime.min.time()) if start_date else None
-        end_datetime = datetime.combine(end_date, datetime.max.time()) if end_date else None
+        # Convert start and end dates to timezone-aware timestamps in Lagos time
+        start_datetime = make_timezone_aware(datetime.combine(start_date, datetime.min.time())) if start_date else None
+        end_datetime = make_timezone_aware(datetime.combine(end_date, datetime.max.time())) if end_date else None
 
         # Query all bookings that are not canceled and not complimentary
         query = db.query(booking_models.Booking).filter(
             booking_models.Booking.status != "cancelled",
-            booking_models.Booking.payment_status != "complimentary"  # Exclude complimentary bookings
+            booking_models.Booking.payment_status != "complimentary"
         )
 
         if start_datetime:
@@ -502,9 +508,9 @@ def get_debtor_list(
                 for payment in all_payments
             )
 
-            # Get the most recent payment date (if available)
+            # Get the most recent payment date (if available) and convert to Lagos timezone
             last_payment_date = (
-                max(payment.payment_date for payment in all_payments)
+                make_timezone_aware(max(payment.payment_date for payment in all_payments))
                 if all_payments else None
             )
 
@@ -522,7 +528,7 @@ def get_debtor_list(
                     "total_due": total_due,
                     "total_paid": total_paid,
                     "amount_due": balance_due,
-                    "booking_date": booking.booking_date,  # Added booking date for filtering
+                    "booking_date": make_timezone_aware(booking.booking_date),  # Convert booking_date to Lagos timezone
                     "last_payment_date": last_payment_date,  # Include last payment date for sorting
                 })
                 total_debt_amount += balance_due
@@ -533,7 +539,7 @@ def get_debtor_list(
 
         # Sort debtor list in descending order based on the last payment date
         debtor_list.sort(
-            key=lambda x: x["last_payment_date"] if x["last_payment_date"] else datetime.min,
+            key=lambda x: x["last_payment_date"] if x["last_payment_date"] else datetime.min.replace(tzinfo=lagos_tz),
             reverse=True
         )
 
