@@ -447,6 +447,7 @@ def make_timezone_aware(dt):
 
 @router.get("/debtor_list")
 def get_debtor_list(
+    debtor_name: Optional[str] = Query(None, description="Filter by debtor name (guest name)"),
     start_date: Optional[date] = Query(None, description="date format-yyyy-mm-dd"),
     end_date: Optional[date] = Query(None, description="date format-yyyy-mm-dd"),
     db: Session = Depends(get_db),
@@ -474,11 +475,13 @@ def get_debtor_list(
             query = query.filter(booking_models.Booking.booking_date >= start_datetime)
         if end_datetime:
             query = query.filter(booking_models.Booking.booking_date <= end_datetime)
+        if debtor_name:
+            query = query.filter(booking_models.Booking.guest_name.ilike(f"%{debtor_name}%"))  # Case-insensitive search
 
         bookings = query.all()
 
         if not bookings:
-            raise HTTPException(status_code=404, detail="No debtor bookings found in the given date range.")
+            raise HTTPException(status_code=404, detail="No debtor bookings found for the given criteria.")
 
         debtor_list = []
         total_debt_amount = 0  # Current total debt in date range
@@ -561,7 +564,7 @@ def get_debtor_list(
 
         # Raise an exception if no debtors are found
         if not debtor_list:
-            raise HTTPException(status_code=404, detail="No debtors found in the given date range.")
+            raise HTTPException(status_code=404, detail="No debtors found for the given criteria.")
 
         # Sort debtor list in descending order based on the last payment date
         debtor_list.sort(
@@ -579,8 +582,8 @@ def get_debtor_list(
     except Exception as e:
         logger.error(f"Error retrieving debtor list: {str(e)}")
         raise HTTPException(
-            status_code=500,
-            detail="An error occurred while retrieving the debtor list.",
+            status_code=404,
+            detail="Debtor records not found",
         )
 
 

@@ -783,22 +783,29 @@ class PaymentManagement:
 
         tk.Label(frame, text="Debtor List", font=("Arial", 14, "bold"), bg="#ffffff").pack(pady=10)
 
-        # Date range filter
+        # Filter Frame
         filter_frame = tk.Frame(frame, bg="#ffffff")
         filter_frame.pack(pady=5)
 
-        tk.Label(filter_frame, text="Start Date:", font=("Arial", 11), bg="#ffffff").grid(row=0, column=0, padx=5, pady=5)
-        self.start_date = DateEntry(filter_frame, font=("Arial", 11))
-        self.start_date.grid(row=0, column=1, padx=5, pady=5)
+        # Debtor Name Search
+        tk.Label(filter_frame, text="Debtor Name:", font=("Arial", 11), bg="#ffffff").grid(row=0, column=0, padx=5, pady=5)
+        self.debtor_name_entry = tk.Entry(filter_frame, font=("Arial", 11))
+        self.debtor_name_entry.grid(row=0, column=1, padx=5, pady=5)
 
-        tk.Label(filter_frame, text="End Date:", font=("Arial", 11), bg="#ffffff").grid(row=0, column=2, padx=5, pady=5)
+        # Date Filters
+        tk.Label(filter_frame, text="Start Date:", font=("Arial", 11), bg="#ffffff").grid(row=0, column=2, padx=5, pady=5)
+        self.start_date = DateEntry(filter_frame, font=("Arial", 11))
+        self.start_date.grid(row=0, column=3, padx=5, pady=5)
+
+        tk.Label(filter_frame, text="End Date:", font=("Arial", 11), bg="#ffffff").grid(row=0, column=4, padx=5, pady=5)
         self.end_date = DateEntry(filter_frame, font=("Arial", 11))
-        self.end_date.set_date(datetime.today())  # Default to current date
-        self.end_date.grid(row=0, column=3, padx=5, pady=5)
+        self.end_date.set_date(datetime.today())
+        self.end_date.grid(row=0, column=5, padx=5, pady=5)
 
         fetch_btn = ttk.Button(filter_frame, text="Fetch Debtor List", command=self.fetch_debtor_list)
-        fetch_btn.grid(row=0, column=4, padx=10, pady=5)
+        fetch_btn.grid(row=0, column=6, padx=10, pady=5)
 
+        # Table Frame
         table_frame = tk.Frame(frame, bg="#ffffff")
         table_frame.pack(fill=tk.BOTH, expand=True)
 
@@ -823,23 +830,29 @@ class PaymentManagement:
         x_scroll.pack(fill=tk.X)
         self.tree.configure(xscroll=x_scroll.set)
 
-        # Create a frame for displaying total debt amounts in a row
+        # Total Debt Display
         self.total_frame = tk.Frame(self.right_frame, bg="#ffffff", pady=2)
         self.total_frame.pack(fill=tk.X)
 
-        self.total_current_label = tk.Label(self.total_frame, text="Total Current Debt: 0.00", font=("Arial", 12, "bold"),
-                                            bg="#ffffff", fg="blue")
+        self.total_current_label = tk.Label(
+            self.total_frame, text="Total Current Debt: 0.00", font=("Arial", 12, "bold"),
+            bg="#ffffff", fg="blue"
+        )
         self.total_current_label.grid(row=0, column=0, padx=120, pady=2)
 
-        self.total_gross_label = tk.Label(self.total_frame, text="Total Gross Debt: 0.00", font=("Arial", 12, "bold"),
-                                        bg="#ffffff", fg="red")
+        self.total_gross_label = tk.Label(
+            self.total_frame, text="Total Gross Debt: 0.00", font=("Arial", 12, "bold"),
+            bg="#ffffff", fg="red"
+        )
         self.total_gross_label.grid(row=0, column=1, padx=20, pady=2)
+
 
     def fetch_debtor_list(self):
         api_url = "http://127.0.0.1:8000/payments/debtor_list"
         headers = {"Authorization": f"Bearer {self.token}"}
 
         params = {
+            "debtor_name": self.debtor_name_entry.get().strip(),  # Get debtor name from input
             "start_date": self.start_date.get_date().strftime("%Y-%m-%d"),
             "end_date": self.end_date.get_date().strftime("%Y-%m-%d"),
         }
@@ -850,10 +863,9 @@ class PaymentManagement:
                 data = response.json()
 
                 debtors = data.get("debtors", [])
-                total_current_debt = data.get("total_current_debt", 0)  # Filtered debt
-                total_gross_debt = data.get("total_gross_debt", 0)  # Overall debt
+                total_current_debt = data.get("total_current_debt", 0)
+                total_gross_debt = data.get("total_gross_debt", 0)
 
-                # Clear the table before inserting new data
                 self.tree.delete(*self.tree.get_children())
 
                 if not debtors:
@@ -865,24 +877,26 @@ class PaymentManagement:
                         debtor.get("booking_id", ""),
                         debtor.get("guest_name", ""),
                         debtor.get("room_number", ""),
-                        f"{float(debtor.get('room_price', 0)) :,.2f}",
+                        debtor.get("room_price", ""),
                         debtor.get("number_of_days", ""),
-                        f"{float(debtor.get('total_due', 0)) :,.2f}",
-                        f"{float(debtor.get('total_paid', 0)) :,.2f}",
-                        f"{float(debtor.get('amount_due', 0)) :,.2f}",
+                        debtor.get("total_due", ""),
+                        debtor.get("total_paid", ""),
+                        debtor.get("amount_due", ""),
                         debtor.get("booking_date", ""),
-                        debtor.get("last_payment_date", "")
+                        debtor.get("last_payment_date", ""),
                     ))
 
-                # Update labels with correct values
                 self.total_current_label.config(text=f"Total Current Debt: {total_current_debt:,.2f}")
                 self.total_gross_label.config(text=f"Total Gross Debt: {total_gross_debt:,.2f}")
 
-                self.apply_grid_effect()
+
+
             else:
-                messagebox.showinfo("No Results", "No data found for the selected filters.")
-        except requests.exceptions.RequestException as e:
-            messagebox.showerror("Error", f"Request failed: {e}")
+                messagebox.showerror("Error", f"Failed to fetch debtor list: {response.json().get('detail', 'Unknown error')}")
+
+        except Exception as e:
+            messagebox.showerror("Error", f"Error fetching debtor list: {str(e)}")
+
 
 
 
@@ -1111,9 +1125,6 @@ class PaymentManagement:
      
     def void_payment(self):
         self.clear_right_frame()
-
-
-        
 
         frame = tk.Frame(self.right_frame, bg="#ffffff", padx=10, pady=10)
         frame.pack(fill=tk.BOTH, expand=True)

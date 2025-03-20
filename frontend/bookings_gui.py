@@ -113,7 +113,7 @@ class BookingManagement:
             ("Sort Guest Name", self.search_booking),
             ("Sort by ID", self.search_booking_by_id),
             ("Sort By Room", self.search_booking_by_room),
-            ("Update", self.update_booking),
+            ("Update Booking", self.update_booking),
             ("Guest Checkout", self.guest_checkout),
             ("Cancel Booking", self.cancel_booking),
         ]
