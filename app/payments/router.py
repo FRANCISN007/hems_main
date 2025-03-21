@@ -139,7 +139,7 @@ def create_payment(
                 amount_paid=payment_request.amount_paid,
                 discount_allowed=payment_request.discount_allowed,
                 payment_method=payment_request.payment_method,
-                payment_date=payment_request.payment_date.isoformat(),
+                payment_date=payment_request.payment_date,
             
             ),
             booking_id=booking_id,
@@ -158,7 +158,7 @@ def create_payment(
                 "payment_id": new_payment.id,
                 "amount_paid": new_payment.amount_paid,
                 "discount_allowed": payment_request.discount_allowed,
-                "payment_date": new_payment.payment_date.isoformat(),
+                "payment_date": new_payment.payment_date,
                 "balance_due": new_payment.balance_due,
                 "void_date": new_payment.void_date.strftime("%Y-%m-%d %H:%M:%S") if new_payment.void_date else "N/A",
                 "status": new_payment.status,
@@ -168,8 +168,10 @@ def create_payment(
 
     except Exception as e:
         db.rollback()
-        logger.error(f"Error creating payment: {e}")
-        raise HTTPException(status_code=500, detail="Error creating payment.")
+        import traceback
+        error_details = traceback.format_exc()
+        logger.error(f"Error creating payment: {error_details}")
+        raise HTTPException(status_code=500, detail=f"Error creating payment: {str(e)}")
 
     
 

@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional
-from datetime import date
+from datetime import date, datetime
 
 # Base Schema for EventPayment
 class EventPaymentBase(BaseModel):
@@ -30,7 +30,7 @@ class EventPaymentResponse(BaseModel):
     balance_due: float
     payment_method: str
     payment_status: str
-    payment_date: date
+    payment_date: datetime
     created_by: str
 
     class Config:

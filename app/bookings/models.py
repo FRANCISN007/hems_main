@@ -13,7 +13,6 @@ def get_local_time():
     lagos_tz = pytz.timezone("Africa/Lagos")
     return datetime.now(lagos_tz)
 
-booking_date = Column(DateTime, default=get_local_time)
 
 class Booking(Base):
     __tablename__ = "bookings"

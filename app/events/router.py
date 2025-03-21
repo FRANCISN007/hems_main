@@ -1,15 +1,21 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, timedelta
 from app.database import get_db
 from app.events import models as event_models
 from app.events import schemas as event_schemas
 from app.users import schemas as user_schemas
 from app.users.auth import get_current_user
+from datetime import datetime, date
+import pytz
 
 
 router = APIRouter()
+
+
+lagos_tz = pytz.timezone("Africa/Lagos")
+
 
 # Create Event
 @router.post("/", response_model=event_schemas.EventResponse)
@@ -18,15 +24,35 @@ def create_event(
     db: Session = Depends(get_db), 
     current_user: user_schemas.UserDisplaySchema = Depends(get_current_user),
 ):
+    # Convert date to datetime if needed
+    def ensure_datetime(dt):
+        if isinstance(dt, date) and not isinstance(dt, datetime):
+            return datetime.combine(dt, datetime.min.time())  # Convert date to datetime
+        return dt
+
+    try:
+        start_datetime = ensure_datetime(event.start_datetime)
+        end_datetime = ensure_datetime(event.end_datetime)
+
+        # Convert to timezone-aware datetime if missing tzinfo
+        if start_datetime.tzinfo is None:
+            start_datetime = lagos_tz.localize(start_datetime)
+
+        if end_datetime.tzinfo is None:
+            end_datetime = lagos_tz.localize(end_datetime)
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Invalid datetime format: {str(e)}")
+
     # Check if an event already exists on the requested start date
     existing_event = db.query(event_models.Event).filter(
-        event_models.Event.start_datetime == event.start_datetime
+        event_models.Event.start_datetime == start_datetime
     ).first()
 
     if existing_event:
         raise HTTPException(
             status_code=400,
-            detail=f"An event has already been booked on {event.start_datetime}. Please choose a different date."
+            detail=f"An event has already been booked on {start_datetime}. Please choose a different date."
         )
 
     # Proceed with creating the event if no conflict exists
@@ -34,8 +60,8 @@ def create_event(
         organizer=event.organizer,
         title=event.title,
         description=event.description,
-        start_datetime=event.start_datetime,
-        end_datetime=event.end_datetime,
+        start_datetime=start_datetime,   # ✅ Ensured datetime format
+        end_datetime=end_datetime,       # ✅ Ensured datetime format
         event_amount=event.event_amount,
         caution_fee=event.caution_fee,
         location=event.location,
@@ -51,24 +77,34 @@ def create_event(
     return db_event
 
 
-# List Events with Filters (Start Date, End Date, Created By)
+
 @router.get("/", response_model=List[event_schemas.EventResponse])
 def list_events(
     db: Session = Depends(get_db),
     current_user: user_schemas.UserDisplaySchema = Depends(get_current_user),
-    start_date: Optional[datetime] = Query(None, description="Filter by start date"),
-    end_date: Optional[datetime] = Query(None, description="Filter by end date"),
-   
+    start_date: Optional[str] = Query(None, description="Start date in YYYY-MM-DD format"),
+    end_date: Optional[str] = Query(None, description="End date in YYYY-MM-DD format"),
 ):
     query = db.query(event_models.Event)
 
     if start_date:
-        query = query.filter(event_models.Event.start_datetime >= start_date)
+        try:
+            start_date_dt = datetime.strptime(start_date, "%Y-%m-%d")
+            query = query.filter(event_models.Event.start_datetime >= start_date_dt)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid start_date format. Use YYYY-MM-DD.")
+
     if end_date:
-        query = query.filter(event_models.Event.end_datetime <= end_date)
+        try:
+            # Extend end date to cover the whole day (23:59:59)
+            end_date_dt = datetime.strptime(end_date, "%Y-%m-%d") + timedelta(days=1) - timedelta(seconds=1)
+            query = query.filter(event_models.Event.end_datetime <= end_date_dt)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid end_date format. Use YYYY-MM-DD.")
 
     events = query.order_by(event_models.Event.start_datetime).all()
     return events
+
 
 
 # Get Event by ID

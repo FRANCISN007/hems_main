@@ -39,7 +39,9 @@ def create_payment(
         balance_due=balance_due,
         discount_allowed=payment.discount_allowed,
         payment_method=payment.payment_method,
-        payment_date=payment.payment_date.isoformat(),
+        payment_date=payment.payment_date,  # Ensure it remains a datetime object
+
+        #payment_date=payment.payment_date.isoformat(),
         status=status,
         void_date=None, 
         created_by=created_by  # Track who created the payment
