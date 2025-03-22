@@ -4,6 +4,8 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+from decouple import config
+
 
 # Load environment variables from .env file
 load_dotenv()
@@ -17,12 +19,20 @@ load_dotenv()
 #SQLALCHEMY_DATABASE_URL = "sqlite:///hems.db?cipher=aes-256-cbc&key=REPOMAN"
 #DATABASE_URL = "sqlite:///your_database.db?cipher=aes-256-cbc&key=your_secure_password"
 
+
+
+DB_URL = config("DB_URL")
+
+engine = create_engine(DB_URL, connect_args={"check_same_thread": False})  
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+
 SQLALCHEMY_DATABASE_URL = os.getenv('DB_URL')
 
 
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL
-)
+#engine = create_engine(
+    #SQLALCHEMY_DATABASE_URL
+#)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # Ensure the database URL is set; otherwise, raise an error

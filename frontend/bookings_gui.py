@@ -967,8 +967,6 @@ class BookingManagement:
         except requests.exceptions.RequestException as e:
             messagebox.showerror("Error", f"Request failed: {e}")
      
-
-    #def search_by_room(self):
     def search_booking_by_room(self):
         self.clear_right_frame()
 
@@ -977,40 +975,56 @@ class BookingManagement:
 
         tk.Label(frame, text="Search Booking by Room Number", font=("Arial", 14, "bold"), bg="#ffffff").pack(pady=10)
 
+        # Centered Frame for Search Inputs
         search_frame = tk.Frame(frame, bg="#ffffff")
-        search_frame.pack(pady=5)
+        search_frame.pack(pady=10)
 
-        tk.Label(search_frame, text="Room Number:", font=("Arial", 11), bg="#ffffff").grid(row=0, column=0, padx=5, pady=5)
-        self.room_number_entry = tk.Entry(search_frame, font=("Arial", 11))
-        self.room_number_entry.grid(row=0, column=1, padx=5, pady=5)
+        # Grid Configuration for Centralization
+        search_frame.grid_columnconfigure(0, weight=1)
+        search_frame.grid_columnconfigure(1, weight=1)
+        search_frame.grid_columnconfigure(2, weight=1)
+        search_frame.grid_columnconfigure(3, weight=1)
+        search_frame.grid_columnconfigure(4, weight=1)
+        search_frame.grid_columnconfigure(5, weight=1)
+        search_frame.grid_columnconfigure(6, weight=1)
 
-        # Date input fields
-        tk.Label(search_frame, text="Start Date:", font=("Arial", 11), bg="#ffffff").grid(row=1, column=0, padx=5, pady=5)
+        # Room Number Entry
+        tk.Label(search_frame, text="Room Number:", font=("Arial", 11), bg="#ffffff").grid(row=0, column=0, padx=5, pady=5, sticky="e")
+        self.room_number_entry = tk.Entry(search_frame, font=("Arial", 11), width=12)
+        self.room_number_entry.grid(row=0, column=1, padx=5, pady=5, sticky="w")
+
+        # Start Date
+        tk.Label(search_frame, text="Start Date:", font=("Arial", 11), bg="#ffffff").grid(row=0, column=2, padx=5, pady=5, sticky="e")
         self.start_date_entry = DateEntry(search_frame, font=("Arial", 11), width=12, background="darkblue", foreground="white", borderwidth=2)
-        self.start_date_entry.grid(row=1, column=1, padx=5, pady=5)
+        self.start_date_entry.grid(row=0, column=3, padx=5, pady=5, sticky="w")
 
-        tk.Label(search_frame, text="End Date:", font=("Arial", 11), bg="#ffffff").grid(row=1, column=2, padx=5, pady=5)
+        # End Date
+        tk.Label(search_frame, text="End Date:", font=("Arial", 11), bg="#ffffff").grid(row=0, column=4, padx=5, pady=5, sticky="e")
         self.end_date_entry = DateEntry(search_frame, font=("Arial", 11), width=12, background="darkblue", foreground="white", borderwidth=2)
-        self.end_date_entry.grid(row=1, column=3, padx=5, pady=5)
+        self.end_date_entry.grid(row=0, column=5, padx=5, pady=5, sticky="w")
 
-        search_btn = ttk.Button(
-            search_frame, text="Search", command=self.fetch_booking_by_room
-        )
-        search_btn.grid(row=2, column=0, columnspan=4, padx=10, pady=10)
+        # Search Button
+        search_btn = ttk.Button(search_frame, text="Search", command=self.fetch_booking_by_room)
+        search_btn.grid(row=0, column=6, padx=10, pady=5, sticky="w")
 
+        # Table Frame for results
         table_frame = tk.Frame(frame, bg="#ffffff")
         table_frame.pack(fill=tk.BOTH, expand=True)
 
-        columns = ("ID", "Room", "Guest Name", "Gender", "Booking Cost", "Arrival", "Departure", "Status", "Number of Days", 
-                "Booking Type", "Phone Number", "Booking Date", "Payment Status", "Identification Number", "Address","Created_by")
+        # Define table columns
+        columns = ("ID", "Room", "Guest Name", "Gender", "Booking Cost", "Arrival", "Departure", "Status", "Number of Days",
+                "Booking Type", "Phone Number", "Booking Date", "Payment Status", "Identification Number", "Address", "Created_by")
 
         self.search_tree = ttk.Treeview(table_frame, columns=columns, show="headings")
+
+        # Configure table column headings
         for col in columns:
             self.search_tree.heading(col, text=col)
             self.search_tree.column(col, width=70, anchor="center")
 
         self.search_tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
+        # Scrollbars
         y_scroll = ttk.Scrollbar(table_frame, orient="vertical", command=self.search_tree.yview)
         y_scroll.pack(side=tk.RIGHT, fill=tk.Y)
         self.search_tree.configure(yscroll=y_scroll.set)
@@ -1018,6 +1032,12 @@ class BookingManagement:
         x_scroll = ttk.Scrollbar(frame, orient="horizontal", command=self.search_tree.xview)
         x_scroll.pack(fill=tk.X)
         self.search_tree.configure(xscroll=x_scroll.set)
+
+        # Total Label (Below Table)
+        self.total_label = tk.Label(frame, text="Total Booking Cost: 0.00", font=("Arial", 12, "bold"), bg="#ffffff", fg="blue")
+        self.total_label.pack(pady=10)
+
+
 
     def fetch_booking_by_room(self):
         room_number = self.room_number_entry.get().strip()
@@ -1055,11 +1075,18 @@ class BookingManagement:
             #print("API Response:", response_data)
 
             # Handle response
+
+            # Initialize total cost
+            
+            total_cost = 0.0
+            
             if response.status_code == 200:
                 if "bookings" in response_data and response_data["bookings"]:
                     self.search_tree.delete(*self.search_tree.get_children())  # Clear table
 
                     for booking in response_data["bookings"]:
+                        cost = float(booking.get("booking_cost", 0))
+                        total_cost += cost  # Sum up the total booking cost
                         self.search_tree.insert("", "end", values=(
                             booking.get("id", ""),
                             booking.get("room_number", ""),
@@ -1080,6 +1107,9 @@ class BookingManagement:
 
                             
                         ))
+
+                    # Update total label dynamically
+                    self.total_label.config(text=f"Total Booking Cost: {total_cost:,.2f}")
                     # Apply grid effect after inserting data
                     self.apply_grid_effect(self.search_tree)
 
