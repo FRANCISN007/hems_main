@@ -2,20 +2,20 @@ import os
 import sys
 import subprocess
 import time
-from datetime import datetime
+import configparser
 
-# Set Africa/Lagos as the default timezone
+# Set default timezone
 os.environ["TZ"] = "Africa/Lagos"
 
 # Determine BASE_DIR dynamically
 if getattr(sys, 'frozen', False):  # Running from an Inno Setup installation
-    BASE_DIR = os.path.dirname(sys.executable)  # Use the directory where the EXE is located
-else:  # Running from the development environment
+    BASE_DIR = os.path.dirname(sys.executable)
+else:  # Running from a development environment
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Paths for Python environments
-PYTHON_VENV = os.path.join(BASE_DIR, "env", "Scripts", "python.exe")  # Virtual environment (Development)
-PYTHON_EMBED = os.path.join(BASE_DIR, "python", "python.exe")  # Embedded Python (Installer)
+PYTHON_VENV = os.path.join(BASE_DIR, "env", "Scripts", "python.exe")  # Virtual environment
+PYTHON_EMBED = os.path.join(BASE_DIR, "python", "python.exe")  # Embedded Python
 
 # Determine which Python executable to use
 if os.path.exists(PYTHON_VENV):
@@ -26,8 +26,20 @@ else:
     print("Error: No valid Python environment found.")
     sys.exit(1)
 
+# Read database configuration
+DB_CONFIG_FILE = os.path.join(BASE_DIR, "db_config.ini")
+if os.path.exists(DB_CONFIG_FILE):
+    config = configparser.ConfigParser()
+    config.read(DB_CONFIG_FILE)
+
+    os.environ["DB_HOST"] = config.get("Database", "Host", fallback="127.0.0.1")
+    os.environ["DB_PORT"] = config.get("Database", "Port", fallback="5432")
+    os.environ["DB_NAME"] = config.get("Database", "Database", fallback="hems_db")
+    os.environ["DB_USER"] = config.get("Database", "Username", fallback="postgres")
+    os.environ["DB_PASSWORD"] = config.get("Database", "Password", fallback="admin")
+
 def start_backend():
-    """Starts the FastAPI backend using the appropriate Python environment."""
+    """Starts the FastAPI backend using the configured database."""
     backend_script = os.path.join(BASE_DIR, "app", "main.py")
 
     if not os.path.exists(backend_script):
@@ -40,7 +52,7 @@ def start_backend():
     return process  # Keep running in the background
 
 def start_frontend():
-    """Starts the Tkinter frontend using the appropriate Python environment."""
+    """Starts the Tkinter frontend."""
     frontend_script = os.path.join(BASE_DIR, "frontend", "main.py")
 
     if not os.path.exists(frontend_script):

@@ -56,6 +56,12 @@ $env:Path += ";C:\Program Files\Git\bin;C:\Program Files\Git\cmd"
 after the above, then shut down
 powershell
 
+Get-NetIPAddress | Select-Object InterfaceAlias,IPAddress
+
+ipconfig.exe
+ IPv4 Address. . . . . . . . . . . : 192.168.250.67
+
+
 📂 Updated Backend Structure
 bash
 Copy

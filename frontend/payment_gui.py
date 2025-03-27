@@ -592,7 +592,9 @@ class PaymentManagement:
                         payment.get("created_by", "N/A"),
                     ))
 
-                
+                # Apply the effect to the correct treeview (payment_tree)
+                    self.apply_grid_effect(self.tree)
+                    
                 # Update breakdown labels
                 self.total_cash_label.config(text=f"Total Cash: {total_cash:,.2f}")
                 self.total_pos_label.config(text=f"Total POS Card: {total_pos:,.2f}")
@@ -811,7 +813,7 @@ class PaymentManagement:
 
         columns = (
             "Booking ID", "Guest Name", "Room Number", "Room Price", "Number of Days",
-            "Total Due", "Total Paid", "Amount Due", "Booking Date", "Last Payment Date"
+            "Total Amount", "Total Paid", "Amount Due", "Booking Date", "Last Payment Date"
         )
 
         self.tree = ttk.Treeview(table_frame, columns=columns, show="headings")
@@ -879,12 +881,16 @@ class PaymentManagement:
                         debtor.get("room_number", ""),
                         f"{float(debtor.get('room_price', 0)) :,.2f}",
                         debtor.get("number_of_days", ""),
-                        f"{float(debtor.get('amount_paid', 0)) :,.2f}",
-                        f"{float(debtor.get('discount_allowed', 0)) :,.2f}",
-                        f"{float(debtor.get('balance_due', 0)) :,.2f}",
+                        f"{float(debtor.get('total_due', 0)) :,.2f}",
+                        f"{float(debtor.get('total_paid', 0)) :,.2f}",
+                        f"{float(debtor.get('amount_due', 0)) :,.2f}",
                         debtor.get("booking_date", ""),
                         debtor.get("last_payment_date", ""),
                     ))
+                # Apply the effect to the correct treeview (payment_tree)
+                    self.apply_grid_effect(self.tree)
+
+
 
                 self.total_current_label.config(text=f"Total Current Debt: {total_current_debt:,.2f}")
                 self.total_gross_label.config(text=f"Total Gross Debt: {total_gross_debt:,.2f}")
