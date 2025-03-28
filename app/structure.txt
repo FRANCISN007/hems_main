@@ -48,6 +48,8 @@ HEMS-main/
 ├── requirements.txt          # Python dependencies
 ├── README.md
 
+ pip install -r requirements.txt
+ pip freeze > requirements.txt
 
 %USERPROFILE%\AppData\Local\programs
 [System.Environment]::SetEnvironmentVariable("Path", $env:Path + ";C:\Program Files\Git\bin", [System.EnvironmentVariableTarget]::Machine)
@@ -59,7 +61,7 @@ powershell
 Get-NetIPAddress | Select-Object InterfaceAlias,IPAddress
 
 ipconfig.exe
- IPv4 Address. . . . . . . . . . . : 192.168.250.67
+ 
 
 
 📂 Updated Backend Structure

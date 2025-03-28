@@ -6,7 +6,6 @@ from tkinter import filedialog, messagebox
 from openpyxl import load_workbook
 from openpyxl.styles import Font, Alignment
 
-import sqlite3
 import os
 import sys
 
@@ -21,21 +20,12 @@ def resource_path(relative_path):
 
 
 
-# Get the database path from environment variables or default location
-DB_PATH = os.getenv("HEMS_DB_PATH", "C:/Program Files/Hotel and Event Management App/hems.db")
-
-def get_db_connection():
-    """Establish a connection to the password-protected SQLite database."""
-    conn = sqlite3.connect(DB_PATH, uri=True)
-    conn.execute("PRAGMA key='REPOMAN'")  # Unlock encrypted database
-    return conn
-
-
 
 
 TOKEN_FILE = "token.txt"
 API_BASE_URL = resource_path("http://127.0.0.1:8000")  # Update this if needed
 BASE_URL = f"{API_BASE_URL}/bookings"  # For booking-related endpoints
+
 
 
 def save_token(token):
